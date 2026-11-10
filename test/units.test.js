@@ -35,3 +35,11 @@ test('ユニット担当：「RESET」は同じ並びの行が同じポジショ
   assert.deepEqual(by['明日のためにキスを'], ['水島美結', '橋本恵理子', '黒須遥香', '永野芹佳']);
   assert.deepEqual(by['心の端のソファー'], ['山根涼羽', '行天優莉奈', '新井彩永']);
 });
+
+test('ユニット担当：「手をつなぎながら」・異体字（渡邉／渡邊）も同じ人', () => {
+  const T = JSON.parse(readFileSync(new URL('../docs/data/units.json', import.meta.url), 'utf8')).stages['手をつなぎながら'];
+  const m = ['丸山ひなた', '渡邉葵心', '近藤沙樹', '田中沙友利', '牧戸愛茉', '奥本カイリ', '髙橋舞桜', '大賀彩姫'];
+  const by = Object.fromEntries(assignUnits(T, m).map((s) => [s.title, s.slots.map((x) => x.name)]));
+  assert.deepEqual(by['Glory days'], ['丸山ひなた', '渡邉葵心', '近藤沙樹']);
+  assert.deepEqual(by['チョコの行方'], ['田中沙友利', '丸山ひなた', '髙橋舞桜', '大賀彩姫']);
+});
