@@ -65,6 +65,19 @@
   .cast-member{display:inline-flex;align-items:center;gap:4px}
   .member-photo{width:24px;height:24px;flex:none;object-fit:cover;object-position:center 25%;border-radius:50%}
   .mem b{color:var(--curtain);font-weight:900}
+  .units{margin-top:8px;font-size:13px}
+  .units summary{cursor:pointer;font-weight:800;color:var(--curtain);list-style:none;display:inline-flex;align-items:center;gap:4px}
+  .units summary::-webkit-details-marker{display:none}
+  .units summary::before{content:"▸";transition:transform .15s}
+  .units[open] summary::before{transform:rotate(90deg)}
+  .units ol{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px}
+  .units li{background:var(--bg);border-radius:8px;padding:6px 9px}
+  .units .sn{font-weight:800}.units .no{font-family:"DM Mono",ui-monospace,monospace;font-size:11px;color:var(--muted);margin-right:4px}
+  .units .who{color:var(--ink);margin-top:2px;line-height:1.6}
+  .units .who .maybe{border-bottom:1px dotted var(--muted)}
+  .units .who .unknown{color:var(--muted)}
+  .units .cr{font-size:11px;color:var(--muted)}
+  .units .foot{font-size:11px;color:var(--muted);margin:6px 0 0}
   .dl{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
   .pill{font-size:12px;border-radius:999px;padding:2px 10px;border:1px solid var(--line)}
   .pill.open{border-color:#bfe0cd;background:#eef8f2;color:var(--ok)}
@@ -491,6 +504,42 @@
     }).join('')}</div>`;
   }
 
+  /* ユニット担当：演目ごとのポジション表（data/units.json）と出演メンバーから割り出す。
+     1行＝1ポジション（先頭がオリジナル、続きがアンダー）で、出演者はちょうど1ポジションに入る */
+  let unitTable = {};
+  const unorm = (x) => String(x || '').normalize('NFKC').replace(/髙/g, '高').replace(/﨑/g, '崎').replace(/\s/g, '');
+  function assignUnits(songs, members) {
+    const cast = new Map(members.map((m) => [unorm(m), m]));
+    const pos = songs.flatMap((song, si) => song.positions.map((row, pi) => ({ si, pi, row, cand: row.filter((n) => cast.has(unorm(n))).map((n) => cast.get(unorm(n))) })));
+    const order = pos.map((_, i) => i).sort((a, b) => pos[a].cand.length - pos[b].cand.length);
+    const sols = []; const used = new Set(); const pick = new Array(pos.length).fill(null); let best = -1;
+    (function go(k, filled) {
+      if (sols.length >= 200 || filled + (order.length - k) < best) return;
+      if (k === order.length) { if (filled > best) { best = filled; sols.length = 0; } if (filled === best) sols.push([...pick]); return; }
+      const i = order[k]; let any = false;
+      for (const n of pos[i].cand) { if (used.has(n)) continue; any = true; used.add(n); pick[i] = n; go(k + 1, filled + 1); pick[i] = null; used.delete(n); }
+      if (!any || !pos[i].cand.length) go(k + 1, filled);
+    })(0, 0);
+    const cost = (sol) => sol.reduce((c, n, i) => c + (n ? pos[i].row.findIndex((x) => unorm(x) === unorm(n)) : 0), 0);
+    const top = sols.length ? sols.reduce((a, b) => (cost(b) < cost(a) ? b : a)) : [];
+    return songs.map((song, si) => ({ ...song, slots: song.positions.map((row, pi) => { const i = pos.findIndex((p) => p.si === si && p.pi === pi); const name = top[i] || null; return { name, sure: !!name && sols.every((x) => x[i] === name) }; }) }));
+  }
+  function unitsBlock(s) {
+    const key = Object.keys(unitTable).find((k) => s.title.includes(k));
+    if (!key || (s.members || []).length < 4) return '';
+    const res = assignUnits(unitTable[key], s.members);
+    let maybe = false;
+    const who = (sl) => {
+      if (!sl.name) return '<span class="unknown">？</span>';
+      if (!sl.sure) maybe = true;
+      const n = picked.has(sl.name) ? `<b>${esc(sl.name)}</b>` : esc(sl.name);
+      return sl.sure ? n : `<span class="maybe">${n}</span>`;
+    };
+    const mine = res.some((so) => so.slots.some((sl) => sl.name && picked.has(sl.name)));
+    const items = res.map((so) => `<li><div><span class="no">${esc(so.no)}</span><span class="sn">${esc(so.title)}</span></div><div class="who">${so.slots.map(who).join('・')}</div>${so.credit ? `<div class="cr">${esc(so.credit)}</div>` : ''}</li>`).join('');
+    return `<details class="units"${mine ? ' data-mine' : ''}><summary>ユニット担当${mine ? '（推しあり）' : ''}</summary><ol>${items}</ol><p class="foot">出演メンバーとポジション表から割り出してるよ。${maybe ? '点線の人は入れ替わりの可能性あり。' : ''}メンバー変更があるとずれることがあるよ</p></details>`;
+  }
+
   function ticket(s) {
     const now = Date.now();
     const live = isLive(s);
@@ -511,6 +560,7 @@
         <div class="ttl">${esc(s.title)}${appliedOf(s).size ? `<span class="appl">✓ ${appliedOf(s).size}枠応募済み</span>` : ''}</div>
         ${s.note ? `<span class="note">${esc(s.note)}</span>` : ''}
         <div class="mem cast">${mem}</div>
+        ${unitsBlock(s)}
         <div class="dl">${groups(s, false).map(pill).join('')}${lobby.map(pill).join('')}</div>
         ${apRow(s)}
         <div class="actions">${live || lobby.length
@@ -984,10 +1034,10 @@
         navigator.serviceWorker.addEventListener('message', (e) => { if (e.data && e.data.type === 'navigate') route(e.data.url); });
       } catch {}
     }
-    const [m, s, c, r, a, hi] = await Promise.all([get('data/members.json'), get('data/shows.json'), get('data/config.json'), get('data/roster.json'), get('data/archive.json'), get('data/history/index.json')]);
+    const [m, s, c, r, a, hi, un] = await Promise.all([get('data/members.json'), get('data/shows.json'), get('data/config.json'), get('data/roster.json'), get('data/archive.json'), get('data/history/index.json'), get('data/units.json')]);
     members = m || []; shows = s || [];
     if (shows.length) { const live = new Set(shows.map((x) => String(x.id))); let ch = false; for (const k of Object.keys(applied)) if (!live.has(k)) { delete applied[k]; ch = true; } if (ch) saveApplied(); }
- config = c || {}; roster = (r && r.members) || []; archive = a || []; historyIndex = hi;
+ config = c || {}; roster = (r && r.members) || []; archive = a || []; historyIndex = hi; unitTable = (un && un.stages) || {};
     if (config.updatedAt) $('#updated').textContent = `データ更新：${jst(config.updatedAt)}`;
     if (!members.length && !roster.length) $('#memberHint').textContent = 'まだデータがないよ（初回の自動チェック後に表示される）';
     renderAll();
