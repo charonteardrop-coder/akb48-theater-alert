@@ -1,203 +1,252 @@
 {
- "_note": "プルダウンの並び順（先輩順）と期の見出し。AKB48公式サイトのメンバー一覧の掲載順をそのまま使っている。新メンバー加入・卒業時はこのファイルを手で更新する。載っていない名前は「その他」に並ぶ。",
+ "_note": "プルダウンの並び順（先輩順）と期の見出し、公式プロフィール写真のURL。AKB48公式サイトのメンバー一覧の掲載順をそのまま使っている。新メンバー加入・卒業時はこのファイルを手で更新する。載っていない名前は「その他」に並ぶ。",
  "source": "https://www.akb48.co.jp/about/members/",
  "checkedAt": "2026-11-10",
  "members": [
   {
    "name": "岩立沙穂",
-   "gen": "13期生"
+   "gen": "13期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83100622.jpg"
   },
   {
    "name": "福岡聖菜",
-   "gen": "15期生"
+   "gen": "15期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83100790.jpg"
   },
   {
    "name": "小栗有以",
-   "gen": "Team8"
+   "gen": "Team8",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83100816.jpg"
   },
   {
    "name": "行天優莉奈",
-   "gen": "Team8"
+   "gen": "Team8",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83100840.jpg"
   },
   {
    "name": "倉野尾成美",
-   "gen": "Team8"
+   "gen": "Team8",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83100846.jpg"
   },
   {
    "name": "坂川陽香",
-   "gen": "Team8"
+   "gen": "Team8",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83100997.jpg"
   },
   {
    "name": "下尾みう",
-   "gen": "Team8"
+   "gen": "Team8",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83100838.jpg"
   },
   {
    "name": "髙橋彩音",
-   "gen": "Team8"
+   "gen": "Team8",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83100814.jpg"
   },
   {
    "name": "徳永羚海",
-   "gen": "Team8"
+   "gen": "Team8",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83100993.jpg"
   },
   {
    "name": "永野芹佳",
-   "gen": "Team8"
+   "gen": "Team8",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83100828.jpg"
   },
   {
    "name": "橋本陽菜",
-   "gen": "Team8"
+   "gen": "Team8",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83100824.jpg"
   },
   {
    "name": "千葉恵里",
-   "gen": "ドラフト2期生"
+   "gen": "ドラフト2期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83100927.jpg"
   },
   {
    "name": "黒須遥香",
-   "gen": "16期生"
+   "gen": "16期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83100937.jpg"
   },
   {
    "name": "長友彩海",
-   "gen": "16期生"
+   "gen": "16期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83100943.jpg"
   },
   {
    "name": "武藤小麟",
-   "gen": "16期生"
+   "gen": "16期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83100949.jpg"
   },
   {
    "name": "山内瑞葵",
-   "gen": "16期生"
+   "gen": "16期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83100951.jpg"
   },
   {
    "name": "山根涼羽",
-   "gen": "16期生"
+   "gen": "16期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83100952.jpg"
   },
   {
    "name": "太田有紀",
-   "gen": "17期生"
+   "gen": "17期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83100998.jpg"
   },
   {
    "name": "佐藤綺星",
-   "gen": "17期生"
+   "gen": "17期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83101000.jpg"
   },
   {
    "name": "橋本恵理子",
-   "gen": "17期生"
+   "gen": "17期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83101001.jpg"
   },
   {
    "name": "畠山希美",
-   "gen": "17期生"
+   "gen": "17期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83101003.jpg"
   },
   {
    "name": "平田侑希",
-   "gen": "17期生"
+   "gen": "17期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83101004.jpg"
   },
   {
    "name": "布袋百椛",
-   "gen": "17期生"
+   "gen": "17期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83101005.jpg"
   },
   {
    "name": "正鋳真優",
-   "gen": "17期生"
+   "gen": "17期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83101006.jpg"
   },
   {
    "name": "水島美結",
-   "gen": "17期生"
+   "gen": "17期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83101007.jpg"
   },
   {
    "name": "山﨑空",
-   "gen": "17期生"
+   "gen": "17期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/mobile/member/83101008.jpg"
   },
   {
    "name": "秋山由奈",
-   "gen": "18期生"
+   "gen": "18期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/hashiranokai/member/83101009.jpg"
   },
   {
    "name": "新井彩永",
-   "gen": "18期生"
+   "gen": "18期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/hashiranokai/member/83101010.jpg"
   },
   {
    "name": "工藤華純",
-   "gen": "18期生"
+   "gen": "18期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/hashiranokai/member/83101011.jpg"
   },
   {
    "name": "久保姫菜乃",
-   "gen": "18期生"
+   "gen": "18期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/hashiranokai/member/83101012.jpg"
   },
   {
    "name": "迫由芽実",
-   "gen": "18期生"
+   "gen": "18期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/hashiranokai/member/83101013.jpg"
   },
   {
    "name": "成田香姫奈",
-   "gen": "18期生"
+   "gen": "18期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/hashiranokai/member/83101014.jpg"
   },
   {
    "name": "八木愛月",
-   "gen": "18期生"
+   "gen": "18期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/hashiranokai/member/83101015.jpg"
   },
   {
    "name": "山口結愛",
-   "gen": "18期生"
+   "gen": "18期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/hashiranokai/member/83101016.jpg"
   },
   {
    "name": "伊藤百花",
-   "gen": "19期生"
+   "gen": "19期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/hashiranokai/member/83101017.jpg"
   },
   {
    "name": "奥本カイリ",
-   "gen": "19期生"
+   "gen": "19期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/hashiranokai/member/83101018.jpg"
   },
   {
    "name": "川村結衣",
-   "gen": "19期生"
+   "gen": "19期生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/hashiranokai/member/83101019.jpg"
   },
   {
    "name": "大賀彩姫",
-   "gen": "20期研究生"
+   "gen": "20期研究生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/hashiranokai/member/83101022.jpg"
   },
   {
    "name": "近藤沙樹",
-   "gen": "20期研究生"
+   "gen": "20期研究生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/hashiranokai/member/83101023.jpg"
   },
   {
    "name": "丸山ひなた",
-   "gen": "20期研究生"
+   "gen": "20期研究生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/hashiranokai/member/83101024.jpg"
   },
   {
    "name": "髙橋舞桜",
-   "gen": "21期研究生"
+   "gen": "21期研究生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/hashiranokai/member/83101025.jpg"
   },
   {
    "name": "田中沙友利",
-   "gen": "21期研究生"
+   "gen": "21期研究生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/hashiranokai/member/83101026.jpg"
   },
   {
    "name": "牧戸愛茉",
-   "gen": "21期研究生"
+   "gen": "21期研究生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/hashiranokai/member/83101027.jpg"
   },
   {
    "name": "森川優",
-   "gen": "21期研究生"
+   "gen": "21期研究生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/hashiranokai/member/83101028.jpg"
   },
   {
    "name": "渡邉葵心",
-   "gen": "21期研究生"
+   "gen": "21期研究生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/hashiranokai/member/83101029.jpg"
   },
   {
    "name": "大西ゆな",
-   "gen": "22期研究生"
+   "gen": "22期研究生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/hashiranokai/member/83101030.jpg"
   },
   {
    "name": "長谷川百々花",
-   "gen": "22期研究生"
+   "gen": "22期研究生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/hashiranokai/member/83101031.jpg"
   },
   {
    "name": "前田衣澄",
-   "gen": "22期研究生"
+   "gen": "22期研究生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/hashiranokai/member/83101032.jpg"
   },
   {
    "name": "山内利乃明",
-   "gen": "22期研究生"
+   "gen": "22期研究生",
+   "photo": "https://d2r1lkk9i7row.cloudfront.net/hashiranokai/member/83101033.jpg"
   }
  ]
 }

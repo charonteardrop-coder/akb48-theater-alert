@@ -61,6 +61,9 @@
   .ticket .ttl{font-weight:900}
   .ticket .note,.log .note{display:inline-block;font-size:12px;background:#fbe9d4;color:#8a4b09;border-radius:6px;padding:1px 8px;margin:4px 0 0}
   .mem{font-size:13px;color:var(--muted);margin-top:6px}
+  .mem.cast{display:flex;flex-wrap:wrap;gap:6px 10px}
+  .cast-member{display:inline-flex;align-items:center;gap:4px}
+  .member-photo{width:24px;height:24px;flex:none;object-fit:cover;object-position:center 25%;border-radius:50%}
   .mem b{color:var(--curtain);font-weight:900}
   .dl{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
   .pill{font-size:12px;border-radius:999px;padding:2px 10px;border:1px solid var(--line)}
@@ -210,6 +213,7 @@
     <h2 id="s3"><span class="n">3</span>チケットセンターに出てる公演</h2>
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" aria-selected="true" data-mode="oshi">推しの出演だけ</button>
+      <button class="tab" role="tab" aria-selected="false" data-mode="open">受付中</button>
       <button class="tab" role="tab" aria-selected="false" data-mode="all">すべて</button>
     </div>
     <div id="shows"><p class="empty">読み込み中…</p></div>
@@ -329,6 +333,10 @@
   // 先輩順：公式サイトのメンバー一覧の掲載順（data/roster.json）。載っていない名前は「その他」で末尾
   const rank = (n) => { const i = roster.findIndex((r) => r.name === n); return i < 0 ? 1e4 : i; };
   const bySenior = (a, b) => rank(a) - rank(b) || a.localeCompare(b, 'ja');
+  function memberPhoto(name) {
+    const photo = roster.find((member) => member.name === name)?.photo;
+    return photo ? `<img class="member-photo" src="${esc(photo)}" alt="" width="24" height="24" loading="lazy" decoding="async">` : '';
+  }
   function renderChips() {
     const all = [...new Set([...roster.map((r) => r.name), ...members.map((m) => m.name)])];
     const rest = all.filter((n) => !picked.has(n)).sort(bySenior);
@@ -341,7 +349,7 @@
     $('#add').innerHTML = `<option value="">${all.length ? (picked.size ? '＋ 推しを追加' : '推しを選ぶ') : 'まだメンバーデータがないよ'}</option>`
       + groups.map(({ g, names }) => `<optgroup label="${esc(g)}">${names.map((n) => `<option value="${esc(n)}">${esc(n)}</option>`).join('')}</optgroup>`).join('');
     $('#add').disabled = !rest.length;
-    $('#tags').innerHTML = [...picked].sort(bySenior).map((n) => `<button class="tag" data-name="${esc(n)}" aria-label="${esc(n)}を外す">${esc(n)}<span class="x" aria-hidden="true">✕</span></button>`).join('');
+    $('#tags').innerHTML = [...picked].sort(bySenior).map((n) => `<button class="tag" data-name="${esc(n)}" aria-label="${esc(n)}を外す">${memberPhoto(n)}${esc(n)}<span class="x" aria-hidden="true">✕</span></button>`).join('');
   }
 
   /* ---------- 通知 ---------- */
@@ -492,14 +500,17 @@
       return `<span class="pill ${cls}">${esc(g.names.join('/'))} ${g.st === 'upcoming' ? '受付前' : '〆'} ${jst(g.end)}${g.st === 'open' && l ? '・' + l : ''}</span>`;
     };
     const [md, wd] = [s.label.replace(/\(.+\)/, ''), (s.label.match(/\((.+)\)/) || [])[1] || ''];
-    const mem = s.members.map((n) => picked.has(n) ? `<b>${esc(n)}</b>` : esc(n)).join('・');
+    const mem = s.members.map((n) => {
+      const name = picked.has(n) ? `<b>${esc(n)}</b>` : esc(n);
+      return `<span class="cast-member">${memberPhoto(n)}${name}</span>`;
+    }).join('');
     const lobby = groups(s, true).filter((g) => g.st === 'open');
     return `<article class="ticket${live ? '' : ' done'}" id="show-${s.id}">
       <div class="stub"><div class="md mono">${esc(md)}</div><div class="wd">${esc(wd)}</div><div class="tm mono">${esc(s.time)}</div></div>
       <div class="body">
         <div class="ttl">${esc(s.title)}${appliedOf(s).size ? `<span class="appl">✓ ${appliedOf(s).size}枠応募済み</span>` : ''}</div>
         ${s.note ? `<span class="note">${esc(s.note)}</span>` : ''}
-        <div class="mem">${mem}</div>
+        <div class="mem cast">${mem}</div>
         <div class="dl">${groups(s, false).map(pill).join('')}${lobby.map(pill).join('')}</div>
         ${apRow(s)}
         <div class="actions">${live || lobby.length
@@ -512,9 +523,10 @@
     document.querySelectorAll('.tab').forEach((t) => t.setAttribute('aria-selected', t.dataset.mode === mode));
     let list = shows;
     if (mode === 'oshi') list = shows.filter((s) => s.members.some((m) => picked.has(m)));
+    if (mode === 'open') list = shows.filter((s) => isLive(s) || groups(s, true).some((g) => g.st === 'open'));
     list = [...list].sort((a, b) => (!isLive(a)) - (!isLive(b)) || a.start.localeCompare(b.start));
     $('#shows').innerHTML = list.length ? list.map(ticket).join('') :
-      `<p class="empty">${mode === 'oshi' && picked.size ? '推しの出る公演は今チケットセンターに出てないよ。出たら通知が届く！' : mode === 'oshi' ? '推しを選ぶとここに出るよ' : '公演はまだ出てないよ'}</p>`;
+      `<p class="empty">${mode === 'oshi' && picked.size ? '推しの出る公演は今チケットセンターに出てないよ。出たら通知が届く！' : mode === 'oshi' ? '推しを選ぶとここに出るよ' : mode === 'open' ? '現在受付中の公演はありません' : '公演はまだ出てないよ'}</p>`;
   }
 
 
@@ -917,7 +929,8 @@
     const u = new URL(href, location.href);
     const id = u.searchParams.get('show');
     if (u.searchParams.get('view') === 'log') document.getElementById('l1').scrollIntoView({ behavior: 'smooth' });
-    if (u.searchParams.get('view') === 'oshi') { mode = 'oshi'; renderShows(); }
+    const view = u.searchParams.get('view');
+    if (view === 'oshi' || view === 'open') { mode = view; renderShows(); }
     if (id) {
       if (!document.getElementById(`show-${id}`)) { mode = 'all'; renderShows(); }
       const el = document.getElementById(`show-${id}`);
@@ -930,6 +943,9 @@
   }
 
   /* ---------- イベント ---------- */
+  document.addEventListener('error', (e) => {
+    if (e.target instanceof HTMLImageElement && e.target.classList.contains('member-photo')) e.target.remove();
+  }, true);
   document.addEventListener('click', (e) => {
     const tag = e.target.closest('.tag');
     if (tag) { picked.delete(tag.dataset.name); renderChips(); renderShows(); renderLog(); scheduleSync(); renderPush(); return; }
