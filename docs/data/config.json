@@ -1,1 +1,6 @@
-{"apiBase":"","vapidPublicKey":""}
+{
+  "apiBase": "https://oshi-gekijo-alert.charonteardrop.workers.dev",
+  "vapidPublicKey": "BCFWd3E_M5W-HE5ZO8s0bWqeCRME2ThzQfhpdqc2s0LnK6Np_apVXWJBq1rQvH5z68j8haIei1HfYL9qB11_Hy8",
+  "source": "https://akb48.zaiko.io",
+  "updatedAt": "2026-11-10T07:14:45.372Z"
+}
