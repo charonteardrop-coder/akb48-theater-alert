@@ -55,7 +55,17 @@ export function parseAttendance(cellHtml) {
   const res = { byTime: {}, common: null, absent: { '*': [] }, notes: { '*': [] } };
   let cur = null; // 2011形式の「12:00公演」ブロック
   let wantList = false;
+  let absentMode = false; // 「休演メンバー」の見出しのあとは、時刻つきの行も休演者
   for (const line of lines) {
+    if (/^【?休演(メンバー|者)】?$/.test(line)) { absentMode = true; continue; }
+    if (absentMode) {
+      const t = line.match(/^(\d{1,2}):(\d{2})\s+(.+)$/);
+      if (t) { const k = hhmm(t[1], t[2]); res.absent[k] = [...(res.absent[k] || []), ...names(t[3])]; continue; }
+      if (isNameList(line) || names(line).length) { res.absent['*'].push(...names(line)); continue; }
+      absentMode = false;
+    }
+    if (/お休み|欠席/.test(line)) { absences(line.replace(/お休み(いた|致)します/, '休演いたします').replace(/^.*?の(為|ため)、?/, ''), res.absent); continue; }
+    if (/出演(いた|致)します|ゲスト出演/.test(line)) { (res.notes['*'] = res.notes['*'] || []).push(line.replace(/(が|は)?出演(いた|致)します。?/, ' 出演')); continue; }
     const block = line.match(/^(\d{1,2}):(\d{2})\s*公演$/);
     if (block) { cur = hhmm(block[1], block[2]); wantList = false; continue; }
     if (/【(出演|公演)メンバー】/.test(line)) { wantList = true; const rest = line.replace(/.*】/, ''); if (isNameList(rest)) { put(names(rest)); wantList = false; } continue; }
@@ -106,7 +116,8 @@ export function parseMonth(html) {
     const a = parseAttendance(att);
     const evNotes = text(ev).normalize('NFKC').split('\n').map((x) => x.trim()).filter((x) => /生誕祭/.test(x) && x.length <= 30);
     for (const s of shows) {
-      let members = a.byTime[s.time] && a.byTime[s.time].length >= 4 ? a.byTime[s.time] : null;
+      // 回ごとの一覧だけで足りるのは、共通の一覧がなくて8人以上いるとき（それ以外は共通＋その回の追加）
+      let members = !a.common && a.byTime[s.time] && a.byTime[s.time].length >= 8 ? a.byTime[s.time] : null;
       let full = !!members;
       if (!members && a.common) { members = [...a.common, ...(a.byTime[s.time] || [])]; full = true; }
       const absent = [...new Set([...(a.absent['*'] || []), ...(a.absent[s.time] || [])])];

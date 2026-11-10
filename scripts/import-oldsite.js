@@ -49,7 +49,7 @@ const rosterFor = (team, date) => {
   const after = has.find((r) => r.date > date);
   const days = (r) => Math.abs((new Date(r.date) - new Date(date)) / 864e5);
   const pick = [before, after].filter(Boolean).sort((a, b) => days(a) - days(b))[0];
-  return pick && days(pick) <= 200 ? pick.teams[team] : null;
+  return pick && days(pick) <= 200 && pick.teams[team].length >= 8 ? pick.teams[team] : null; // 名簿が少なすぎるページ（チーム発足直後など）は使わない
 };
 
 // 同じ月のページが何版かあるときは、一番情報が多いもの（公演数＋出演者の載っている回）を使う
@@ -76,9 +76,12 @@ for (const [ym, v] of Object.entries(months).sort()) {
     if (label) notes.push(label);
     notes.push(...s.notes.map((n) => n.replace(/[「」]/g, '')));
     const rec = { id: `${s.date.replace(/-/g, '')}-${s.time.replace(':', '')}`, date: s.date, time: s.time, title: title ? `「${title}」公演` : `${s.team || ''}公演`, note: [...new Set(notes)].join(' '), members: s.members };
+    if (rec.members.length && rec.members.length < 8) { rec.members = []; } // 部分的な名前だけは出演者一覧として扱わない
     if (!s.full) {
       const roster = rosterFor(s.team, s.date);
-      if (roster) { rec.members = roster.filter((n) => !s.absent.includes(n)); rec.guess = 'roster'; }
+      // 休演者は名字だけのこともある（「前田・板野がお休み」）
+      const out = (n) => s.absent.some((a) => a === n || (a.length <= 3 && n.startsWith(a)));
+      if (roster) { rec.members = roster.filter((n) => !out(n)); rec.guess = 'roster'; }
     }
     if (s.absent.length) rec.absent = s.absent;
     rec.src = 'oldsite';

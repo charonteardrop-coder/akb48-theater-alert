@@ -306,7 +306,7 @@ export function buildHistory(posts) {
       applied++;
     }
   }
-  const list = fillSameDay([...map.values()].sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)));
+  const list = fillFromNeighbors(fillSameDay([...map.values()].sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))));
   return { shows: list, applied };
 }
 
@@ -390,4 +390,32 @@ export function toYearFiles(shows) {
   }
   const index = { years: Object.keys(years).sort(), counts: Object.fromEntries(Object.entries(years).map(([y, v]) => [y, v.length])) };
   return { years, index };
+}
+
+// メンバー変更のお知らせ（「A ⇒ B」「【休演】A【出演】B」）しか見つからず、出演者が1〜数人しか入っていない回を、
+// 近い日（前後14日）の同じ演目でちゃんと一覧がある回のメンバーに変更を反映して埋める。guess: 'neighbor'
+export function fillFromNeighbors(shows) {
+  const full = shows.filter((s) => (s.members || []).length >= 8 && !s.guess);
+  const byCore = new Map();
+  for (const s of full) { const k = coreTitle(s.title); if (k.length >= 2) (byCore.get(k) || byCore.set(k, []).get(k)).push(s); }
+  const day = (d) => new Date(d).getTime() / 864e5;
+  let n = 0;
+  const out = shows.map((s) => {
+    const m = s.members || [];
+    const changeOnly = /⇒|→|休演|出演】/.test(s.note || '');
+    if (!m.length || m.length >= 6 || s.guess || !(changeOnly || m.length <= 3)) return s;
+    const cand = (byCore.get(coreTitle(s.title)) || []).filter((o) => Math.abs(day(o.date) - day(s.date)) <= 14);
+    if (!cand.length) return s;
+    cand.sort((a, b) => Math.abs(day(a.date) - day(s.date)) - Math.abs(day(b.date) - day(s.date)));
+    const note = String(s.note || '').normalize('NFKC');
+    const gone = new Set([
+      ...[...note.matchAll(/([^\s⇒→、・]+)\s*[⇒→]/g)].map((x) => x[1]),
+      ...((note.match(/休演】?\s*([^出]+)/) || [])[1] || '').split(/[\s・、]+/).map((x) => x.replace(/[（(].*$/, '')).filter(Boolean),
+    ]);
+    const base = cand[0].members.filter((x) => !gone.has(x));
+    n++;
+    return { ...s, members: [...new Set([...base, ...m])], guess: 'neighbor', base: cand[0].id };
+  });
+  out.filled = n;
+  return out;
 }
