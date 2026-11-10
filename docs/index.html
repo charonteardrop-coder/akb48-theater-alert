@@ -540,8 +540,14 @@
     const zt = new Set(z.map((s) => s.time));
     const hist = (historyCache[y] || []).filter((s) => s.date === date && !(s.time && zt.has(s.time)));
     const seen = new Set();
-    return [...z, ...hist].filter((s) => !seen.has(String(s.id)) && seen.add(String(s.id))).sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+    const list = [...z, ...hist].filter((s) => !seen.has(String(s.id)) && seen.add(String(s.id))).sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+    if (list.length) return list;
+    // 公演データがない日は、その時期にやっていた演目を候補として出す（時刻・メンバーは不明）
+    if (stagePeriods === null) stagePeriods = (await get('data/history/stages.json')) || [];
+    return stagePeriods.filter((p) => p.start <= date && date <= p.end)
+      .map((p, i) => ({ id: `stage-${date}-${i}`, date, time: '', title: `「${p.title}」公演`, note: `${p.team}・時刻とメンバーは不明`, members: [], stageOnly: true }));
   }
+  let stagePeriods = null;
   let dayShows = [];
 
   /* ---------- 写真（IndexedDBに保存。縮小してから入れる） ---------- */
@@ -651,13 +657,16 @@
     fMembers = new Set(s.members || []); renderFTags();
     const h = $('#fMemHint');
     h.hidden = !(s.guess || (s.id != null && !(s.members || []).length));
-    h.textContent = s.guess ? '※この回のメンバーはデータになかったから、同じ日の別の回のメンバーを入れてるよ。違ってたら直してね'
+    h.textContent = s.guess === 'roster' ? `※この回は出演者の一覧が残ってなかったから、当時の公式サイトのチームメンバーから${s.absent?.length ? `休演者（${s.absent.join('・')}）を外して` : ''}入れてるよ。代役は入ってないから、違ってたら直してね`
+      : s.guess === 'fan' ? '※この回のメンバーは、ファンの公演レポートに載ってたものだよ。違ってたら直してね'
+      : s.guess ? '※この回のメンバーはデータになかったから、同じ日の別の回のメンバーを入れてるよ。違ってたら直してね'
+      : s.stageOnly ? 'この頃は日ごとの出演メンバーが残ってない。「＋ メンバーを追加」から入れてね'
       : 'この回の出演メンバーはデータに残ってなかった。「＋ メンバーを追加」から入れてね';
   }
   async function fillDay(date, selectId = null, autofill = false) {
     dayShows = /^\d{4}-\d{2}-\d{2}$/.test(date) ? await showsOn(date) : [];
     $('#fShow').innerHTML = '<option value="">手入力する</option>' + dayShows.map((s) => `<option value="${esc(s.id)}">${esc(`${s.time || '時刻不明'} ${s.title.replace(/^「|」\s*公演$/g, '') || '（演目不明）'}${s.note ? ` ${s.note}` : ''}`)}</option>`).join('');
-    $('#fShowLabel').textContent = dayShows.length ? `この日の公演（${dayShows.length}件）` : 'この日の公演（データなし → 手入力）';
+    $('#fShowLabel').textContent = !dayShows.length ? 'この日の公演（データなし → 手入力）' : dayShows[0].stageOnly ? 'この時期にやってた演目（日ごとのデータなし）' : `この日の公演（${dayShows.length}件）`;
     renderFTags();
     if (selectId != null && dayShows.some((s) => String(s.id) === String(selectId))) $('#fShow').value = String(selectId);
     else if (autofill && dayShows.length) { $('#fShow').value = String(dayShows[0].id); fillFromShow(dayShows[0]); }
@@ -795,7 +804,8 @@
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { $('#fDate').focus(); $('#fErr').textContent = '日付を入れてね'; return; }
     // 「公演から選ぶ」で選んだ公演と紐づける。編集中で、元の公演がもう一覧にない（古すぎる）場合は紐づけを残す
     const keepOld = editing && editing.showId != null && editing.date === date && !dayShows.some((s) => String(s.id) === String(editing.showId));
-    const showId = $('#fShow').value ? String($('#fShow').value) : keepOld ? String(editing.showId) : null;
+    const picked = $('#fShow').value && !$('#fShow').value.startsWith('stage-') ? $('#fShow').value : '';  // 演目候補は公演IDとしては持たない
+    const showId = picked ? String(picked) : keepOld ? String(editing.showId) : null;
     const rec = {
       id: editing?.id || uid(), showId,
       date, time: $('#fTime').value, title: $('#fTitle').value.trim(), note: $('#fNote').value.trim(),
