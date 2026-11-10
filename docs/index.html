@@ -545,7 +545,11 @@
     };
     const mine = res.some((so) => so.slots.some((sl) => sl.name && picked.has(sl.name)));
     const items = res.map((so) => `<li><div><span class="no">${esc(so.no)}</span><span class="sn">${esc(so.title)}</span></div><div class="who">${so.slots.map(who).join('・')}</div>${so.credit ? `<div class="cr">${esc(so.credit)}</div>` : ''}</li>`).join('');
-    return `<details class="units"${mine ? ' data-mine' : ''}><summary>ユニット担当${mine ? '（推しあり）' : ''}</summary><ol>${items}</ol><p class="foot">出演メンバーとポジション表から割り出してるよ。${maybe ? '点線の人は入れ替わりの可能性あり。' : ''}メンバー変更があるとずれることがあるよ</p></details>`;
+    const placed = new Set(res.flatMap((so) => so.slots.map((sl) => sl.name)).filter(Boolean));
+    const extra = s.members.filter((n) => !placed.has(n));
+    const gap = res.some((so) => so.slots.some((sl) => !sl.name));
+    const newPos = gap && extra.length ? `<p class="foot">「？」のところは、${extra.map(esc).join('・')}が入る新しいポジションかも（公演後に分かるよ）</p>` : '';
+    return `<details class="units"${mine ? ' data-mine' : ''}><summary>ユニット担当${mine ? '（推しあり）' : ''}</summary><ol>${items}</ol>${newPos}<p class="foot">出演メンバーとポジション表から割り出してるよ。${maybe ? '点線の人は入れ替わりの可能性あり。' : ''}メンバー変更があるとずれることがあるよ</p></details>`;
   }
 
   function ticket(s) {
