@@ -76,6 +76,7 @@
   .units .who{color:var(--ink);margin-top:2px;line-height:1.6}
   .units .who .maybe{border-bottom:1px dotted var(--muted)}
   .units .who .unknown{color:var(--muted)}
+  .units b{color:var(--curtain);font-weight:900}
   .units .cr{font-size:11px;color:var(--muted)}
   .units .foot{font-size:11px;color:var(--muted);margin:6px 0 0}
   .dl{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
@@ -510,7 +511,14 @@
   const unorm = (x) => String(x || '').normalize('NFKC').replace(/髙/g, '高').replace(/﨑/g, '崎').replace(/\s/g, '');
   function assignUnits(songs, members) {
     const cast = new Map(members.map((m) => [unorm(m), m]));
-    const pos = songs.flatMap((song, si) => song.positions.map((row, pi) => ({ si, pi, row, cand: row.filter((n) => cast.has(unorm(n))).map((n) => cast.get(unorm(n))) })));
+    // 同じ並びの行は同じポジション（「RESET」のように1人が2曲を担当する演目）
+    const pos = [];
+    const at = songs.map((song) => song.positions.map((row) => {
+      const key = row.map(unorm).join('|');
+      let i = pos.findIndex((p) => p.key === key);
+      if (i < 0) { pos.push({ key, row, cand: row.filter((n) => cast.has(unorm(n))).map((n) => cast.get(unorm(n))) }); i = pos.length - 1; }
+      return i;
+    }));
     const order = pos.map((_, i) => i).sort((a, b) => pos[a].cand.length - pos[b].cand.length);
     const sols = []; const used = new Set(); const pick = new Array(pos.length).fill(null); let best = -1;
     (function go(k, filled) {
@@ -522,10 +530,10 @@
     })(0, 0);
     const cost = (sol) => sol.reduce((c, n, i) => c + (n ? pos[i].row.findIndex((x) => unorm(x) === unorm(n)) : 0), 0);
     const top = sols.length ? sols.reduce((a, b) => (cost(b) < cost(a) ? b : a)) : [];
-    return songs.map((song, si) => ({ ...song, slots: song.positions.map((row, pi) => { const i = pos.findIndex((p) => p.si === si && p.pi === pi); const name = top[i] || null; return { name, sure: !!name && sols.every((x) => x[i] === name) }; }) }));
+    return songs.map((song, si) => ({ ...song, slots: song.positions.map((row, pi) => { const i = at[si][pi]; const name = top[i] || null; return { name, sure: !!name && sols.every((x) => x[i] === name) }; }) }));
   }
   function unitsBlock(s) {
-    const key = Object.keys(unitTable).find((k) => s.title.includes(k));
+    const key = Object.keys(unitTable).find((k) => String(s.title).normalize('NFKC').includes(k.normalize('NFKC')));
     if (!key || (s.members || []).length < 4) return '';
     const res = assignUnits(unitTable[key], s.members);
     let maybe = false;

@@ -3,7 +3,14 @@
 const norm = (s) => String(s || '').normalize('NFKC').replace(/髙/g, '高').replace(/﨑/g, '崎').replace(/\s/g, '');
 export function assignUnits(songs, members) {
   const cast = new Map(members.map((m) => [norm(m), m]));
-  const pos = songs.flatMap((song, si) => song.positions.map((row, pi) => ({ si, pi, cand: row.filter((n) => cast.has(norm(n))).map((n) => cast.get(norm(n))) })));
+  // 同じ並びの行は同じポジション（「RESET」のように1人が2曲を担当する演目）
+  const pos = [];
+  const at = songs.map((song) => song.positions.map((row) => {
+    const key = row.map(norm).join('|');
+    let i = pos.findIndex((p) => p.key === key);
+    if (i < 0) { pos.push({ key, row, cand: row.filter((n) => cast.has(norm(n))).map((n) => cast.get(norm(n))) }); i = pos.length - 1; }
+    return i;
+  }));
   // 候補の少ないポジションから決める
   const order = pos.map((_, i) => i).sort((a, b) => pos[a].cand.length - pos[b].cand.length);
   const sols = [];
@@ -23,12 +30,12 @@ export function assignUnits(songs, members) {
     if (!any || pos[i].cand.length === 0) go(k + 1, filled);
   })(0, 0);
   // 決めきれないときは「オリジナル→アンダーの並び順で前にいる人」が多い組み合わせを採る
-  const cost = (s) => s.reduce((c, n, i) => c + (n ? songs[pos[i].si].positions[pos[i].pi].findIndex((x) => norm(x) === norm(n)) : 0), 0);
+  const cost = (s) => s.reduce((c, n, i) => c + (n ? pos[i].row.findIndex((x) => norm(x) === norm(n)) : 0), 0);
   const top = sols.length ? sols.reduce((a, b) => (cost(b) < cost(a) ? b : a)) : [];
   return songs.map((song, si) => ({
     ...song,
     slots: song.positions.map((row, pi) => {
-      const i = pos.findIndex((p) => p.si === si && p.pi === pi);
+      const i = at[si][pi];
       const name = top[i] || null;
       return { original: row[0], name, sure: !!name && sols.every((s) => s[i] === name) };
     }),

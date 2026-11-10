@@ -26,3 +26,12 @@ test('ユニット担当：オリジナルが全員出ていればオリジナ�
   const r2 = assignUnits(U, orig.filter((n) => n !== '八木愛月'));
   assert.equal(r2.find((s) => s.title === '2月のMermaid').slots[0].name, null);
 });
+
+test('ユニット担当：「RESET」は同じ並びの行が同じポジション（1人2曲）', () => {
+  const R = JSON.parse(readFileSync(new URL('../docs/data/units.json', import.meta.url), 'utf8')).stages.RESET;
+  const m = ['橋本恵理子', '大賀彩姫', '水島美結', '永野芹佳', '新井彩永', '黒須遥香', '行天優莉奈', '山根涼羽'];
+  const by = Object.fromEntries(assignUnits(R, m).map((s) => [s.title, s.slots.map((x) => x.name)]));
+  assert.deepEqual(by['制服レジスタンス'], ['橋本恵理子', '大賀彩姫', '水島美結']);
+  assert.deepEqual(by['明日のためにキスを'], ['水島美結', '橋本恵理子', '黒須遥香', '永野芹佳']);
+  assert.deepEqual(by['心の端のソファー'], ['山根涼羽', '行天優莉奈', '新井彩永']);
+});
