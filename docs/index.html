@@ -508,7 +508,7 @@
   /* ユニット担当：演目ごとのポジション表（data/units.json）と出演メンバーから割り出す。
      1行＝1ポジション（先頭がオリジナル、続きがアンダー）で、出演者はちょうど1ポジションに入る */
   let unitTable = {};
-  const unorm = (x) => String(x || '').normalize('NFKC').replace(/髙/g, '高').replace(/﨑/g, '崎').replace(/\s/g, '');
+  const unorm = (x) => String(x || '').normalize('NFKC').replace(/髙/g, '高').replace(/﨑/g, '崎').replace(/[邊邉]/g, '辺').replace(/[濵濱]/g, '浜').replace(/\s/g, '');
   function assignUnits(songs, members) {
     const cast = new Map(members.map((m) => [unorm(m), m]));
     // 同じ並びの行は同じポジション（「RESET」のように1人が2曲を担当する演目）
