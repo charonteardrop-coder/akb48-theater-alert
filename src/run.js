@@ -159,7 +159,7 @@ export async function run({ now = new Date(), fetchImpl = fetch, sendImpl } = {}
     } else {
       const subs = await loadSubscriptions(fetchImpl);
       for (const sub of subs) {
-        for (const payload of composeFor(sub.members, ev, now)) jobs.push({ subscription: sub.subscription, payload });
+        for (const payload of composeFor(sub.members, ev, now, sub.applied || [])) jobs.push({ subscription: sub.subscription, payload });
       }
     }
   }

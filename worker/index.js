@@ -2,7 +2,8 @@
 // 役割は「どの端末がどの推しを購読しているか」を保存するだけ。通知の送信はGitHub Actions側で行う。
 //
 // 公開API（サイトから呼ぶ）
-//   POST /subscribe    { subscription: PushSubscriptionJSON, members: string[] }  ※ members に "*" で全公演
+//   POST /subscribe    { subscription: PushSubscriptionJSON, members: string[], applied?: string[] }
+//                      ※ members に "*" で全公演。applied は「応募済み」にした枠ID（省略時は前の値のまま）
 //   POST /unsubscribe  { endpoint }
 // 管理API（GitHub Actionsから呼ぶ。Authorization: Bearer <ADMIN_TOKEN>）
 //   GET  /admin/subscriptions?offset=0&limit=1000
@@ -17,6 +18,7 @@ const PUSH_HOSTS = [
   /^android\.googleapis\.com$/,
 ];
 const MAX_MEMBERS = 60;
+const MAX_APPLIED = 300;
 
 export function validEndpoint(endpoint) {
   try {
@@ -37,6 +39,8 @@ export function validate(body) {
   const m = body.members;
   if (!Array.isArray(m) || m.length > MAX_MEMBERS) return 'members が不正';
   if (!m.every((x) => typeof x === 'string' && x.length >= 1 && x.length <= 20)) return 'members が不正';
+  const a = body.applied;
+  if (a !== undefined && (!Array.isArray(a) || a.length > MAX_APPLIED || !a.every((x) => typeof x === 'string' && /^[A-Za-z0-9_-]{1,24}$/.test(x)))) return 'applied が不正';
   return null;
 }
 
@@ -61,6 +65,14 @@ function isAdmin(req, env) {
   return !!env.ADMIN_TOKEN && env.ADMIN_TOKEN.length >= 16 && h === `Bearer ${env.ADMIN_TOKEN}`;
 }
 
+// 前のバージョンで作ったテーブルに applied 列を足す（あれば何もしない）
+const migrated = new WeakSet();
+async function migrate(env) {
+  if (migrated.has(env.DB)) return;
+  try { await env.DB.prepare("ALTER TABLE subs ADD COLUMN applied TEXT NOT NULL DEFAULT '[]'").run(); } catch { /* もうある */ }
+  migrated.add(env.DB);
+}
+
 async function readBody(req) {
   const text = await req.text();
   if (text.length > 8000) throw new Error('too large');
@@ -74,6 +86,7 @@ export default {
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: h });
 
     try {
+      if (req.method !== 'GET' || url.pathname !== '/health') await migrate(env);
       if (req.method === 'GET' && url.pathname === '/health') return json({ ok: true }, 200, h);
 
       if (req.method === 'POST' && url.pathname === '/subscribe') {
@@ -81,12 +94,13 @@ export default {
         const err = validate(body);
         if (err) return json({ error: err }, 400, h);
         const members = [...new Set(body.members)];
+        const applied = body.applied === undefined ? null : JSON.stringify([...new Set(body.applied)]);
         const now = new Date().toISOString();
         await env.DB.prepare(
-          `INSERT INTO subs (endpoint, p256dh, auth, members, created_at, updated_at)
-           VALUES (?1, ?2, ?3, ?4, ?5, ?5)
-           ON CONFLICT(endpoint) DO UPDATE SET p256dh = ?2, auth = ?3, members = ?4, updated_at = ?5`,
-        ).bind(body.subscription.endpoint, body.subscription.keys.p256dh, body.subscription.keys.auth, JSON.stringify(members), now).run();
+          `INSERT INTO subs (endpoint, p256dh, auth, members, applied, created_at, updated_at)
+           VALUES (?1, ?2, ?3, ?4, COALESCE(?6, '[]'), ?5, ?5)
+           ON CONFLICT(endpoint) DO UPDATE SET p256dh = ?2, auth = ?3, members = ?4, applied = COALESCE(?6, applied), updated_at = ?5`,
+        ).bind(body.subscription.endpoint, body.subscription.keys.p256dh, body.subscription.keys.auth, JSON.stringify(members), now, applied).run();
         return json({ ok: true, members }, 200, h);
       }
 
@@ -104,11 +118,12 @@ export default {
           const limit = Math.min(Math.max(Number(url.searchParams.get('limit')) || 1000, 1), 5000);
           const offset = Math.max(Number(url.searchParams.get('offset')) || 0, 0);
           const { results } = await env.DB.prepare(
-            'SELECT endpoint, p256dh, auth, members FROM subs ORDER BY endpoint LIMIT ?1 OFFSET ?2',
+            'SELECT endpoint, p256dh, auth, members, applied FROM subs ORDER BY endpoint LIMIT ?1 OFFSET ?2',
           ).bind(limit, offset).all();
           const items = results.map((r) => ({
             subscription: { endpoint: r.endpoint, keys: { p256dh: r.p256dh, auth: r.auth } },
             members: JSON.parse(r.members),
+            applied: (() => { try { return JSON.parse(r.applied || '[]'); } catch { return []; } })(),
           }));
           return json({ items, next: items.length === limit ? offset + limit : null }, 200, h);
         }

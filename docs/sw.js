@@ -56,9 +56,11 @@ self.addEventListener('pushsubscriptionchange', (event) => {
     const cache = await caches.open('oshi-alert-prefs');
     const saved = await cache.match('members');
     const members = saved ? await saved.json() : [];
+    const ap = await cache.match('applied');
+    const applied = ap ? await ap.json().catch(() => []) : [];
     if (!cfg.apiBase || !cfg.vapidPublicKey || !members.length) return;
     const key = Uint8Array.from(atob(cfg.vapidPublicKey.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0));
     const sub = await self.registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
-    await fetch(`${cfg.apiBase}/subscribe`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ subscription: sub.toJSON(), members }) });
+    await fetch(`${cfg.apiBase}/subscribe`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ subscription: sub.toJSON(), members, applied }) });
   })());
 });

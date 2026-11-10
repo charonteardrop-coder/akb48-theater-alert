@@ -48,3 +48,22 @@ test('不正な入力・認証なしは弾く', async () => {
   const r = await call(env, '/subscribe', { method: 'OPTIONS', origin: 'https://other.example' });
   assert.equal(r.headers.get('access-control-allow-origin'), 'null', '許可していないサイトからは使えない');
 });
+
+test('応募済みの枠：保存・省略時は前の値のまま・古いテーブルにも自動で列を足す', async () => {
+  const env = mk();
+  const list = async () => (await (await call(env, '/admin/subscriptions', { token: env.ADMIN_TOKEN })).json()).items[0];
+  await call(env, '/subscribe', { method: 'POST', body: { subscription: fakeSub(1), members: ['千葉恵里'] } });
+  assert.deepEqual((await list()).applied, []);
+  await call(env, '/subscribe', { method: 'POST', body: { subscription: fakeSub(1), members: ['千葉恵里'], applied: ['212265', '212266'] } });
+  assert.deepEqual((await list()).applied, ['212265', '212266']);
+  await call(env, '/subscribe', { method: 'POST', body: { subscription: fakeSub(1), members: ['山﨑空'] } });
+  assert.deepEqual((await list()).applied, ['212265', '212266'], 'applied を送らない更新では消えない');
+  assert.equal((await call(env, '/subscribe', { method: 'POST', body: { subscription: fakeSub(1), members: ['a'], applied: ['<x>'] } })).status, 400);
+
+  // applied 列がない前のバージョンのテーブル
+  const old = { ...mk(), DB: makeD1(schema.replace(/^\s*applied .*\n/m, '')) };
+  const r = await call(old, '/subscribe', { method: 'POST', body: { subscription: fakeSub(2), members: ['千葉恵里'], applied: ['1'] } });
+  assert.equal(r.status, 200);
+  const j = await (await call(old, '/admin/subscriptions', { token: old.ADMIN_TOKEN })).json();
+  assert.deepEqual(j.items[0].applied, ['1']);
+});

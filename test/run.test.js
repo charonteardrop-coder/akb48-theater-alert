@@ -183,3 +183,15 @@ test('通し：初回は通知なし → 受付開始・メンバー変更・リ
   const cfg = JSON.parse(readFileSync('docs/data/config.json', 'utf8'));
   assert.equal(cfg.apiBase, 'https://api.test');
 });
+
+test('文面：応募済みにした枠は締切リマインドから外す', () => {
+  const s = show1117();
+  const now = at('2026-11-12T10:30:00+09:00');
+  const due = dueReminders([s], new Set(), now);
+  const ids = due[0].group.ids;
+  assert.equal(ids.length, due[0].group.names.length);
+  const [r] = composeFor(['千葉恵里'], { opened: [], changes: [], reminders: due }, now, [ids[0]]);
+  assert.ok(!r.body.includes(due[0].group.names[0]) && r.body.includes(due[0].group.names[1]), '応募済みの枠だけ消える');
+  assert.equal(composeFor(['千葉恵里'], { opened: [], changes: [], reminders: due }, now, ids).length, 0, '全部応募済みなら送らない');
+  assert.equal(composeFor(['千葉恵里'], { opened: [], changes: [], reminders: due }, now, ['99999']).length, 1, '関係ない枠IDは影響しない');
+});

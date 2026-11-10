@@ -67,6 +67,14 @@
   .pill.open{border-color:#bfe0cd;background:#eef8f2;color:var(--ok)}
   .pill.soon{border-color:#f1c8a8;background:#fff2e6;color:#b25400;font-weight:700}
   .pill.closed{color:#aaa;text-decoration:line-through}
+  .aps{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+  .aps .l{font-size:11px;font-weight:700;color:var(--muted);margin-right:2px}
+  .ap{font:inherit;font-size:12px;font-weight:700;border-radius:999px;padding:5px 11px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+  .ap::before{content:"";width:12px;height:12px;border-radius:3px;border:1.5px solid #bbb;box-sizing:border-box}
+  .ap.on{background:#eef8f2;border-color:#9fd1b3;color:var(--ok)}
+  .ap.on::before{content:"✓";border:0;background:var(--ok);color:#fff;font-size:10px;line-height:12px;text-align:center}
+  .ap:disabled{opacity:.45;cursor:default}
+  .appl{display:inline-block;font-size:11px;font-weight:700;color:var(--ok);background:#eef8f2;border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:2px}
   .ticket .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
   .ticket.done{opacity:.55}
   .empty{text-align:center;color:var(--muted);font-size:14px;padding:18px 0 6px}
@@ -391,7 +399,7 @@
       if (perm !== 'granted') throw new Error(perm === 'denied' ? 'denied' : '許可されなかったよ');
       reg = reg || await navigator.serviceWorker.ready;
       sub = await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(config.vapidPublicKey) });
-      await api('/subscribe', { subscription: sub.toJSON(), members: wanted() });
+      await api('/subscribe', { subscription: sub.toJSON(), members: wanted(), applied: appliedIds() });
       persist();
       toast('通知をオンにしたよ');
     } catch (e) {
@@ -409,13 +417,13 @@
     renderPush();
   }
 
-  function scheduleSync() {
+  function scheduleSync(done = '推しの設定を保存したよ') {
     persist();
     if (!sub) return;
     clearTimeout(syncTimer);
     syncMsg = '保存中…'; renderPush();
     syncTimer = setTimeout(async () => {
-      try { await api('/subscribe', { subscription: sub.toJSON(), members: wanted() }); syncMsg = '推しの設定を保存したよ'; }
+      try { await api('/subscribe', { subscription: sub.toJSON(), members: wanted(), applied: appliedIds() }); syncMsg = done; }
       catch (e) { syncMsg = `保存できなかった：${e.message}`; }
       renderPush();
     }, 900);
@@ -443,6 +451,38 @@
   };
   const isLive = (s) => s.slots.some((x) => !x.lobby && x.status === 'open' && x.end && new Date(x.end) > Date.now());
 
+  /* 応募済みチェック（この端末だけ。{公演ID: [枠ID…]}） */
+  const APKEY = 'oshi-gekijo-alert:applied:v1';
+  let applied = (() => { try { const o = JSON.parse(localStorage.getItem(APKEY)); return o && typeof o === 'object' ? o : {}; } catch { return {}; } })();
+  const saveApplied = () => {
+    try { localStorage.setItem(APKEY, JSON.stringify(applied)); } catch {}
+    if ('caches' in window) caches.open('oshi-alert-prefs').then((c) => c.put('applied', new Response(JSON.stringify(appliedIds())))).catch(() => {});
+  };
+  // 通知サーバーに送る「応募済み」の枠ID（締切リマインドから外してもらう）
+  const appliedIds = () => [...new Set(Object.values(applied).flat().map(String))].filter((x) => /^[A-Za-z0-9_-]{1,24}$/.test(x)).slice(-300);
+  const appliedOf = (s) => new Set((applied[s.id] || []).map(String));
+  function toggleApplied(showId, slotId) {
+    const cur = new Set((applied[showId] || []).map(String));
+    cur.has(slotId) ? cur.delete(slotId) : cur.add(slotId);
+    if (cur.size) applied[showId] = [...cur]; else delete applied[showId];
+    saveApplied();
+  }
+  function apRow(s) {
+    const done = appliedOf(s);
+    const now = Date.now();
+    const seen = new Set();
+    const list = s.slots.filter((x) => {
+      const k = String(x.id ?? x.short);
+      if (seen.has(k)) return false; seen.add(k);
+      return x.status !== 'upcoming' || done.has(k);
+    });
+    if (!list.length || (new Date(s.start) <= now && !done.size)) return '';
+    return `<div class="aps"><span class="l">応募した枠</span>${list.map((x) => {
+      const k = String(x.id ?? x.short), on = done.has(k);
+      return `<button type="button" class="ap${on ? ' on' : ''}" data-ap="${esc(s.id)}" data-slot="${esc(k)}" aria-pressed="${on}">${esc(x.short || x.name)}</button>`;
+    }).join('')}</div>`;
+  }
+
   function ticket(s) {
     const now = Date.now();
     const live = isLive(s);
@@ -457,10 +497,11 @@
     return `<article class="ticket${live ? '' : ' done'}" id="show-${s.id}">
       <div class="stub"><div class="md mono">${esc(md)}</div><div class="wd">${esc(wd)}</div><div class="tm mono">${esc(s.time)}</div></div>
       <div class="body">
-        <div class="ttl">${esc(s.title)}</div>
+        <div class="ttl">${esc(s.title)}${appliedOf(s).size ? `<span class="appl">✓ ${appliedOf(s).size}枠応募済み</span>` : ''}</div>
         ${s.note ? `<span class="note">${esc(s.note)}</span>` : ''}
         <div class="mem">${mem}</div>
         <div class="dl">${groups(s, false).map(pill).join('')}${lobby.map(pill).join('')}</div>
+        ${apRow(s)}
         <div class="actions">${live || lobby.length
           ? `<a class="btn primary" href="${esc(s.url)}" target="_blank" rel="noopener">チケットセンターで申し込む</a>`
           : '<span class="hint">受付終了</span>'}${new Date(s.start) <= now ? beenBtn(s) : ''}</div>
@@ -887,6 +928,8 @@
     if (been) { const s = shows.find((x) => String(x.id) === been.dataset.been); const r = recordOf(been.dataset.been); if (r) openForm({ record: r }); else if (s) openForm({ show: s }); return; }
     const ph = e.target.closest('[data-photo]');
     if (ph) { openViewer(ph.dataset.photo, Number(ph.dataset.i)); return; }
+    const ap = e.target.closest('[data-ap]');
+    if (ap) { toggleApplied(ap.dataset.ap, ap.dataset.slot); const on = appliedOf({ id: ap.dataset.ap }).has(ap.dataset.slot); renderShows(); scheduleSync('応募済みの枠は締切リマインドが届かないよ'); toast(on ? `${ap.textContent}：応募済みにしたよ${sub ? '（締切の通知は止めるね）' : ''}` : `${ap.textContent}：チェックを外したよ`); return; }
     const lg = e.target.closest('[data-log]');
     if (lg) { const r = records.find((x) => x.id === lg.dataset.log); if (r) openForm({ record: r }); return; }
     if (e.target.closest('#addLog')) { openForm(); return; }
@@ -915,7 +958,9 @@
       } catch {}
     }
     const [m, s, c, r, a, hi] = await Promise.all([get('data/members.json'), get('data/shows.json'), get('data/config.json'), get('data/roster.json'), get('data/archive.json'), get('data/history/index.json')]);
-    members = m || []; shows = s || []; config = c || {}; roster = (r && r.members) || []; archive = a || []; historyIndex = hi;
+    members = m || []; shows = s || [];
+    if (shows.length) { const live = new Set(shows.map((x) => String(x.id))); let ch = false; for (const k of Object.keys(applied)) if (!live.has(k)) { delete applied[k]; ch = true; } if (ch) saveApplied(); }
+ config = c || {}; roster = (r && r.members) || []; archive = a || []; historyIndex = hi;
     if (config.updatedAt) $('#updated').textContent = `データ更新：${jst(config.updatedAt)}`;
     if (!members.length && !roster.length) $('#memberHint').textContent = 'まだデータがないよ（初回の自動チェック後に表示される）';
     renderAll();

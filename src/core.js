@@ -16,9 +16,10 @@ export function deadlineGroups(show, now = new Date(), { includeLobby = false } 
     if (s.status !== 'open' || !s.end || new Date(s.end) <= now) continue;
     if (s.lobby && !includeLobby) continue;
     if (!g.has(s.end)) g.set(s.end, []);
-    g.get(s.end).push(s.short);
+    g.get(s.end).push(s);
   }
-  return [...g.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([end, names]) => ({ end, names }));
+  return [...g.entries()].sort(([a], [b]) => a.localeCompare(b))
+    .map(([end, xs]) => ({ end, names: xs.map((x) => x.short), ids: xs.map((x) => String(x.id ?? x.short)) }));
 }
 
 export function diffMembers(prev, next) {
@@ -51,9 +52,11 @@ const shortTitle = (s) => s.title.replace(/^「|」\s*公演$/g, '').replace(/�
  * 購読者1人ぶんの通知を作る
  * @param {string[]} subMembers 購読している推し（"*" で全公演）
  * @param {{opened, changes, reminders}} ev このチェックで起きたこと
+ * @param {string[]} appliedSlots 「応募済み」にチェックした枠ID（締切リマインドから外す）
  * @returns {Array<{title, body, url, tag, apply?}>}
  */
-export function composeFor(subMembers, ev, now = new Date()) {
+export function composeFor(subMembers, ev, now = new Date(), appliedSlots = []) {
+  const done = new Set((appliedSlots || []).map(String));
   const all = subMembers.includes('*');
   const mine = new Set(subMembers.filter((m) => m !== '*'));
   const oshiIn = (s) => s.members.filter((m) => mine.has(m));
@@ -103,7 +106,13 @@ export function composeFor(subMembers, ev, now = new Date()) {
   }
 
   // 締切リマインド
-  const rem = ev.reminders.filter((r) => mine.size ? oshiIn(r.show).length > 0 : false);
+  // 応募済みの枠は外す。締切の枠が全部応募済みならその公演はリマインドしない
+  const rem = ev.reminders.filter((r) => mine.size ? oshiIn(r.show).length > 0 : false)
+    .map((r) => {
+      const ids = r.group.ids || [];
+      const keep = r.group.names.filter((_, i) => !done.has(String(ids[i])));
+      return keep.length ? { ...r, group: { ...r.group, names: keep } } : null;
+    }).filter(Boolean);
   if (rem.length) {
     const shows = [...new Set(rem.map((r) => r.show))];
     out.push({
