@@ -306,8 +306,54 @@ export function buildHistory(posts) {
       applied++;
     }
   }
-  const list = [...map.values()].sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+  const list = fillSameDay([...map.values()].sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)));
   return { shows: list, applied };
+}
+
+// 1日2公演以上の日の後始末。
+// ① 同じ公演が「時刻あり・メンバーなし」と「時刻なし（タイトルに『18:00開演』など）・メンバーあり」に分かれていたら1つにまとめる
+// ② それでもメンバーがない回は、同じ日・同じ演目の別の回（時刻が近い順）で補って guess: true を付ける（画面で注意書きを出す）
+const toMin = (t) => (/^\d{1,2}:\d{2}$/.test(t || '') ? Number(t.split(':')[0]) * 60 + Number(t.split(':')[1]) : null);
+const hhmm = (h, m) => `${String(h).padStart(2, '0')}:${m}`;
+const timeInTitle = (t) => { const m = String(t || '').normalize('NFKC').match(/(\d{1,2}):(\d{2})\s*(?:開演|スタート|〜|~|公演)/); return m ? hhmm(m[1], m[2]) : null; };
+export const coreTitle = (t) => {
+  let x = String(t || '').normalize('NFKC').replace(/\s/g, '');
+  const br = [...x.matchAll(/「([^」]+)」/g)];
+  if (br.length) return br[br.length - 1][1].replace(/公演$/, '');
+  return x.replace(/^[<＜][^>＞]*[>＞]/, '').replace(/\d{1,2}:\d{2}(開演|スタート)?/g, '').replace(/公演/g, '');
+};
+const sameShow = (a, b) => { const x = coreTitle(a.title), y = coreTitle(b.title); return x.length >= 2 && y.length >= 2 && (x.includes(y) || y.includes(x)); };
+const has = (s) => (s.members || []).length > 0;
+export function fillSameDay(shows) {
+  const out = shows.map((s) => ({ ...s }));
+  const byDay = new Map();
+  for (const s of out) (byDay.get(s.date) || byDay.set(s.date, []).get(s.date)).push(s);
+  const drop = new Set();
+  for (const day of byDay.values()) {
+    if (day.length < 2) continue;
+    // ①
+    for (const d of day.filter((s) => !s.time && has(s))) {
+      const tt = timeInTitle(d.title);
+      let hit = day.filter((e) => e.time && !has(e) && tt && e.time === tt);
+      if (!hit.length) hit = day.filter((e) => e.time && !has(e) && sameShow(e, d));
+      if (!hit.length) continue;
+      for (const e of hit) {
+        e.members = [...d.members];
+        if (!e.note && d.note) e.note = d.note;
+        if (hit.length > 1) e.guess = true;
+      }
+      drop.add(d);
+    }
+    // ②
+    for (const e of day) {
+      if (has(e) || drop.has(e) || !e.time) continue;
+      const m = toMin(e.time);
+      const cand = day.filter((o) => o !== e && !drop.has(o) && has(o) && !o.guess && sameShow(o, e))
+        .sort((a, b) => (toMin(a.time) == null) - (toMin(b.time) == null) || Math.abs((toMin(a.time) ?? 0) - m) - Math.abs((toMin(b.time) ?? 0) - m));
+      if (cand.length) { e.members = [...cand[0].members]; e.guess = true; }
+    }
+  }
+  return out.filter((s) => !drop.has(s));
 }
 
 /** 記事タイトルで、本文を読む必要があるか判定 */
@@ -340,7 +386,7 @@ export function toYearFiles(shows) {
     for (let i = 2; used.has(id); i++) id = `${id.replace(/~\d+$/, '')}~${i}`;
     used.add(id);
     const y = s.date.slice(0, 4);
-    (years[y] ||= []).push({ id, date: s.date, time: s.time || '', title: s.title || '', note: s.note || '', members: s.members || [], ...(s.url ? { url: s.url } : {}) });
+    (years[y] ||= []).push({ id, date: s.date, time: s.time || '', title: s.title || '', note: s.note || '', members: s.members || [], ...(s.guess ? { guess: true } : {}), ...(s.url ? { url: s.url } : {}) });
   }
   const index = { years: Object.keys(years).sort(), counts: Object.fromEntries(Object.entries(years).map(([y, v]) => [y, v.length])) };
   return { years, index };

@@ -245,6 +245,7 @@
     <div class="field"><span>出演メンバー</span>
       <div class="select"><select id="fAdd" aria-label="出演メンバーを追加"></select></div>
       <div class="tags" id="fTags"></div>
+      <p class="hint" id="fMemHint" hidden style="margin:2px 0 0"></p>
     </div>
     <label class="field"><span>当選した枠</span>
       <select id="fSlot"><option value="">—</option><option>映像倉庫</option><option>柱の会</option><option>100発98中</option><option>一般</option><option>ファミカプ</option><option>女性・小中学生</option><option>ロビー観覧</option><option>招待・その他</option></select></label>
@@ -607,6 +608,10 @@
   function fillFromShow(s) {
     $('#fDate').value = s.date; $('#fTime').value = s.time || ''; $('#fTitle').value = s.title || ''; $('#fNote').value = s.note || '';
     fMembers = new Set(s.members || []); renderFTags();
+    const h = $('#fMemHint');
+    h.hidden = !(s.guess || (s.id != null && !(s.members || []).length));
+    h.textContent = s.guess ? '※この回のメンバーはデータになかったから、同じ日の別の回のメンバーを入れてるよ。違ってたら直してね'
+      : 'この回の出演メンバーはデータに残ってなかった。「＋ メンバーを追加」から入れてね';
   }
   async function fillDay(date, selectId = null, autofill = false) {
     dayShows = /^\d{4}-\d{2}-\d{2}$/.test(date) ? await showsOn(date) : [];
@@ -623,6 +628,7 @@
     $('#titleList').innerHTML = [...new Set([...shows, ...archive, ...records, ...Object.values(historyCache).flat()].map((x) => x.title).filter(Boolean))].map((t) => `<option value="${esc(t)}"></option>`).join('');
     $('#dlgTitle').textContent = record ? '記録を編集' : '観覧記録を追加';
     $('#fDelete').hidden = !record; $('#fDelete').textContent = '削除';
+    $('#fMemHint').hidden = true;
     if (record) {
       $('#fDate').value = record.date; $('#fTime').value = record.time || ''; $('#fTitle').value = record.title || ''; $('#fNote').value = record.note || '';
       fMembers = new Set(record.members); $('#fSlot').value = record.slot || ''; $('#fMemo').value = record.memo || '';
@@ -715,7 +721,7 @@
   });
   $('#fShow').addEventListener('change', (e) => {
     const s = dayShows.find((x) => String(x.id) === e.target.value);
-    if (s) fillFromShow(s);
+    if (s) fillFromShow(s); else $('#fMemHint').hidden = true;
   });
   $('#fAdd').addEventListener('change', (e) => { if (e.target.value) { fMembers.add(e.target.value); renderFTags(); } });
   $('#fTags').addEventListener('click', (e) => { const t = e.target.closest('[data-fname]'); if (t) { fMembers.delete(t.dataset.fname); renderFTags(); } });

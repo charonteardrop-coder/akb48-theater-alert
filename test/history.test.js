@@ -144,3 +144,25 @@ test('メンバー名の切り出し：半角中黒・＋ゲスト・「と」�
   assert.deepEqual(splitMembers('は込山榛香'), ['込山榛香']);
   assert.deepEqual(splitMembers('及び公演内容'), []);
 });
+
+test('2公演の日：分かれた同じ公演をまとめ、メンバーのない回は別の回で補う', async () => {
+  const { fillSameDay } = await import('../src/history.js');
+  const M = ['A', 'B', 'C', 'D'];
+  const out = fillSameDay([
+    { date: '2021-08-01', time: '', title: '僕の夏が始まる 公演 18:30開演', note: '', members: M },
+    { date: '2021-08-01', time: '13:00', title: '「僕の夏が始まる」公演', note: '', members: [] },
+    { date: '2021-08-01', time: '18:30', title: '「僕の夏が始まる」公演', note: '', members: [] },
+    { date: '2021-08-02', time: '', title: '＜夜公演＞18:00開演 X 生誕祭', note: 'X 生誕祭', members: M },
+    { date: '2021-08-02', time: '18:00', title: '「僕の太陽」公演', note: '', members: [] },
+    { date: '2021-08-03', time: '14:00', title: '「ＲＥＳＥＴ」公演', note: '', members: [] },
+    { date: '2021-08-03', time: '18:00', title: '「ＲＥＳＥＴ」公演', note: '', members: M },
+    { date: '2021-08-03', time: '19:00', title: '「別の」公演', note: '', members: [] },
+  ]);
+  const at = (d, t) => out.find((s) => s.date === d && s.time === t);
+  assert.equal(out.filter((s) => !s.time).length, 0, 'まとめた側は消える');
+  assert.deepEqual(at('2021-08-01', '18:30').members, M); assert.ok(!at('2021-08-01', '18:30').guess);
+  assert.deepEqual(at('2021-08-01', '13:00').members, M); assert.ok(at('2021-08-01', '13:00').guess);
+  assert.deepEqual(at('2021-08-02', '18:00').members, M); assert.equal(at('2021-08-02', '18:00').note, 'X 生誕祭');
+  assert.deepEqual(at('2021-08-03', '14:00').members, M); assert.ok(at('2021-08-03', '14:00').guess);
+  assert.deepEqual(at('2021-08-03', '19:00').members, [], '演目が違う回からは補わない');
+});
