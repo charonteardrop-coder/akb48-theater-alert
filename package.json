@@ -1,0 +1,17 @@
+{
+  "name": "akb-gekijo-alert",
+  "version": "1.0.0",
+  "description": "AKB48劇場公演 推しメン出演 受付開始通知",
+  "scripts": {
+    "test": "node --no-warnings --test test/*.test.js",
+    "start": "node src/run.js"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "node-html-parser": "^6.1.13",
+    "web-push": "^3.6.7"
+  }
+}

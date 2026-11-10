@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AKB48 THEATER ALERT</title>
+<meta name="description" content="推しメンが出演するAKB48劇場公演の受付が始まったら、スマホに申込リンク付きでプッシュ通知。非公式のファンメイドツールです。">
+<meta name="theme-color" content="#a3122e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon-64.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="AKB48 ALERT">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f1ea; --paper:#fffdf9; --ink:#1d1a1c; --muted:#7a7175; --line:#e6ddd3;
+    --curtain:#a3122e; --curtain-d:#760b20; --gold:#c99a3b; --ok:#2f7d55;
+    --r:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:"Zen Kaku Gothic New",system-ui,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .mono{font-family:"DM Mono",ui-monospace,monospace}
+  header{background:linear-gradient(180deg,var(--curtain) 0%,var(--curtain-d) 100%);color:#fff;padding:28px 20px 56px;position:relative;overflow:hidden}
+  header::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(0,0,0,.12) 0 2px,transparent 2px 38px);pointer-events:none}
+  .wrap{max-width:720px;margin:0 auto;position:relative;z-index:1}
+  h1{font-size:clamp(28px,8vw,42px);line-height:1.1;margin:0 0 10px;font-weight:900;letter-spacing:.04em}
+  header p{margin:0;opacity:.92;font-size:15px}
+  main{max-width:720px;margin:-34px auto 0;padding:0 16px 48px;position:relative;z-index:2}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:16px;box-shadow:0 1px 0 rgba(0,0,0,.03),0 8px 24px -16px rgba(60,20,30,.25)}
+  h2{font-size:16px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+  h2 .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--curtain);color:#fff;font-size:12px}
+  input[type=search]{width:100%;font:inherit;font-size:16px;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:#fff}
+  input[type=search]:focus{outline:2px solid var(--gold);border-color:transparent}
+  .select{position:relative}
+  .select select{appearance:none;-webkit-appearance:none;width:100%;font:inherit;font-size:16px;font-weight:700;color:var(--ink);padding:13px 44px 13px 14px;border-radius:10px;border:1px solid var(--line);background:#fff;cursor:pointer}
+  .select select:focus{outline:2px solid var(--gold);border-color:transparent}
+  .select::after{content:"";position:absolute;right:18px;top:50%;width:9px;height:9px;border-right:2px solid var(--curtain);border-bottom:2px solid var(--curtain);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .tag{font:inherit;font-size:14px;font-weight:700;display:inline-flex;align-items:center;gap:6px;background:var(--curtain);color:#fff;border:0;border-radius:999px;padding:7px 8px 7px 14px;cursor:pointer}
+  .tag .x{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.22);font-size:12px;line-height:1}
+  .tag:hover .x{background:rgba(255,255,255,.4)}
+  .tag:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  .hint{font-size:13px;color:var(--muted);margin:10px 0 0}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font:inherit;font-size:14px;font-weight:700;border-radius:10px;padding:10px 14px;border:0;cursor:pointer;text-decoration:none}
+  .btn.primary{background:var(--curtain);color:#fff}
+  .btn.primary:hover{background:var(--curtain-d)}
+  .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  /* ticket */
+  .ticket{display:grid;grid-template-columns:86px 1fr;background:#fff;border:1px solid var(--line);border-radius:12px;margin-top:12px;overflow:hidden;position:relative}
+  .ticket .stub{background:var(--ink);color:#fff;text-align:center;padding:12px 6px;display:flex;flex-direction:column;justify-content:center;border-right:2px dashed var(--bg)}
+  .ticket .md{font-size:22px;font-weight:900;line-height:1}
+  .ticket .wd{font-size:12px;opacity:.8;margin-top:4px}
+  .ticket .tm{font-size:12px;color:var(--gold);margin-top:6px}
+  .ticket .body{padding:12px 14px}
+  .ticket .ttl{font-weight:900}
+  .ticket .note,.log .note{display:inline-block;font-size:12px;background:#fbe9d4;color:#8a4b09;border-radius:6px;padding:1px 8px;margin:4px 0 0}
+  .mem{font-size:13px;color:var(--muted);margin-top:6px}
+  .mem b{color:var(--curtain);font-weight:900}
+  .dl{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .pill{font-size:12px;border-radius:999px;padding:2px 10px;border:1px solid var(--line)}
+  .pill.open{border-color:#bfe0cd;background:#eef8f2;color:var(--ok)}
+  .pill.soon{border-color:#f1c8a8;background:#fff2e6;color:#b25400;font-weight:700}
+  .pill.closed{color:#aaa;text-decoration:line-through}
+  .ticket .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .ticket.done{opacity:.55}
+  .empty{text-align:center;color:var(--muted);font-size:14px;padding:18px 0 6px}
+  .tabs{display:flex;gap:6px;margin-bottom:4px}
+  .tab{font:inherit;font-size:13px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 10px;cursor:pointer}
+  .tab[aria-selected=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .push{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fff}
+  .push .state{font-weight:900;font-size:16px;display:flex;align-items:center;gap:8px}
+  .dot{width:10px;height:10px;border-radius:50%;background:#bbb;display:inline-block}
+  .dot.on{background:var(--ok);box-shadow:0 0 0 4px #e1f2e8}
+  .push p{margin:6px 0 0;font-size:14px}
+  .btn[disabled]{opacity:.45;cursor:not-allowed}
+  .btn.big{width:100%;padding:14px;font-size:16px;margin-top:12px}
+  .install{display:grid;gap:10px;margin:10px 0 0;padding:0;counter-reset:st}
+  .install li{list-style:none;display:flex;gap:10px;align-items:center;font-size:14px;background:var(--bg);border-radius:10px;padding:10px 12px}
+  .install li::before{counter-increment:st;content:counter(st);flex:none;width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700}
+  .install svg{flex:none}
+  .check{display:flex;gap:8px;align-items:center;font-size:14px;margin-top:12px;cursor:pointer}
+  .check input{width:18px;height:18px;accent-color:var(--curtain)}
+  .ticket.hl{outline:3px solid var(--gold);outline-offset:2px}
+  .sync{font-size:12px;color:var(--muted);margin-top:8px;min-height:1em}
+  [hidden]{display:none!important}
+  /* 観覧記録 */
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .stat .k{font-size:12px;color:var(--muted);font-weight:700}
+  .stat .v{font-size:30px;font-weight:900;line-height:1.1}
+  .stat .v small{font-size:13px;font-family:"Zen Kaku Gothic New",sans-serif;margin-left:2px}
+  .bars{margin-top:14px;display:grid;gap:7px}
+  .bars h3{font-size:13px;margin:6px 0 0;color:var(--muted)}
+  .bar{display:grid;grid-template-columns:7.5em 1fr 2.4em;align-items:center;gap:8px;font-size:13px}
+  .bar .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar .b{height:10px;border-radius:5px;background:var(--bg);overflow:hidden}
+  .bar .b i{display:block;height:100%;background:var(--curtain);border-radius:5px}
+  .bar .n{text-align:right;font-family:"DM Mono",monospace}
+  .head-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
+  .head-row h2{margin:0}
+  .log{display:grid;grid-template-columns:86px 1fr;background:#fff;border:1px solid var(--line);border-radius:12px;margin-top:12px;overflow:hidden;cursor:pointer;text-align:left;font:inherit;color:inherit;padding:0;width:100%}
+  .log .stub{background:var(--curtain);color:#fff;text-align:center;padding:12px 6px;display:flex;flex-direction:column;justify-content:center;border-right:2px dashed var(--bg)}
+  .log .yr{font-size:11px;opacity:.8}
+  .log .md{font-size:22px;font-weight:900;line-height:1.1}
+  .log .tm{font-size:12px;color:#f4d8a0;margin-top:4px}
+  .log .body{padding:12px 14px}
+  .log .memo{font-size:13px;margin-top:6px;white-space:pre-wrap;color:var(--ink);background:var(--bg);border-radius:8px;padding:6px 10px}
+  .slot{display:inline-block;font-size:11px;font-weight:700;border:1px solid var(--line);border-radius:6px;padding:0 6px;margin-left:6px;color:var(--muted);vertical-align:middle}
+  .btn.small{padding:7px 12px;font-size:13px}
+  .been{background:var(--ink);color:#fff}
+  .been.done{background:#fff;color:var(--ok);border:1px solid #bfe0cd}
+  /* ダイアログ */
+  dialog{border:0;border-radius:16px;padding:0;width:min(560px,calc(100vw - 20px));max-height:calc(100dvh - 30px);background:var(--paper);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  dialog::backdrop{background:rgba(29,26,28,.45)}
+  .dlg{padding:18px;display:grid;gap:12px}
+  .dlg h2{margin:0}
+  .field{display:grid;gap:4px}
+  .field > span{font-size:12px;font-weight:700;color:var(--muted)}
+  .field input,.field select,.field textarea{font:inherit;font-size:16px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink);width:100%}
+  .field textarea{min-height:76px;resize:vertical}
+  .two{display:grid;grid-template-columns:1.4fr 1fr;gap:10px}
+  .dlg .tags .tag{font-size:13px;padding:5px 6px 5px 12px}
+  .dlg-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:4px}
+  .calbtn{justify-self:start;margin-top:-4px}
+  .cal{border:1px solid var(--line);border-radius:12px;background:#fff;padding:10px}
+  .cal-head{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+  .cal-head select{font:inherit;font-size:15px;font-weight:700;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+  .cal-head .sp{flex:1}
+  .cal-nav{font:inherit;font-size:18px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--ink)}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+  .cal-grid .wd{text-align:center;font-size:11px;font-weight:700;color:var(--muted);padding:2px 0}
+  .cal-grid .wd:nth-child(1){color:#c0392b}.cal-grid .wd:nth-child(7){color:#2463b0}
+  .cd{position:relative;font:inherit;font-size:14px;aspect-ratio:1/1;border:0;border-radius:10px;background:transparent;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0}
+  .cd:disabled{color:#ccc;cursor:default}
+  .cd.has{background:var(--bg);font-weight:700}
+  .cd i{display:block;width:6px;height:6px;border-radius:50%;background:transparent}
+  .cd.has i{background:var(--muted)}
+  .cd.oshi i{background:var(--curtain)}
+  .cd.rec::after{content:"✓";position:absolute;top:1px;right:3px;font-size:10px;color:var(--ok);font-weight:900}
+  .cd.today{box-shadow:inset 0 0 0 1px var(--gold)}
+  .cd.sel{background:var(--curtain);color:#fff}
+  .cd.sel i{background:#fff}
+  .cal-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:8px;align-items:center}
+  .cal-legend b{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;vertical-align:1px}
+  .pics{display:flex;gap:8px;flex-wrap:wrap}
+  .pic{position:relative;width:72px;height:72px;border-radius:10px;overflow:hidden;background:var(--bg);border:1px solid var(--line)}
+  .pic img{width:100%;height:100%;object-fit:cover;display:block}
+  .pic .rm{position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:50%;border:0;background:rgba(29,26,28,.7);color:#fff;font-size:13px;line-height:24px;padding:0;cursor:pointer}
+  .addpic{width:72px;height:72px;border-radius:10px;border:1.5px dashed var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;gap:2px}
+  .addpic b{font-size:22px;line-height:1;color:var(--curtain)}
+  .log .thumbs{display:flex;gap:6px;margin-top:8px;overflow-x:auto}
+  .log .thumbs span{flex:0 0 auto;width:56px;height:56px;border-radius:8px;overflow:hidden;background:var(--bg);cursor:zoom-in}
+  .log .thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+  .log .thumbs .more{display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--muted)}
+  #viewer{width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;margin:0;border-radius:0;background:#000;padding:0}
+  #viewer .vwrap{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+  #viewer img{max-width:100%;max-height:100%;object-fit:contain}
+  #viewer .vbar{position:absolute;left:0;right:0;display:flex;gap:8px;align-items:center;padding:12px 14px;color:#fff;font-size:13px}
+  #viewer .vtop{top:0;padding-top:calc(12px + env(safe-area-inset-top));background:linear-gradient(rgba(0,0,0,.6),transparent)}
+  #viewer .vbot{bottom:0;justify-content:center;padding-bottom:calc(14px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(0,0,0,.6))}
+  #viewer .vbtn{font:inherit;font-size:14px;font-weight:700;border:1px solid rgba(255,255,255,.4);background:rgba(0,0,0,.35);color:#fff;border-radius:999px;padding:8px 16px;cursor:pointer}
+  #viewer .vnav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:0;background:rgba(0,0,0,.4);color:#fff;font-size:24px;cursor:pointer}
+  #viewer .vprev{left:8px}#viewer .vnext{right:8px}
+  .ferr{margin:0;font-size:13px;font-weight:700;color:#b3261e;min-height:1em}
+  .btn.danger{background:#fff;color:#b3261e;border:1px solid #f1c6c3;margin-right:auto}
+  footer{max-width:720px;margin:0 auto;padding:0 20px 40px;font-size:12px;color:var(--muted)}
+  footer a{color:inherit}
+  .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:.2s;pointer-events:none;z-index:9}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (max-width:420px){.ticket{grid-template-columns:72px 1fr}.ticket .md{font-size:19px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>AKB48 THEATER ALERT</h1>
+    <p>推しが出る劇場公演の受付が始まったら、スマホに通知。メンバー変更で推しが出演することになったときと、締切の6時間前にも届くよ。</p>
+  </div>
+</header>
+
+<main id="view-home">
+  <section class="card" aria-labelledby="s1">
+    <h2 id="s1"><span class="n">1</span>推しを選ぶ</h2>
+    <div class="select"><select id="add" aria-label="推しを追加"><option value="">＋ 推しを追加</option></select></div>
+    <div class="tags" id="tags" aria-live="polite"></div>
+    <p class="hint" id="memberHint">何人でも選べるよ。外すときはタップ。</p>
+  </section>
+
+  <section class="card" aria-labelledby="s2">
+    <h2 id="s2"><span class="n">2</span>通知をオンにする</h2>
+    <div class="push" id="push"><p class="hint">読み込み中…</p></div>
+    <label class="check"><input type="checkbox" id="box"> 推し以外も含めて、全公演の受付開始を受け取る（箱推し）</label>
+  </section>
+
+  <section class="card" aria-labelledby="s3">
+    <h2 id="s3"><span class="n">3</span>チケットセンターに出てる公演</h2>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-mode="oshi">推しの出演だけ</button>
+      <button class="tab" role="tab" aria-selected="false" data-mode="all">すべて</button>
+    </div>
+    <div id="shows"><p class="empty">読み込み中…</p></div>
+  </section>
+
+  <section class="card" aria-labelledby="l1">
+    <h2 id="l1"><span class="n">4</span>観覧記録</h2>
+    <div class="stats" id="stats"></div>
+    <div class="bars" id="bars"></div>
+  </section>
+  <section class="card">
+    <div class="head-row"><h2>行った公演</h2><button class="btn primary small" id="addLog">＋ 記録を追加</button></div>
+    <div id="logs"></div>
+  </section>
+  <section class="card" aria-labelledby="l3">
+    <h2 id="l3">バックアップ</h2>
+    <p class="hint" style="margin-top:0">記録はこの端末の中だけに保存されてるよ。ホーム画面のアイコンを消したり機種変更したりする前に書き出しておいてね。</p>
+    <div class="row">
+      <button class="btn ghost" id="exportLog">書き出す</button>
+      <label class="btn ghost" for="importFile">読み込む</label>
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
+    </div>
+  </section>
+</main>
+
+
+
+<dialog id="logDlg" aria-labelledby="dlgTitle">
+  <form class="dlg" id="logForm" method="dialog" novalidate>
+    <h2 id="dlgTitle">観覧記録</h2>
+    <div class="two">
+      <label class="field"><span>日付</span><input type="date" id="fDate" required min="2005-12-08"></label>
+      <label class="field"><span>開演</span><input type="time" id="fTime"></label>
+    </div>
+    <button type="button" class="btn ghost small calbtn" id="calToggle" aria-expanded="false">📅 カレンダーで選ぶ</button>
+    <div class="cal" id="cal" hidden></div>
+    <label class="field"><span id="fShowLabel">この日の公演</span>
+      <select id="fShow"><option value="">手入力する</option></select></label>
+    <label class="field"><span>演目</span><input id="fTitle" list="titleList" placeholder="例：「ＲＥＳＥＴ」公演" autocomplete="off"><datalist id="titleList"></datalist></label>
+    <label class="field"><span>補足（生誕祭など）</span><input id="fNote" autocomplete="off"></label>
+    <div class="field"><span>出演メンバー</span>
+      <div class="select"><select id="fAdd" aria-label="出演メンバーを追加"></select></div>
+      <div class="tags" id="fTags"></div>
+    </div>
+    <label class="field"><span>当選した枠</span>
+      <select id="fSlot"><option value="">—</option><option>映像倉庫</option><option>柱の会</option><option>100発98中</option><option>一般</option><option>ファミカプ</option><option>女性・小中学生</option><option>ロビー観覧</option><option>招待・その他</option></select></label>
+    <label class="field"><span>メモ（座席・感想など）</span><textarea id="fMemo"></textarea></label>
+    <div class="field"><span>写真</span>
+      <div class="pics" id="fPics"></div>
+      <input type="file" id="fPhoto" accept="image/*" multiple hidden>
+    </div>
+    <p class="ferr" id="fErr" role="alert"></p>
+    <div class="dlg-actions">
+      <button type="button" class="btn danger" id="fDelete" hidden>削除</button>
+      <button type="button" class="btn ghost" id="fCancel">やめる</button>
+      <button type="submit" class="btn primary" id="fSave">保存</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="viewer" aria-label="写真">
+  <div class="vwrap">
+    <img id="vImg" alt="">
+    <div class="vbar vtop"><span id="vCount"></span><span style="flex:1"></span><button type="button" class="vbtn" id="vClose">閉じる</button></div>
+    <button type="button" class="vnav vprev" id="vPrev" aria-label="前の写真">‹</button>
+    <button type="button" class="vnav vnext" id="vNext" aria-label="次の写真">›</button>
+    <div class="vbar vbot"><button type="button" class="vbtn" id="vSave">保存・共有</button></div>
+  </div>
+</dialog>
+
+<footer>
+  <p>非公式のファンメイドツールだよ。公演・出演メンバー・受付期間は <a href="https://akb48.zaiko.io/" target="_blank" rel="noopener">AKB48チケットセンター</a> の掲載内容を10分おきに読み取ってるので、申込前に必ずチケットセンターで内容を確認してね。</p>
+  <p id="updated"></p>
+</footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const KEY = 'oshi-gekijo-alert:v2';
+  const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } };
+  const save = (v) => { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch {} };
+  let prefs = load();
+  let picked = new Set(prefs.picked || []);
+  let box = !!prefs.box;
+  let mode = prefs.mode || 'oshi';
+  let members = [], shows = [], config = {}, roster = [], archive = [], historyIndex = null;
+  const historyCache = {};
+  let reg = null, sub = null, busy = false, syncTimer = null, syncMsg = '';
+
+  const ua = navigator.userAgent;
+  const isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  const standalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const pushCapable = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+
+  const jst = (iso) => {
+    const p = Object.fromEntries(new Intl.DateTimeFormat('ja-JP',{timeZone:'Asia/Tokyo',month:'numeric',day:'numeric',weekday:'short',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date(iso)).map(x=>[x.type,x.value]));
+    return `${p.month}/${p.day}(${p.weekday}) ${p.hour}:${p.minute}`;
+  };
+  const left = (iso) => {
+    const ms = new Date(iso) - Date.now();
+    if (ms <= 0) return null;
+    const h = Math.floor(ms / 3600e3);
+    return h < 24 ? `あと${h}時間` : `あと${Math.floor(h / 24)}日`;
+  };
+  const toast = (t) => { const el = $('#toast'); el.textContent = t; el.classList.add('on'); setTimeout(() => el.classList.remove('on'), 2000); };
+  const wanted = () => [...picked, ...(box ? ['*'] : [])];
+  const persist = () => {
+    save({ picked: [...picked], box, mode });
+    // service worker が購読を更新し直すとき用
+    if ('caches' in window) caches.open('oshi-alert-prefs').then((c) => c.put('members', new Response(JSON.stringify(wanted())))).catch(() => {});
+  };
+
+  /* ---------- 推し選択 ---------- */
+  // 先輩順：公式サイトのメンバー一覧の掲載順（data/roster.json）。載っていない名前は「その他」で末尾
+  const rank = (n) => { const i = roster.findIndex((r) => r.name === n); return i < 0 ? 1e4 : i; };
+  const bySenior = (a, b) => rank(a) - rank(b) || a.localeCompare(b, 'ja');
+  function renderChips() {
+    const all = [...new Set([...roster.map((r) => r.name), ...members.map((m) => m.name)])];
+    const rest = all.filter((n) => !picked.has(n)).sort(bySenior);
+    const groups = [];
+    for (const n of rest) {
+      const g = roster.find((r) => r.name === n)?.gen || 'その他';
+      if (!groups.length || groups[groups.length - 1].g !== g) groups.push({ g, names: [] });
+      groups[groups.length - 1].names.push(n);
+    }
+    $('#add').innerHTML = `<option value="">${all.length ? (picked.size ? '＋ 推しを追加' : '推しを選ぶ') : 'まだメンバーデータがないよ'}</option>`
+      + groups.map(({ g, names }) => `<optgroup label="${esc(g)}">${names.map((n) => `<option value="${esc(n)}">${esc(n)}</option>`).join('')}</optgroup>`).join('');
+    $('#add').disabled = !rest.length;
+    $('#tags').innerHTML = [...picked].sort(bySenior).map((n) => `<button class="tag" data-name="${esc(n)}" aria-label="${esc(n)}を外す">${esc(n)}<span class="x" aria-hidden="true">✕</span></button>`).join('');
+  }
+
+  /* ---------- 通知 ---------- */
+  const b64ToBytes = (s) => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4)), (c) => c.charCodeAt(0));
+  const shareIcon = '<svg width="20" height="24" viewBox="0 0 20 24" fill="none" stroke="#1d7cf2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 15V2M5.5 6.5 10 2l4.5 4.5"/><path d="M6 10H3.5A1.5 1.5 0 0 0 2 11.5v9A1.5 1.5 0 0 0 3.5 22h13a1.5 1.5 0 0 0 1.5-1.5v-9a1.5 1.5 0 0 0-1.5-1.5H14"/></svg>';
+  const plusIcon = '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#1d1a1c" stroke-width="1.8" aria-hidden="true"><rect x="2" y="2" width="18" height="18" rx="5"/><path d="M11 7v8M7 11h8"/></svg>';
+
+  async function api(path, body) {
+    const r = await fetch(config.apiBase + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || `HTTP ${r.status}`);
+    return r.json();
+  }
+
+  function renderPush() {
+    const el = $('#push');
+    const names = [...picked];
+    const who = names.length ? names.map(esc).join('・') : '';
+    if (!config.apiBase || !config.vapidPublicKey) {
+      el.innerHTML = '<div class="state"><span class="dot"></span>準備中</div><p>通知サーバーの設定がまだ終わってないよ。</p>'; return;
+    }
+    if (isIOS && !standalone()) {
+      el.innerHTML = `<div class="state"><span class="dot"></span>まずホーム画面に追加してね</div>
+        <p>iPhoneは、ホーム画面に追加したアプリからだけ通知を受け取れるよ（iOS 16.4以降）。</p>
+        <ol class="install">
+          <li>${shareIcon}<span>Safariの下にある<b>共有ボタン</b>をタップ</span></li>
+          <li>${plusIcon}<span><b>「ホーム画面に追加」</b>を選んで「追加」</span></li>
+          <li><img src="icons/icon-180.png" width="22" height="22" alt="" style="border-radius:5px"><span>ホーム画面の<b>「AKB48 ALERT」</b>から開いて、ここで通知をオン</span></li>
+        </ol>`; return;
+    }
+    if (!pushCapable()) {
+      el.innerHTML = '<div class="state"><span class="dot"></span>このブラウザは通知に未対応</div><p>iPhoneならSafari、AndroidならChromeで開いてみてね。</p>'; return;
+    }
+    if (Notification.permission === 'denied') {
+      el.innerHTML = `<div class="state"><span class="dot"></span>通知がブロックされてるよ</div>
+        <p>${isIOS ? '設定アプリ →「通知」→「AKB48 ALERT」で通知を許可してね。' : 'ブラウザのサイト設定で、このサイトの通知を「許可」にしてね。'}</p>`; return;
+    }
+    if (sub) {
+      el.innerHTML = `<div class="state"><span class="dot on"></span>通知オン</div>
+        <p>${who ? `<b>${who}</b> の出演公演` : ''}${who && box ? '＋' : ''}${box ? '全公演の受付開始' : ''}${!who && !box ? '推しがまだ選ばれてないよ' : 'を通知するよ'}</p>
+        <p class="hint">推しを選び直すと自動で反映されるよ。</p>
+        <div class="row"><button class="btn ghost" id="testBtn">表示テスト</button><button class="btn ghost" id="offBtn">通知をオフにする</button></div>
+        <div class="sync" id="sync">${esc(syncMsg)}</div>`;
+      return;
+    }
+    const can = names.length || box;
+    el.innerHTML = `<div class="state"><span class="dot"></span>通知オフ</div>
+      <p>${can ? `${who ? `<b>${who}</b> ` : ''}${box ? (who ? '＋全公演' : '全公演') : ''}の受付開始・メンバー変更・締切前をお知らせするよ。` : '先に①で推しを選んでね。'}</p>
+      <button class="btn primary big" id="onBtn" ${can && !busy ? '' : 'disabled'}>${busy ? '設定中…' : '通知をオンにする'}</button>`;
+  }
+
+  async function turnOn() {
+    busy = true; renderPush();
+    try {
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') throw new Error(perm === 'denied' ? 'denied' : '許可されなかったよ');
+      reg = reg || await navigator.serviceWorker.ready;
+      sub = await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(config.vapidPublicKey) });
+      await api('/subscribe', { subscription: sub.toJSON(), members: wanted() });
+      persist();
+      toast('通知をオンにしたよ');
+    } catch (e) {
+      if (sub && !(await reg.pushManager.getSubscription())) sub = null;
+      toast(e.message === 'denied' ? '通知がブロックされたよ' : `うまくいかなかった：${e.message}`);
+      if (sub) { try { await sub.unsubscribe(); } catch {} sub = null; }
+    } finally { busy = false; renderPush(); }
+  }
+
+  async function turnOff() {
+    try {
+      if (sub) { const ep = sub.endpoint; await sub.unsubscribe(); await api('/unsubscribe', { endpoint: ep }).catch(() => {}); }
+      sub = null; toast('通知をオフにしたよ');
+    } catch (e) { toast(`うまくいかなかった：${e.message}`); }
+    renderPush();
+  }
+
+  function scheduleSync() {
+    persist();
+    if (!sub) return;
+    clearTimeout(syncTimer);
+    syncMsg = '保存中…'; renderPush();
+    syncTimer = setTimeout(async () => {
+      try { await api('/subscribe', { subscription: sub.toJSON(), members: wanted() }); syncMsg = '推しの設定を保存したよ'; }
+      catch (e) { syncMsg = `保存できなかった：${e.message}`; }
+      renderPush();
+    }, 900);
+  }
+
+  async function testShow() {
+    reg = reg || await navigator.serviceWorker.ready;
+    const s = shows.find((x) => x.members.some((m) => picked.has(m))) || shows[0];
+    await reg.showNotification('🎫 表示テスト', {
+      body: s ? `${s.label} ${s.time} ${s.title}\nこんな感じで届くよ` : 'こんな感じで届くよ',
+      icon: 'icons/icon-192.png', badge: 'icons/badge-96.png', tag: 'test', data: { url: s ? `./?show=${s.id}` : './' },
+    });
+  }
+
+  /* ---------- 公演一覧 ---------- */
+  const groups = (s, lobby) => {
+    const g = new Map();
+    for (const x of s.slots) {
+      if (!!x.lobby !== lobby || !x.end) continue;
+      const k = x.end + '|' + (x.status === 'open' && new Date(x.end) > Date.now() ? 'open' : x.status === 'upcoming' ? 'upcoming' : 'closed');
+      if (!g.has(k)) g.set(k, []);
+      g.get(k).push(x.short);
+    }
+    return [...g.entries()].map(([k, names]) => { const [end, st] = k.split('|'); return { end, st, names }; }).sort((a, b) => a.end.localeCompare(b.end));
+  };
+  const isLive = (s) => s.slots.some((x) => !x.lobby && x.status === 'open' && x.end && new Date(x.end) > Date.now());
+
+  function ticket(s) {
+    const now = Date.now();
+    const live = isLive(s);
+    const pill = (g) => {
+      const l = left(g.end);
+      const cls = g.st === 'open' ? (new Date(g.end) - now < 24 * 3600e3 ? 'soon' : 'open') : g.st === 'upcoming' ? '' : 'closed';
+      return `<span class="pill ${cls}">${esc(g.names.join('/'))} ${g.st === 'upcoming' ? '受付前' : '〆'} ${jst(g.end)}${g.st === 'open' && l ? '・' + l : ''}</span>`;
+    };
+    const [md, wd] = [s.label.replace(/\(.+\)/, ''), (s.label.match(/\((.+)\)/) || [])[1] || ''];
+    const mem = s.members.map((n) => picked.has(n) ? `<b>${esc(n)}</b>` : esc(n)).join('・');
+    const lobby = groups(s, true).filter((g) => g.st === 'open');
+    return `<article class="ticket${live ? '' : ' done'}" id="show-${s.id}">
+      <div class="stub"><div class="md mono">${esc(md)}</div><div class="wd">${esc(wd)}</div><div class="tm mono">${esc(s.time)}</div></div>
+      <div class="body">
+        <div class="ttl">${esc(s.title)}</div>
+        ${s.note ? `<span class="note">${esc(s.note)}</span>` : ''}
+        <div class="mem">${mem}</div>
+        <div class="dl">${groups(s, false).map(pill).join('')}${lobby.map(pill).join('')}</div>
+        <div class="actions">${live || lobby.length
+          ? `<a class="btn primary" href="${esc(s.url)}" target="_blank" rel="noopener">チケットセンターで申し込む</a>`
+          : '<span class="hint">受付終了</span>'}${new Date(s.start) <= now ? beenBtn(s) : ''}</div>
+      </div></article>`;
+  }
+
+  function renderShows() {
+    document.querySelectorAll('.tab').forEach((t) => t.setAttribute('aria-selected', t.dataset.mode === mode));
+    let list = shows;
+    if (mode === 'oshi') list = shows.filter((s) => s.members.some((m) => picked.has(m)));
+    list = [...list].sort((a, b) => (!isLive(a)) - (!isLive(b)) || a.start.localeCompare(b.start));
+    $('#shows').innerHTML = list.length ? list.map(ticket).join('') :
+      `<p class="empty">${mode === 'oshi' && picked.size ? '推しの出る公演は今チケットセンターに出てないよ。出たら通知が届く！' : mode === 'oshi' ? '推しを選ぶとここに出るよ' : '公演はまだ出てないよ'}</p>`;
+  }
+
+
+  /* ---------- 観覧記録（この端末のlocalStorageに保存） ---------- */
+  const LOGKEY = 'oshi-gekijo-alert:records:v1';
+  const loadRecords = () => { try { const r = JSON.parse(localStorage.getItem(LOGKEY)); return Array.isArray(r) ? r : []; } catch { return []; } };
+  let records = loadRecords();
+  const saveRecords = () => {
+    try { localStorage.setItem(LOGKEY, JSON.stringify(records)); } catch { toast('保存できなかった（容量がいっぱいかも）'); }
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  };
+  const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+  const byDateDesc = (a, b) => (b.date + (b.time || '')).localeCompare(a.date + (a.time || ''));
+  const todayJst = () => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Tokyo' }).format(new Date());
+  const wday = (d) => '日月火水木金土'[new Date(`${d}T12:00:00+09:00`).getUTCDay()];
+  const recordOf = (showId) => records.find((r) => r.showId != null && String(r.showId) === String(showId));
+  // その日の公演：チケットセンター由来（今の一覧・アーカイブ）＋公式ブログから取り込んだ過去公演（年ごとに必要なときだけ読む）
+  async function showsOn(date) {
+    const y = date.slice(0, 4);
+    if (historyIndex && historyIndex.years.includes(y) && !historyCache[y]) historyCache[y] = (await get(`data/history/${y}.json`)) || [];
+    const now = Date.now();
+    const z = [...shows.filter((s) => new Date(s.start) <= now), ...archive].filter((s) => s.date === date);
+    const zt = new Set(z.map((s) => s.time));
+    const hist = (historyCache[y] || []).filter((s) => s.date === date && !(s.time && zt.has(s.time)));
+    const seen = new Set();
+    return [...z, ...hist].filter((s) => !seen.has(String(s.id)) && seen.add(String(s.id))).sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+  }
+  let dayShows = [];
+
+  /* ---------- 写真（IndexedDBに保存。縮小してから入れる） ---------- */
+  let dbp = null;
+  const db = () => dbp || (dbp = new Promise((res, rej) => {
+    const q = indexedDB.open('oshi-gekijo-alert', 1);
+    q.onupgradeneeded = () => { const st = q.result.createObjectStore('photos', { keyPath: 'id' }); st.createIndex('rec', 'recordId'); };
+    q.onsuccess = () => res(q.result); q.onerror = () => { dbp = null; rej(q.error); };
+  }));
+  const tx = async (mode, fn) => { const d = await db(); return new Promise((res, rej) => { const t = d.transaction('photos', mode); const out = fn(t.objectStore('photos')); t.oncomplete = () => res(out && 'result' in out ? out.result : undefined); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error); }); };
+  const photoGet = (id) => tx('readonly', (st) => st.get(id)).catch(() => null);
+  const photoPut = (rows) => tx('readwrite', (st) => { rows.forEach((r) => st.put(r)); });
+  const photoDel = (ids) => ids.length ? tx('readwrite', (st) => { ids.forEach((id) => st.delete(id)); }).catch(() => {}) : Promise.resolve();
+  const urlCache = new Map();
+  async function photoUrl(id) {
+    if (urlCache.has(id)) return urlCache.get(id);
+    const r = await photoGet(id);
+    if (!r) return '';
+    const u = URL.createObjectURL(r.blob); urlCache.set(id, u); return u;
+  }
+  const forgetUrl = (id) => { const u = urlCache.get(id); if (u) { URL.revokeObjectURL(u); urlCache.delete(id); } };
+  async function shrink(file, max = 1600) {
+    try {
+      const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
+      const W = bmp.width, H = bmp.height, k = Math.min(1, max / Math.max(W, H));
+      const w = Math.round(W * k), h = Math.round(H * k);
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      c.getContext('2d').drawImage(bmp, 0, 0, w, h); bmp.close && bmp.close();
+      const blob = await new Promise((r) => c.toBlob(r, 'image/jpeg', 0.82));
+      if (blob && (blob.size < file.size || k < 1)) return { blob, w, h };
+      return { blob: file, w: W, h: H };
+    } catch { return { blob: file, w: 0, h: 0 }; }
+  }
+  const fillImgs = (root) => root.querySelectorAll('img[data-pid]').forEach(async (img) => { const u = await photoUrl(img.dataset.pid); if (u) img.src = u; });
+
+  const beenBtn = (s) => { const r = recordOf(s.id); return `<button class="btn small been${r ? ' done' : ''}" data-been="${esc(s.id)}">${r ? '✓ 記録済み' : '行った！'}</button>`; };
+
+  function renderLog() {
+    const yr = todayJst().slice(0, 4);
+    const thisYear = records.filter((r) => r.date.startsWith(yr)).length;
+    const oshiCnt = records.filter((r) => r.members.some((m) => picked.has(m))).length;
+    const titles = new Map();
+    for (const r of records) if (r.title) titles.set(r.title, (titles.get(r.title) || 0) + 1);
+    const tile = (k, v, unit) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}<small>${unit}</small></div></div>`;
+    $('#stats').innerHTML = tile('通算', records.length, '公演') + tile(`${yr}年`, thisYear, '公演')
+      + (picked.size ? tile('推しが出てた', oshiCnt, '公演') : tile('観た演目', titles.size, '種類'))
+      + tile('観たメンバー', new Set(records.flatMap((r) => r.members)).size, '人');
+
+    const bar = (label, n, max, hl) => `<div class="bar"><span class="t">${hl ? `<b style="color:var(--curtain)">${esc(label)}</b>` : esc(label)}</span><span class="b"><i style="width:${max ? Math.max(4, n / max * 100) : 0}%"></i></span><span class="n">${n}</span></div>`;
+    const seen = new Map();
+    for (const r of records) for (const m of r.members) seen.set(m, (seen.get(m) || 0) + 1);
+    let html = '';
+    if (records.length) {
+      const memTop = picked.size
+        ? [...picked].sort(bySenior).map((m) => [m, seen.get(m) || 0])
+        : [...seen.entries()].sort((a, b) => b[1] - a[1] || bySenior(a[0], b[0])).slice(0, 5);
+      const mmax = Math.max(1, ...memTop.map((x) => x[1]));
+      html += `<h3>${picked.size ? '推しを見た回数' : 'よく見たメンバー'}</h3>` + memTop.map(([m, n]) => bar(m, n, mmax, picked.has(m))).join('');
+      const tTop = [...titles.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
+      if (tTop.length) html += '<h3>演目別</h3>' + tTop.map(([t, n]) => bar(t.replace(/^「|」\s*公演$/g, ''), n, tTop[0][1])).join('');
+    }
+    $('#bars').innerHTML = html;
+
+    const list = [...records].sort(byDateDesc);
+    $('#logs').innerHTML = list.length ? list.map((r) => {
+      const [y, mo, d] = r.date.split('-');
+      return `<button class="log" data-log="${esc(r.id)}">
+        <div class="stub"><div class="yr mono">${y}</div><div class="md mono">${Number(mo)}/${Number(d)}</div><div class="yr">${wday(r.date)}</div>${r.time ? `<div class="tm mono">${esc(r.time)}</div>` : ''}</div>
+        <div class="body">
+          <div class="ttl">${esc(r.title || '（演目未入力）')}${r.slot ? `<span class="slot">${esc(r.slot)}</span>` : ''}</div>
+          ${r.note ? `<span class="note">${esc(r.note)}</span>` : ''}
+          ${r.members.length ? `<div class="mem">${[...r.members].map((n) => picked.has(n) ? `<b>${esc(n)}</b>` : esc(n)).join('・')}</div>` : ''}
+          ${r.memo ? `<div class="memo">${esc(r.memo)}</div>` : ''}
+          ${(r.photos || []).length ? `<div class="thumbs">${r.photos.slice(0, 5).map((pid, i) => `<span data-photo="${esc(r.id)}" data-i="${i}" role="img" aria-label="写真${i + 1}を見る"><img data-pid="${esc(pid)}" alt=""></span>`).join('')}${r.photos.length > 5 ? `<span class="more" data-photo="${esc(r.id)}" data-i="5">+${r.photos.length - 5}</span>` : ''}</div>` : ''}
+        </div></button>`;
+    }).join('') : '<p class="empty">まだ記録がないよ。「＋ 記録を追加」か、公演一覧の「行った！」から記録してね。</p>';
+    fillImgs($('#logs'));
+  }
+
+  /* 記録フォーム */
+  let editing = null, fMembers = new Set(), delArmed = false;
+  // フォーム中の写真：{id, url, blob?, w?, h?}。blobがあるのは保存前の新しい写真
+  let fPhotos = [];
+  const MAXPICS = 20;
+  function renderFPics() {
+    $('#fPics').innerHTML = fPhotos.map((p, i) => `<div class="pic"><img ${p.url ? `src="${p.url}"` : `data-pid="${esc(p.id)}"`} alt="写真${i + 1}"><button type="button" class="rm" data-rmpic="${i}" aria-label="写真${i + 1}を外す">✕</button></div>`).join('')
+      + (fPhotos.length < MAXPICS ? '<label class="addpic" for="fPhoto"><b>＋</b>写真</label>' : '');
+    fillImgs($('#fPics'));
+  }
+  const dropNewPics = () => { fPhotos.forEach((p) => { if (p.blob && p.url) URL.revokeObjectURL(p.url); }); fPhotos = []; };
+  const dlg = $('#logDlg');
+  const showLabel = (s) => `${s.date.slice(0, 4)} ${s.label} ${s.time} ${s.title.replace(/^「|」\s*公演$/g, '')}${s.note ? ` ${s.note}` : ''}`;
+  function renderFTags() {
+    const past = Object.values(historyCache).flat().flatMap((s) => s.members || []);
+    const all = [...new Set([...roster.map((r) => r.name), ...members.map((m) => m.name), ...past])].filter((n) => !fMembers.has(n)).sort(bySenior);
+    const groups = [];
+    for (const n of all) {
+      const g = roster.find((r) => r.name === n)?.gen || '卒業生・ゲストなど';
+      if (!groups.length || groups[groups.length - 1].g !== g) groups.push({ g, names: [] });
+      groups[groups.length - 1].names.push(n);
+    }
+    $('#fAdd').innerHTML = '<option value="">＋ メンバーを追加</option>' + groups.map(({ g, names }) => `<optgroup label="${esc(g)}">${names.map((n) => `<option value="${esc(n)}">${esc(n)}</option>`).join('')}</optgroup>`).join('');
+    $('#fTags').innerHTML = [...fMembers].sort(bySenior).map((n) => `<button type="button" class="tag" data-fname="${esc(n)}" aria-label="${esc(n)}を外す">${esc(n)}<span class="x" aria-hidden="true">✕</span></button>`).join('');
+  }
+  function fillFromShow(s) {
+    $('#fDate').value = s.date; $('#fTime').value = s.time || ''; $('#fTitle').value = s.title || ''; $('#fNote').value = s.note || '';
+    fMembers = new Set(s.members || []); renderFTags();
+  }
+  async function fillDay(date, selectId = null, autofill = false) {
+    dayShows = /^\d{4}-\d{2}-\d{2}$/.test(date) ? await showsOn(date) : [];
+    $('#fShow').innerHTML = '<option value="">手入力する</option>' + dayShows.map((s) => `<option value="${esc(s.id)}">${esc(`${s.time || '時刻不明'} ${s.title.replace(/^「|」\s*公演$/g, '') || '（演目不明）'}${s.note ? ` ${s.note}` : ''}`)}</option>`).join('');
+    $('#fShowLabel').textContent = dayShows.length ? `この日の公演（${dayShows.length}件）` : 'この日の公演（データなし → 手入力）';
+    renderFTags();
+    if (selectId != null && dayShows.some((s) => String(s.id) === String(selectId))) $('#fShow').value = String(selectId);
+    else if (autofill && dayShows.length) { $('#fShow').value = String(dayShows[0].id); fillFromShow(dayShows[0]); }
+    else $('#fShow').value = '';
+  }
+  async function openForm({ record = null, show = null } = {}) {
+    editing = record; delArmed = false; $('#fErr').textContent = ''; openCal(false);
+    dropNewPics(); fPhotos = (record?.photos || []).map((id) => ({ id })); renderFPics();
+    $('#titleList').innerHTML = [...new Set([...shows, ...archive, ...records, ...Object.values(historyCache).flat()].map((x) => x.title).filter(Boolean))].map((t) => `<option value="${esc(t)}"></option>`).join('');
+    $('#dlgTitle').textContent = record ? '記録を編集' : '観覧記録を追加';
+    $('#fDelete').hidden = !record; $('#fDelete').textContent = '削除';
+    if (record) {
+      $('#fDate').value = record.date; $('#fTime').value = record.time || ''; $('#fTitle').value = record.title || ''; $('#fNote').value = record.note || '';
+      fMembers = new Set(record.members); $('#fSlot').value = record.slot || ''; $('#fMemo').value = record.memo || '';
+      renderFTags();
+      dlg.showModal();
+      await fillDay(record.date, record.showId);
+    } else {
+      $('#fSlot').value = ''; $('#fMemo').value = '';
+      if (show) fillFromShow(show); else fillFromShow({ date: todayJst(), time: '', title: '', note: '', members: [] });
+      dlg.showModal();
+      await fillDay($('#fDate').value, show ? show.id : null, !show);
+    }
+  }
+  $('#fDate').addEventListener('change', (e) => fillDay(e.target.value, null, true));
+
+  /* カレンダー：公演のあった日・推しが出てた日・記録済みの日に印 */
+  let calY = 0, calM = 0;
+  const FIRST_YEAR = 2005;
+  async function monthInfo(y, m) {
+    const ys = String(y);
+    if (historyIndex && historyIndex.years.includes(ys) && !historyCache[ys]) historyCache[ys] = (await get(`data/history/${ys}.json`)) || [];
+    const pre = `${ys}-${String(m).padStart(2, '0')}-`;
+    const now = Date.now();
+    const info = new Map();
+    const add = (s) => {
+      if (!s.date || !s.date.startsWith(pre)) return;
+      const v = info.get(s.date) || { n: 0, oshi: false, keys: new Set() };
+      const k = s.time || s.title;
+      if (!v.keys.has(k)) { v.keys.add(k); v.n++; }
+      if ((s.members || []).some((x) => picked.has(x))) v.oshi = true;
+      info.set(s.date, v);
+    };
+    [...shows.filter((s) => new Date(s.start) <= now), ...archive, ...(historyCache[ys] || [])].forEach(add);
+    return info;
+  }
+  async function renderCal() {
+    const today = todayJst();
+    const ty = Number(today.slice(0, 4));
+    const info = await monthInfo(calY, calM);
+    const recDays = new Set(records.map((r) => r.date));
+    const sel = $('#fDate').value;
+    const first = new Date(Date.UTC(calY, calM - 1, 1)).getUTCDay();
+    const days = new Date(Date.UTC(calY, calM, 0)).getUTCDate();
+    let cells = '日月火水木金土'.split('').map((w) => `<span class="wd">${w}</span>`).join('');
+    cells += '<span></span>'.repeat(first);
+    for (let d = 1; d <= days; d++) {
+      const ds = `${calY}-${String(calM).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const v = info.get(ds);
+      const cls = ['cd', v && 'has', v && v.oshi && 'oshi', recDays.has(ds) && 'rec', ds === today && 'today', ds === sel && 'sel'].filter(Boolean).join(' ');
+      const label = `${calM}月${d}日${v ? ` 公演${v.n}件${v.oshi ? '（推し出演）' : ''}` : ''}${recDays.has(ds) ? ' 記録済み' : ''}`;
+      cells += `<button type="button" class="${cls}" data-d="${ds}" ${ds > today ? 'disabled' : ''} aria-label="${label}">${d}<i></i></button>`;
+    }
+    const years = []; for (let y = ty; y >= FIRST_YEAR; y--) years.push(`<option value="${y}" ${y === calY ? 'selected' : ''}>${y}年</option>`);
+    const months = []; for (let m = 1; m <= 12; m++) months.push(`<option value="${m}" ${m === calM ? 'selected' : ''}>${m}月</option>`);
+    const atEnd = calY > ty || (calY === ty && calM >= Number(today.slice(5, 7)));
+    $('#cal').innerHTML = `<div class="cal-head">
+        <button type="button" class="cal-nav" data-cal="-1" aria-label="前の月">‹</button>
+        <span class="sp"></span><select id="calY" aria-label="年">${years.join('')}</select><select id="calM" aria-label="月">${months.join('')}</select><span class="sp"></span>
+        <button type="button" class="cal-nav" data-cal="1" aria-label="次の月" ${atEnd ? 'disabled' : ''}>›</button>
+      </div>
+      <div class="cal-grid">${cells}</div>
+      <div class="cal-legend"><span><b style="background:var(--muted)"></b>公演あり</span>${picked.size ? '<span><b style="background:var(--curtain)"></b>推しが出演</span>' : ''}<span><span style="color:var(--ok);font-weight:900">✓</span> 記録済み</span></div>`;
+  }
+  function openCal(open) {
+    $('#cal').hidden = !open;
+    $('#calToggle').setAttribute('aria-expanded', open);
+    $('#calToggle').textContent = open ? '📅 カレンダーを閉じる' : '📅 カレンダーで選ぶ';
+    if (open) {
+      const base = /^\d{4}-\d{2}-\d{2}$/.test($('#fDate').value) ? $('#fDate').value : todayJst();
+      calY = Number(base.slice(0, 4)); calM = Number(base.slice(5, 7));
+      renderCal();
+    }
+  }
+  $('#calToggle').addEventListener('click', () => openCal($('#cal').hidden));
+  $('#cal').addEventListener('click', (e) => {
+    const nav = e.target.closest('[data-cal]');
+    if (nav) {
+      calM += Number(nav.dataset.cal);
+      if (calM < 1) { calM = 12; calY--; } if (calM > 12) { calM = 1; calY++; }
+      if (calY < FIRST_YEAR) { calY = FIRST_YEAR; calM = 1; }
+      renderCal(); return;
+    }
+    const d = e.target.closest('[data-d]');
+    if (d && !d.disabled) { $('#fDate').value = d.dataset.d; fillDay(d.dataset.d, null, true); openCal(false); }
+  });
+  $('#cal').addEventListener('change', (e) => {
+    if (e.target.id === 'calY') calY = Number(e.target.value);
+    if (e.target.id === 'calM') calM = Number(e.target.value);
+    renderCal();
+  });
+  $('#fShow').addEventListener('change', (e) => {
+    const s = dayShows.find((x) => String(x.id) === e.target.value);
+    if (s) fillFromShow(s);
+  });
+  $('#fAdd').addEventListener('change', (e) => { if (e.target.value) { fMembers.add(e.target.value); renderFTags(); } });
+  $('#fTags').addEventListener('click', (e) => { const t = e.target.closest('[data-fname]'); if (t) { fMembers.delete(t.dataset.fname); renderFTags(); } });
+  $('#fCancel').addEventListener('click', () => dlg.close());
+  dlg.addEventListener('close', () => dropNewPics());
+  $('#fPhoto').addEventListener('change', async (e) => {
+    const files = [...e.target.files].filter((f) => f.type.startsWith('image/') || /\.(heic|heif|jpe?g|png|webp|gif)$/i.test(f.name));
+    e.target.value = '';
+    const room = MAXPICS - fPhotos.length;
+    if (files.length > room) toast(`写真は1公演${MAXPICS}枚までだよ`);
+    for (const f of files.slice(0, room)) {
+      const r = await shrink(f);
+      fPhotos.push({ id: uid(), blob: r.blob, w: r.w, h: r.h, url: URL.createObjectURL(r.blob) });
+      renderFPics();
+    }
+  });
+  $('#fPics').addEventListener('click', (e) => {
+    const rm = e.target.closest('[data-rmpic]');
+    if (rm) { const [p] = fPhotos.splice(Number(rm.dataset.rmpic), 1); if (p.blob && p.url) URL.revokeObjectURL(p.url); renderFPics(); }
+  });
+  $('#fDelete').addEventListener('click', () => {
+    if (!delArmed) { delArmed = true; $('#fDelete').textContent = '本当に削除する？'; return; }
+    const gone = editing.photos || [];
+    records = records.filter((r) => r.id !== editing.id); saveRecords(); dlg.close(); renderLog(); renderShows(); toast('記録を削除したよ');
+    photoDel(gone); gone.forEach(forgetUrl);
+  });
+  $('#logForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const date = $('#fDate').value;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { $('#fDate').focus(); $('#fErr').textContent = '日付を入れてね'; return; }
+    // 「公演から選ぶ」で選んだ公演と紐づける。編集中で、元の公演がもう一覧にない（古すぎる）場合は紐づけを残す
+    const keepOld = editing && editing.showId != null && editing.date === date && !dayShows.some((s) => String(s.id) === String(editing.showId));
+    const showId = $('#fShow').value ? String($('#fShow').value) : keepOld ? String(editing.showId) : null;
+    const rec = {
+      id: editing?.id || uid(), showId,
+      date, time: $('#fTime').value, title: $('#fTitle').value.trim(), note: $('#fNote').value.trim(),
+      members: [...fMembers].sort(bySenior), slot: $('#fSlot').value, memo: $('#fMemo').value.trim(),
+      photos: fPhotos.map((p) => p.id),
+      createdAt: editing?.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString(),
+    };
+    if (rec.showId && records.some((r) => r.showId != null && String(r.showId) === rec.showId && r.id !== rec.id)) { $('#fErr').textContent = 'この公演はもう記録してあるよ（一覧のカードから編集できるよ）'; return; }
+    const fresh = fPhotos.filter((p) => p.blob);
+    if (fresh.length) {
+      $('#fSave').disabled = true;
+      try { await photoPut(fresh.map((p) => ({ id: p.id, recordId: rec.id, blob: p.blob, w: p.w, h: p.h, createdAt: new Date().toISOString() }))); }
+      catch { $('#fSave').disabled = false; $('#fErr').textContent = '写真を保存できなかった（容量がいっぱいかも）'; return; }
+      $('#fSave').disabled = false;
+      fresh.forEach((p) => { urlCache.set(p.id, p.url); delete p.blob; });
+    }
+    const removed = (editing?.photos || []).filter((id) => !rec.photos.includes(id));
+    photoDel(removed); removed.forEach(forgetUrl);
+    records = editing ? records.map((r) => (r.id === editing.id ? rec : r)) : [...records, rec];
+    saveRecords(); dlg.close(); renderLog(); renderShows();
+    toast(editing ? '記録を更新したよ' : '記録したよ');
+  });
+
+  /* バックアップ */
+  async function exportRecords() {
+    const name = `oshi-gekijo-records-${todayJst().replace(/-/g, '')}.json`;
+    const photos = [];
+    for (const id of records.flatMap((r) => r.photos || [])) {
+      const p = await photoGet(id);
+      if (p) photos.push({ id: p.id, recordId: p.recordId, w: p.w, h: p.h, createdAt: p.createdAt, data: await new Promise((res) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = () => res(''); fr.readAsDataURL(p.blob); }) });
+    }
+    const text = JSON.stringify({ app: 'oshi-gekijo-alert', kind: 'records', version: 2, exportedAt: new Date().toISOString(), records, photos }, null, 1);
+    const file = new File([text], name, { type: 'application/json' });
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: '観覧記録のバックアップ' }); return; }
+    } catch (e) { if (e.name === 'AbortError') return; }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    toast(`${records.length}件${photos.length ? `（写真${photos.length}枚）` : ''}を書き出したよ`);
+  }
+  const clean = (r) => ({
+    id: String(r.id || uid()).slice(0, 64), showId: r.showId != null && r.showId !== '' ? String(r.showId).slice(0, 40) : null,
+    date: String(r.date || ''), time: /^\d{2}:\d{2}$/.test(r.time || '') ? r.time : '',
+    title: String(r.title || '').slice(0, 60), note: String(r.note || '').slice(0, 60),
+    members: (Array.isArray(r.members) ? r.members : []).filter((m) => typeof m === 'string').map((m) => m.slice(0, 20)).slice(0, 60),
+    slot: String(r.slot || '').slice(0, 20), memo: String(r.memo || '').slice(0, 2000),
+    photos: (Array.isArray(r.photos) ? r.photos : []).filter((x) => typeof x === 'string').map((x) => x.slice(0, 64)).slice(0, MAXPICS),
+    createdAt: String(r.createdAt || new Date().toISOString()), updatedAt: String(r.updatedAt || new Date().toISOString()),
+  });
+  async function importRecords(file) {
+    try {
+      const j = JSON.parse(await file.text());
+      const list = (Array.isArray(j) ? j : j.records || []).map(clean).filter((r) => /^\d{4}-\d{2}-\d{2}$/.test(r.date));
+      const have = new Set(records.map((r) => r.id));
+      const add = list.filter((r) => !have.has(r.id));
+      const want = new Set(add.flatMap((r) => r.photos));
+      const rows = [];
+      for (const p of Array.isArray(j.photos) ? j.photos : []) {
+        if (!p || !want.has(p.id) || typeof p.data !== 'string' || !/^data:image\//.test(p.data)) continue;
+        try { rows.push({ id: p.id, recordId: String(p.recordId || ''), blob: await (await fetch(p.data)).blob(), w: Number(p.w) || 0, h: Number(p.h) || 0, createdAt: String(p.createdAt || new Date().toISOString()) }); } catch {}
+      }
+      if (rows.length) await photoPut(rows);
+      const got = new Set(rows.map((r) => r.id));
+      add.forEach((r) => { r.photos = r.photos.filter((id) => got.has(id)); });
+      records = [...records, ...add]; saveRecords(); renderLog(); renderShows();
+      toast(add.length ? `${add.length}件${rows.length ? `（写真${rows.length}枚）` : ''}を読み込んだよ` : '新しい記録はなかったよ');
+    } catch { toast('読み込めなかった（ファイルを確認してね）'); }
+  }
+
+  /* 写真ビューア */
+  let vList = [], vIdx = 0;
+  const viewer = $('#viewer');
+  async function showPhoto() {
+    $('#vCount').textContent = vList.length > 1 ? `${vIdx + 1} / ${vList.length}` : '';
+    $('#vPrev').hidden = $('#vNext').hidden = vList.length < 2;
+    $('#vImg').src = await photoUrl(vList[vIdx]);
+  }
+  function openViewer(recId, i) {
+    const r = records.find((x) => x.id === recId);
+    if (!r || !(r.photos || []).length) return;
+    vList = r.photos; vIdx = Math.min(i, vList.length - 1); viewer.dataset.rec = recId;
+    viewer.showModal(); showPhoto();
+  }
+  const step = (d) => { if (vList.length > 1) { vIdx = (vIdx + d + vList.length) % vList.length; showPhoto(); } };
+  $('#vPrev').addEventListener('click', () => step(-1));
+  $('#vNext').addEventListener('click', () => step(1));
+  $('#vClose').addEventListener('click', () => viewer.close());
+  viewer.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') step(-1); if (e.key === 'ArrowRight') step(1); });
+  let tx0 = null;
+  viewer.addEventListener('touchstart', (e) => { tx0 = e.touches[0].clientX; }, { passive: true });
+  viewer.addEventListener('touchend', (e) => { if (tx0 == null) return; const dx = e.changedTouches[0].clientX - tx0; tx0 = null; if (Math.abs(dx) > 50) step(dx < 0 ? 1 : -1); });
+  $('#vSave').addEventListener('click', async () => {
+    const p = await photoGet(vList[vIdx]);
+    if (!p) return;
+    const r = records.find((x) => x.id === viewer.dataset.rec);
+    const ext = (p.blob.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+    const name = `akb48-theater-${(r?.date || '').replace(/-/g, '')}-${vIdx + 1}.${ext}`;
+    const file = new File([p.blob], name, { type: p.blob.type || 'image/jpeg' });
+    try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); return; } } catch (e) { if (e.name === 'AbortError') return; }
+    const a = document.createElement('a'); a.href = await photoUrl(p.id); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  const renderAll = () => { renderChips(); renderPush(); renderShows(); renderLog(); };
+
+  /* ---------- 通知タップからの遷移（?show=ID / ?view=oshi） ---------- */
+  function route(href) {
+    const u = new URL(href, location.href);
+    const id = u.searchParams.get('show');
+    if (u.searchParams.get('view') === 'log') document.getElementById('l1').scrollIntoView({ behavior: 'smooth' });
+    if (u.searchParams.get('view') === 'oshi') { mode = 'oshi'; renderShows(); }
+    if (id) {
+      if (!document.getElementById(`show-${id}`)) { mode = 'all'; renderShows(); }
+      const el = document.getElementById(`show-${id}`);
+      if (el) { el.classList.add('hl'); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => el.classList.remove('hl'), 4000); }
+    } else if (u.searchParams.has('view')) {
+      $('#s3').scrollIntoView({ behavior: 'smooth' });
+    }
+    if (u.search) history.replaceState(null, '', location.pathname);
+    if (navigator.clearAppBadge) navigator.clearAppBadge().catch(() => {});
+  }
+
+  /* ---------- イベント ---------- */
+  document.addEventListener('click', (e) => {
+    const tag = e.target.closest('.tag');
+    if (tag) { picked.delete(tag.dataset.name); renderChips(); renderShows(); renderLog(); scheduleSync(); renderPush(); return; }
+    const tab = e.target.closest('.tab');
+    if (tab) { mode = tab.dataset.mode; persist(); renderShows(); return; }
+    const been = e.target.closest('[data-been]');
+    if (been) { const s = shows.find((x) => String(x.id) === been.dataset.been); const r = recordOf(been.dataset.been); if (r) openForm({ record: r }); else if (s) openForm({ show: s }); return; }
+    const ph = e.target.closest('[data-photo]');
+    if (ph) { openViewer(ph.dataset.photo, Number(ph.dataset.i)); return; }
+    const lg = e.target.closest('[data-log]');
+    if (lg) { const r = records.find((x) => x.id === lg.dataset.log); if (r) openForm({ record: r }); return; }
+    if (e.target.closest('#addLog')) { openForm(); return; }
+    if (e.target.closest('#exportLog')) { exportRecords(); return; }
+    if (e.target.closest('#onBtn')) { turnOn(); return; }
+    if (e.target.closest('#offBtn')) { turnOff(); return; }
+    if (e.target.closest('#testBtn')) { testShow().catch((err) => toast(err.message)); }
+  });
+  $('#add').addEventListener('change', (e) => {
+    const n = e.target.value;
+    if (!n) return;
+    picked.add(n); renderChips(); renderShows(); renderLog(); scheduleSync(); renderPush();
+  });
+  $('#importFile').addEventListener('change', (e) => { const f = e.target.files[0]; if (f) importRecords(f); e.target.value = ''; });
+  $('#box').checked = box;
+  $('#box').addEventListener('change', (e) => { box = e.target.checked; scheduleSync(); renderPush(); });
+
+  /* ---------- 起動 ---------- */
+  const get = (p) => fetch(p, { cache: 'no-cache' }).then((r) => r.ok ? r.json() : null).catch(() => null);
+  (async () => {
+    if (pushCapable()) {
+      try {
+        reg = await navigator.serviceWorker.register('sw.js');
+        sub = await reg.pushManager.getSubscription();
+        navigator.serviceWorker.addEventListener('message', (e) => { if (e.data && e.data.type === 'navigate') route(e.data.url); });
+      } catch {}
+    }
+    const [m, s, c, r, a, hi] = await Promise.all([get('data/members.json'), get('data/shows.json'), get('data/config.json'), get('data/roster.json'), get('data/archive.json'), get('data/history/index.json')]);
+    members = m || []; shows = s || []; config = c || {}; roster = (r && r.members) || []; archive = a || []; historyIndex = hi;
+    if (config.updatedAt) $('#updated').textContent = `データ更新：${jst(config.updatedAt)}`;
+    if (!members.length && !roster.length) $('#memberHint').textContent = 'まだデータがないよ（初回の自動チェック後に表示される）';
+    renderAll();
+    route(location.href);
+  })();
+})();
+</script>
+</body>
+</html>

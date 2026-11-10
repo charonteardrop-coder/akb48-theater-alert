@@ -1,0 +1,14 @@
+name = "oshi-gekijo-alert"
+main = "index.js"
+compatibility_date = "2026-11-01"
+
+[vars]
+# サイトのオリジン（GitHub Pages）。例: "https://yourname.github.io"
+ALLOWED_ORIGINS = "*"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "oshi-gekijo-alert"
+database_id = "ここに wrangler d1 create で表示された database_id を貼る"
+
+# ADMIN_TOKEN は wrangler secret put ADMIN_TOKEN で設定（16文字以上のランダム文字列）

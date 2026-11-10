@@ -1,0 +1,44 @@
+name: 劇場公演チェック
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # 10分おき（GitHub側の混雑で数分遅れることがある）
+  workflow_dispatch:          # 手動実行ボタン
+
+permissions:
+  contents: write
+
+concurrency:
+  group: check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: ブログを確認して通知
+        env:
+          API_BASE: ${{ vars.API_BASE }}
+          VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
+          VAPID_SUBJECT: ${{ vars.VAPID_SUBJECT }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+          REMINDERS: ${{ vars.REMINDERS }}
+        run: node --no-warnings src/run.js
+      - name: データを保存（変化があったときだけ）
+        run: |
+          if git diff --quiet -- docs/data state/ && git ls-files --error-unmatch state/state.json >/dev/null 2>&1; then
+            echo "変化なし"; exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data state
+          git commit -m "data: 劇場公演データ更新"
+          git push

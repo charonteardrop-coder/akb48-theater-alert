@@ -1,0 +1,17 @@
+{
+  "name": "AKB48 THEATER ALERT",
+  "short_name": "AKB48 ALERT",
+  "description": "推しが出る劇場公演の受付開始を通知（非公式ファンメイド）",
+  "lang": "ja",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f1ea",
+  "theme_color": "#a3122e",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

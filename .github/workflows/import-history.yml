@@ -1,0 +1,31 @@
+name: 過去公演の取り込み
+
+on:
+  workflow_dispatch:
+    inputs:
+      since:
+        description: 何年から取り込むか
+        default: '2012'
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node --no-warnings scripts/import-history.js --since "${{ inputs.since }}"
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data/history
+          git diff --cached --quiet && echo "変化なし" && exit 0
+          git commit -m "data: 過去公演の取り込み"
+          git push
