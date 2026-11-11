@@ -33,7 +33,7 @@
   main{max-width:720px;margin:-34px auto 0;padding:0 16px 48px;position:relative;z-index:2}
   .card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:16px;box-shadow:0 1px 0 rgba(0,0,0,.03),0 8px 24px -16px rgba(60,20,30,.25)}
   h2{font-size:16px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
-  h2 .n{font-size:14px;line-height:1}
+  h2 .n{display:inline-block;flex:none;width:11px;height:11px;border:2px solid var(--curtain);border-radius:2px;box-sizing:border-box}
   input[type=search]{width:100%;font:inherit;font-size:16px;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:#fff}
   input[type=search]:focus{outline:2px solid var(--gold);border-color:transparent}
   .select{position:relative}
@@ -254,20 +254,20 @@
 
 <main id="view-home">
   <section class="card" aria-labelledby="s1">
-    <h2 id="s1"><span class="n" aria-hidden="true">▫️</span>推しを選ぶ</h2>
+    <h2 id="s1"><span class="n" aria-hidden="true"></span>推しを選ぶ</h2>
     <div class="select"><select id="add" aria-label="推しを追加"><option value="">＋ 推しを追加</option></select></div>
     <div class="tags" id="tags" aria-live="polite"></div>
     <p class="hint" id="memberHint">何人でも選べるよ。外すときはタップ。</p>
   </section>
 
   <section class="card" aria-labelledby="s2">
-    <h2 id="s2"><span class="n" aria-hidden="true">▫️</span>通知をオンにする</h2>
+    <h2 id="s2"><span class="n" aria-hidden="true"></span>通知をオンにする</h2>
     <div class="push" id="push"><p class="hint">読み込み中…</p></div>
     <label class="check"><input type="checkbox" id="box"> 推し以外も含めて、全公演の受付開始を受け取る（箱推し）</label>
   </section>
 
   <section class="card" aria-labelledby="s3">
-    <h2 id="s3"><span class="n" aria-hidden="true">▫️</span>チケットセンターに出てる公演</h2>
+    <h2 id="s3"><span class="n" aria-hidden="true"></span>チケットセンターに出てる公演</h2>
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" aria-selected="true" data-mode="oshi">推しの出演だけ</button>
       <button class="tab" role="tab" aria-selected="false" data-mode="open">受付中</button>
@@ -277,16 +277,16 @@
   </section>
 
   <section class="card" aria-labelledby="l1">
-    <h2 id="l1"><span class="n" aria-hidden="true">▫️</span>観覧記録</h2>
+    <h2 id="l1"><span class="n" aria-hidden="true"></span>観覧記録</h2>
     <div class="stats" id="stats"></div>
     <div class="bars" id="bars"></div>
   </section>
   <section class="card">
-    <div class="head-row"><h2 id="l2"><span class="n" aria-hidden="true">▫️</span>行った公演</h2><button class="btn primary small" id="addLog">＋ 記録を追加</button></div>
+    <div class="head-row"><h2 id="l2"><span class="n" aria-hidden="true"></span>行った公演</h2><button class="btn primary small" id="addLog">＋ 記録を追加</button></div>
     <div id="logs"></div>
   </section>
   <section class="card" aria-labelledby="l3">
-    <h2 id="l3"><span class="n" aria-hidden="true">▫️</span>バックアップ</h2>
+    <h2 id="l3"><span class="n" aria-hidden="true"></span>バックアップ</h2>
     <p class="hint" style="margin-top:0">記録はこの端末の中だけに保存されてるよ。ホーム画面のアイコンを消したり機種変更したりする前に書き出しておいてね。</p>
     <div class="row">
       <button class="btn ghost" id="exportLog">書き出す</button>
@@ -298,29 +298,29 @@
 
 <main id="view-akushu" hidden>
   <section class="card" aria-labelledby="a1">
-    <h2 id="a1"><span class="n" aria-hidden="true">▫️</span>申込の開始と締切を通知</h2>
+    <h2 id="a1"><span class="n" aria-hidden="true"></span>申込の開始と締切を通知</h2>
     <label class="check" style="margin-top:0"><input type="checkbox" id="akOn"> 握手会・お話し会の申込受付が始まったときと、締切の前に通知する</label>
     <p class="hint" id="akPushHint"></p>
   </section>
 
   <section class="card" aria-labelledby="a2">
-    <div class="head-row"><h2 id="a2"><span class="n" aria-hidden="true">▫️</span>持ってる券</h2><button class="btn primary small" id="akAdd">＋ 申込を記録</button></div>
+    <div class="head-row"><h2 id="a2"><span class="n" aria-hidden="true"></span>持ってる券</h2><button class="btn primary small" id="akAdd">＋ 申込を記録</button></div>
     <div class="stats" id="akStats"></div>
     <div id="akTickets"></div>
   </section>
 
   <section class="card" aria-labelledby="a3">
-    <h2 id="a3"><span class="n" aria-hidden="true">▫️</span>申込中（結果待ち）</h2>
+    <h2 id="a3"><span class="n" aria-hidden="true"></span>申込中（結果待ち）</h2>
     <div id="akPending"></div>
   </section>
 
   <section class="card" aria-labelledby="a4">
-    <h2 id="a4"><span class="n" aria-hidden="true">▫️</span>申込受付スケジュール</h2>
+    <h2 id="a4"><span class="n" aria-hidden="true"></span>申込受付スケジュール</h2>
     <div id="akSched"><p class="empty">読み込み中…</p></div>
   </section>
 
   <section class="card" aria-labelledby="a5">
-    <h2 id="a5"><span class="n" aria-hidden="true">▫️</span>開催日程</h2>
+    <h2 id="a5"><span class="n" aria-hidden="true"></span>開催日程</h2>
     <div id="akDays"></div>
   </section>
 
