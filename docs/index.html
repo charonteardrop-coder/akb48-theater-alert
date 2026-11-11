@@ -1127,9 +1127,11 @@
     const x = lineupRow(e.rel, e.kind, e.date, e.member);
     if (!x || !e.part) return null;
     const c = x.row[e.part - 1];
-    return !c || c === '.' ? { absent: true } : { label: x.ev.signs[Number(c) - 1] || '' };
+    if (!c || c === '.') return { absent: true };
+    const label = x.ev.signs[Number(c) - 1] || '';
+    return /なし/.test(label) ? { label: '', none: true } : { label };
   };
-  const signLabel = (e) => signOf(e)?.label || e.sign || '';
+  const signLabel = (e) => { const sg = signOf(e); return sg ? sg.label : e.sign || ''; };
   const lotteryOpen = (e) => e.date && Date.now() >= new Date(`${e.date}T18:00:00+09:00`).getTime() - 5 * 864e5;
   const lotteryFrom = (e) => md(new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Tokyo' }).format(new Date(new Date(`${e.date}T18:00:00+09:00`).getTime() - 5 * 864e5)));
   const signBadge = (e) => {
@@ -1141,6 +1143,7 @@
     return lb ? `<span class="pill">${esc(lb)}</span>` : '';
   };
   const signActs = (e) => {
+    if (signOf(e)?.none) return '';
     if (e.signWon !== null || !lotteryOpen(e) || signOf(e)?.absent) return e.signWon === null && e.date && !lotteryOpen(e) && signLabel(e) ? `<div class="ak-acts"><span class="s">${esc(signLabel(e))}の抽選は ${lotteryFrom(e)} 18:00 から</span></div>` : '';
     return `<div class="ak-acts"><span class="s">${esc(signLabel(e) || 'サイン')}の抽選：</span><button type="button" class="btn ghost small" data-aksign="${esc(e.id)}" data-v="win">当選</button><button type="button" class="btn ghost small" data-aksign="${esc(e.id)}" data-v="lose">落選</button></div>`;
   };
@@ -1302,8 +1305,8 @@
     }
     const sg = signOf({ rel, kind, date, member, part });
     $('#kSignHint').textContent = !member || !part ? '' : !sg ? '公式の参加メンバー表がまだ読めてないので、サインの種類は出せないよ。'
-      : sg.absent ? `公式の表だと、${member}はこの部に出ないみたい。日程と部を確認してね。` : `この部の抽選企画は【${sg.label}】（公式の参加メンバー表より）`;
-    $('#kSignLabel').textContent = `${sg?.label || 'サイン'} 当選枚数（空欄＝まだ抽選してない）`;
+      : sg.absent ? `公式の表だと、${member}はこの部に出ないみたい。日程と部を確認してね。` : sg.none ? 'この部は抽選企画なし（公式の参加メンバー表より）' : `この部の抽選企画は【${sg.label}】（公式の参加メンバー表より）`;
+    $('#kSignLabel').textContent = `${sg?.label || '抽選企画'} 当選枚数（空欄＝まだ抽選してない）`;
     return sg;
   }
   function openAk({ entry, rel, kind, date, win, keepFrom, part, member } = {}) {
