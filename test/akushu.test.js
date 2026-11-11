@@ -192,3 +192,18 @@ test('握手会：シングルのタイトルは、発表後の記事に出た�
   const it = { slug: 'y', url: `${NEWS}y/`, date: '2026-11-20', title: '69thシングル『春の歌』OS盤 第7販売開始のご案内' };
   assert.equal(parseArticle(it, PAGES['2026-10-04-3']).song, '春の歌');
 });
+
+test('握手会：本文だけ切り出して読む・会場ごとに各部の時間が違うイベント（2ショット写真会）', () => {
+  // ページのほかの部分が崩れていても本文は読める（実際に「オンラインお話し会」の記事が読めていなかった）
+  const page = (body) => `<html><body><script>if (a <= (window.innerHeight || 0)) {}</script><div class="column__detail paragraph--01"><div class="main-editor-content">${body}</div>\n</div>\n<!--/.column--></div>\n</article><div class="main-editor-content"><p>＜開催日時＞<br />2030年1月1日（火）別の欄</p></div></body></html>`;
+  const it = { slug: 'p', url: `${NEWS}p/`, date: '2026-09-12', title: 'AKB48「M.T.に捧ぐ」公演アルバム発売記念「2ショット写真会」開催のご案内' };
+  const f = parseArticle(it, page(`<p><strong>＜会場・開催日時＞<br /></strong>※全3日程にて開催<br />2026年11月21日（土）10:00〜20:15（幕張メッセ）<br />2026年11月22日（日）10:00〜20:15（幕張メッセ）<br />2026年12月19日（土）9:45〜20:00（インテックス大阪）<br />幕張メッセ：https://www.m-messe.co.jp/access/</p>
+    <p><strong>＜各部 時間帯＞</strong><br />＜2026年11月21日（土）・22日（日）幕張メッセ開催分＞<br />【第1部】受付開始09:50／受付終了10:50（イベント時間10:00～11:15）<br />【第2部】受付開始11:20／受付終了12:20（イベント時間11:30～12:45）</p>
+    <p>＜2026年12月19日（土）インテックス大阪開催分＞<br />【第1部】受付開始9:35／受付終了10:35（イベント時間9:45～11:00）</p>`));
+  assert.equal(f.kind, '2ショット写真会');
+  assert.equal(f.rel, 'M.T.に捧ぐ');
+  assert.deepEqual(f.days.map((d) => [d.date, d.venue, d.open, d.parts ? d.parts.map((p) => p.start) : null]), [
+    ['2026-11-21', '幕張メッセ', '10:00', null], ['2026-11-22', '幕張メッセ', '10:00', null], ['2026-12-19', 'インテックス大阪', '9:45', ['09:45']],
+  ]);
+  assert.deepEqual(f.parts.map((p) => `${p.n} ${p.start}~${p.end}`), ['1 10:00~11:15', '2 11:30~12:45']);
+});

@@ -1110,9 +1110,10 @@
   // 「69thシングル『タイトル未定』」→ タイトルが発表されたら公式ニュースの表記に合わせて自動で変わる
   const relName = (r) => r.label + (r.song ? `『${r.song}』` : /シングル$/.test(r.label) ? '『タイトル未定』' : '');
   const relOf = (e) => { const r = akRel(e.rel); return r ? relName(r) : e.relLabel; };
-  const dayTime = (ev, d) => (d.open ? `${d.open}〜${d.close}` : ev && ev.parts.length ? `${ev.parts[0].start}〜${ev.parts[ev.parts.length - 1].end}` : '');
+  const dayParts = (ev, d) => (d && d.parts) || (ev ? ev.parts : []);
+  const dayTime = (ev, d) => { const ps = dayParts(ev, d); return d.open ? `${d.open}〜${d.close}` : ps.length ? `${ps[0].start}〜${ps[ps.length - 1].end}` : ''; };
   const md = (d) => { const [y, m, dd] = d.split('-').map(Number); return `${m}/${dd}(${'日月火水木金土'[new Date(Date.UTC(y, m - 1, dd)).getUTCDay()]})`; };
-  const partTime = (e) => { const p = akRel(e.rel)?.events.find((x) => x.kind === e.kind)?.parts.find((x) => x.n === e.part); return p ? `${p.start}〜${p.end}` : ''; };
+  const partTime = (e) => { const ev = akRel(e.rel)?.events.find((x) => x.kind === e.kind); const p = dayParts(ev, ev?.days.find((d) => d.date === e.date)).find((x) => x.n === e.part); return p ? `${p.start}〜${p.end}` : ''; };
   /* 抽選企画（私物サイン／色紙サイン）：公式の参加メンバー表から、その部がどれか */
   const nameKey = (n) => String(n).replace(/\s+/g, '').replace(/髙/g, '高').replace(/﨑/g, '崎').replace(/[邉邊]/g, '辺').replace(/濵/g, '浜').replace(/德/g, '徳');
   const lineupRow = (rel, kind, date, member) => {
@@ -1240,7 +1241,7 @@
           <optgroup label="全メンバー">${names.map((n) => `<option value="${esc(n)}"${n === mem && !favs.includes(n) ? ' selected' : ''}>${esc(n)}</option>`).join('')}</optgroup></select></div>`;
       } else if (cur.ev.memberUrl) body += '<p class="hint">参加メンバーの表がまだ読めてないので、部ごとのサインの種類は公式のPDFで確認してね。</p>';
       const row = mem ? lu[mem] : '';
-      body += cur.ev.parts.map((p) => {
+      body += dayParts(cur.ev, cur.d).map((p) => {
         const c = row ? row[p.n - 1] : '', sg = c && c !== '.' ? cur.ev.signs[Number(c) - 1] : '';
         const have = sumBy(akEntries.filter((e) => e.rel === cur.r.id && e.kind === cur.kind && e.date === cur.date && e.part === p.n && e.won > 0 && (!mem || nameKey(e.member) === nameKey(mem))), (e) => e.won);
         return `<div class="ak-row${mem && !sg ? ' past' : ''}"><div><div class="t">第${p.n}部　${p.start}〜${p.end}${mem ? (sg ? `<span class="pill ${/私物/.test(sg) ? 'open' : 'soon'}" style="font-weight:700">${esc(sg)}</span>` : '<span class="pill">不参加</span>') : ''}</div>
@@ -1261,7 +1262,7 @@
   const allWins = (r) => r ? [...r.sales.flatMap((s) => s.rounds.map((x) => ({ ...x, label: `第${s.no}販売 第${x.n}次` }))), ...r.others.filter((o) => o.apply).map((o) => ({ ...o.apply, label: `${o.name} 事前応募` }))] : [];
   function fillAkKind(keep) {
     const r = akRel($('#kRel').value);
-    const kinds = [...new Set([...(r ? [...r.events.map((e) => e.kind), ...r.others.map((o) => o.name)] : []), '個別握手会', 'オンラインお話し会', ...(keep ? [keep] : [])])];
+    const kinds = [...new Set([...(r ? [...r.events.map((e) => e.kind), ...r.others.map((o) => o.name)] : []), '個別握手会', 'オンラインお話し会', '2ショット写真会', ...(keep ? [keep] : [])])];
     $('#kKind').innerHTML = kinds.map((k) => opt(k, k, k === keep)).join('');
   }
   function fillAkWin(keepKey, keepLabel) {
@@ -1279,8 +1280,14 @@
     $('#kDay').dataset.venue = keepVenue || '';
     $('#kDate').value = keepDate && !known ? keepDate : '';
     $('#kDateWrap').hidden = $('#kDay').value !== FREE;
-    const parts = ev?.parts.length ? ev.parts : Array.from({ length: 9 }, (_, i) => ({ n: i + 1 }));
-    const keepPart = Number($('#kPart').dataset.keep) || 0;
+    fillAkPart(Number($('#kPart').dataset.keep) || 0);
+  }
+  // 部のプルダウン（会場によって時間が違うイベントがあるので、選んだ日程に合わせる）
+  function fillAkPart(keepPart) {
+    const ev = akRel($('#kRel').value)?.events.find((e) => e.kind === $('#kKind').value);
+    const date = $('#kDay').value === FREE ? $('#kDate').value : $('#kDay').value.split('|')[0];
+    const ps = dayParts(ev, ev?.days.find((d) => d.date === date));
+    const parts = ps.length ? ps : Array.from({ length: 9 }, (_, i) => ({ n: i + 1 }));
     $('#kPart').innerHTML = opt('0', '—', !keepPart) + parts.map((p) => `<option value="${p.n}" data-base="${esc(`第${p.n}部${p.start ? ` ${p.start}〜` : ''}`)}"${p.n === keepPart ? ' selected' : ''}>第${p.n}部${p.start ? ` ${p.start}〜` : ''}</option>`).join('');
   }
   // 選んだメンバー・日程に合わせて、部のプルダウンと案内に「私物サイン／色紙サイン」を出す
@@ -1355,7 +1362,7 @@
   $('#kDelete').addEventListener('click', () => { if (akEditing && confirm('この記録を消す？')) { akEntries = akEntries.filter((x) => x.id !== akEditing.id); saveAk(); renderAkushu(); akDlg.close(); toast('消したよ'); } });
   $('#kRel').addEventListener('change', () => { $('#kRelFreeWrap').hidden = $('#kRel').value !== FREE; fillAkKind(); fillAkWin(); fillAkDay(); refreshSign(); });
   $('#kKind').addEventListener('change', () => { fillAkDay(); refreshSign(); });
-  $('#kDay').addEventListener('change', () => { $('#kDateWrap').hidden = $('#kDay').value !== FREE; refreshSign(); });
+  $('#kDay').addEventListener('change', () => { $('#kDateWrap').hidden = $('#kDay').value !== FREE; fillAkPart(Number($('#kPart').value) || 0); refreshSign(); });
   ['#kDate', '#kPart', '#kMember'].forEach((q) => $(q).addEventListener('change', refreshSign));
   $('#akOn').addEventListener('change', (e) => { akOn = e.target.checked; scheduleSync(akOn ? '握手会の通知をオンにしたよ' : '握手会の通知をオフにしたよ'); renderPush(); renderAkushu(); });
 

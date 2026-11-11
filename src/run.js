@@ -53,6 +53,10 @@ async function fetchText(url, fetchImpl) {
 export async function checkAkushu({ now, fetchImpl }) {
   const st = await readJson(PATHS.akushuState, { bootstrapped: false, checkedAt: '', articles: {}, notified: [] });
   const first = !st.bootstrapped;
+  // 読み取り方を直したら PARSER を上げる → 次のチェックで記事を読み直す（通知済みの印はそのまま）
+  const PARSER = 2;
+  const reread = !first && st.parser !== PARSER;
+  if (reread) { st.articles = {}; st.checkedAt = ''; }
   const today = new Date(now.getTime() + 9 * 3600e3).toISOString().slice(0, 10);
   const upcoming = (f) => f.days.some((d) => d.date >= today);
   const get = async (url) => {
@@ -63,7 +67,7 @@ export async function checkAkushu({ now, fetchImpl }) {
   if (!st.checkedAt || now - new Date(st.checkedAt) >= 8 * 60e3) {
     try {
       let read = 0;
-      for (let page = 1; page <= (first ? 5 : 1); page++) {
+      for (let page = 1; page <= (first || reread ? 5 : 1); page++) {
         const items = parseNewsList(await get(page === 1 ? NEWS : `${NEWS}page/${page}/`));
         if (!items.length) { if (page === 1) console.warn('握手会：ニュース一覧が読めなかった（ページ構造が変わった可能性）'); break; }
         for (const it of items.filter((x) => wanted(x.title))) {
@@ -79,7 +83,7 @@ export async function checkAkushu({ now, fetchImpl }) {
           } catch (e) { console.warn(`握手会：記事を読めなかった ${it.url}: ${e.message}`); }
           await sleep(1500);
         }
-        if (page > 1 || first) await sleep(1500);
+        if (page > 1 || first || reread) await sleep(1500);
       }
       // 参加メンバーの表（PDF）：どの部が私物サイン／色紙サインか。新しい表はすぐ、それ以外は6時間おきに読み直す
       for (const a of Object.values(st.articles)) {
@@ -113,7 +117,7 @@ export async function checkAkushu({ now, fetchImpl }) {
   const changed = JSON.stringify(prev.releases || []) !== JSON.stringify(releases);
   await writeJson(PATHS.akushu, { source: NEWS, updatedAt: changed || !prev.updatedAt ? now.toISOString() : prev.updatedAt, releases });
   await writeJson(PATHS.akushuState, {
-    bootstrapped: st.bootstrapped || !!st.checkedAt, checkedAt: st.checkedAt, articles,
+    bootstrapped: st.bootstrapped || !!st.checkedAt, parser: st.checkedAt ? PARSER : st.parser, checkedAt: st.checkedAt, articles,
     notified: [...notified].filter((k) => keys.has(k.replace(/^(open|close):/, ''))),
   });
   return { releases, due };

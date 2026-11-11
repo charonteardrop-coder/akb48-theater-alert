@@ -31,8 +31,12 @@ export function parseNewsList(html) {
 
 /** 記事本文 → { lines, links } */
 export function articleText(html) {
-  const root = parse(html).querySelector('.main-editor-content');
-  if (!root) return { lines: [], links: [] };
+  // ページ全体を解析すると記事によっては本文が見つからなくなるので、本文の部分だけ切り出してから読む
+  const a = html.indexOf('main-editor-content');
+  const from = a < 0 ? -1 : html.lastIndexOf('<div', a);
+  if (from < 0) return { lines: [], links: [] };
+  const to = html.indexOf('</article>', from);
+  const root = parse(html.slice(from, to < 0 ? undefined : to));
   const links = root.querySelectorAll('a').map((a) => a.getAttribute('href')).filter(Boolean);
   const lines = root.structuredText.split('\n').map(norm).filter(Boolean);
   return { lines, links };
@@ -102,10 +106,27 @@ export function parseEventInfo(item, { lines, links }) {
     if (venue.length > 30) continue;
     days.push({ date: `${m[1]}-${pad(m[2])}-${pad(m[3])}`, venue, open: m[4] || '', close: m[5] || '' });
   }
-  const parts = [];
+  // 各部の時間。会場ごとに違うときは「<2026年11月21日(土)・22日(日)幕張メッセ開催分>」の見出しで分かれている
+  const buckets = [{ dates: null, parts: [] }];
   for (const l of lines) {
+    if (/^<.*開催分>$/.test(l)) {
+      const dates = [];
+      for (const m of l.matchAll(/(\d{4})年(\d{1,2})月(\d{1,2})日\([^)]*\)(?:\s*・\s*(\d{1,2})日)?/g)) {
+        dates.push(`${m[1]}-${pad(m[2])}-${pad(m[3])}`);
+        if (m[4]) dates.push(`${m[1]}-${pad(m[2])}-${pad(m[4])}`);
+      }
+      if (dates.length) buckets.push({ dates, parts: [] });
+      continue;
+    }
     const m = l.match(/^【第\s*(\d+)\s*部】\s*受付開始\s*(\d{1,2}:\d{2})\s*\/\s*受付終了\s*(\d{1,2}:\d{2})\s*\(\D*(\d{1,2}:\d{2})\s*~\s*(\d{1,2}:\d{2})\)/);
-    if (m && !parts.some((p) => p.n === Number(m[1]))) parts.push({ n: Number(m[1]), recv: m[2], recvEnd: m[3], start: m[4], end: m[5] });
+    const b = buckets[buckets.length - 1];
+    if (m && !b.parts.some((p) => p.n === Number(m[1]))) b.parts.push({ n: Number(m[1]), recv: m[2].padStart(5, '0'), recvEnd: m[3], start: m[4].padStart(5, '0'), end: m[5] });
+  }
+  const filled = buckets.filter((b) => b.parts.length);
+  const parts = filled.length ? filled[0].parts : [];
+  for (const d of days) {
+    const b = filled.find((x) => x.dates && x.dates.includes(d.date));
+    if (b && b.parts !== parts) d.parts = b.parts;
   }
   const at = lines.findIndex((l) => /参加メンバースケジュール/.test(l));
   const memberUrl = (at >= 0 && /^https?:\/\//.test(lines[at + 1] || '') ? lines[at + 1] : '')
@@ -154,7 +175,7 @@ export function parseLineupPage(items) {
   const cols = it.filter((i) => /^第\d+部$/.test(i.s)).map((i) => ({ n: Number(i.s.match(/\d+/)[0]), x: i.x, y: i.y })).sort((a, b) => a.n - b.n);
   const mh = it.find((i) => i.s === 'メンバー');
   if (!head || !cols.length || !mh) return null;
-  const cells = it.filter((i) => i.y < mh.y + 5 && i.x > mh.x + 60 && /^(私物サイン|色紙サイン|サイン[A-Z]|[^\s]{1,8}サイン)$/.test(i.s));
+  const cells = it.filter((i) => i.y < mh.y - 5 && i.x > mh.x + 60 && i.s.length <= 14 && !/^[\d:~\s]+$/.test(i.s));
   const members = {};
   for (const m of it.filter((i) => i.y < mh.y - 5 && Math.abs(i.x - mh.x) <= 30 && i.s.length >= 2)) {
     const row = cols.map(() => '');
