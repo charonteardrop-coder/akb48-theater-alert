@@ -1,5 +1,5 @@
 #!/bin/bash
-# AKB48 THEATER ALERT：公開の残り（Cloudflare＋GitHub設定＋初回実行）を全部やるスクリプト
+# AKB48 BOOKING ALERT：公開の残り（Cloudflare＋GitHub設定＋初回実行）を全部やるスクリプト
 # 使い方：プロジェクトのフォルダで  bash scripts/setup.sh
 # 前提：gh auth login と npx wrangler login が済んでいて、GitHubに push 済み
 set -euo pipefail

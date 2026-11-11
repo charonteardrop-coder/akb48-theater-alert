@@ -1,7 +1,7 @@
 {
-  "name": "AKB48 THEATER ALERT",
+  "name": "AKB48 BOOKING ALERT",
   "short_name": "AKB48 ALERT",
-  "description": "推しが出る劇場公演の受付開始を通知（非公式ファンメイド）",
+  "description": "推しが出る劇場公演の受付開始と、握手会の申込開始・締切を通知（非公式ファンメイド）",
   "lang": "ja",
   "id": "./",
   "start_url": "./",

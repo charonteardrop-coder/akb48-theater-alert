@@ -1,4 +1,4 @@
-// AKB48 THEATER ALERT service worker：プッシュ通知の表示とタップ時の遷移
+// AKB48 BOOKING ALERT service worker：プッシュ通知の表示とタップ時の遷移
 const VERSION = 'v1';
 
 self.addEventListener('install', () => self.skipWaiting());
@@ -6,7 +6,7 @@ self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
 
 self.addEventListener('push', (event) => {
   let d = {};
-  try { d = event.data ? event.data.json() : {}; } catch { d = { title: 'AKB48 THEATER ALERT', body: event.data && event.data.text() }; }
+  try { d = event.data ? event.data.json() : {}; } catch { d = { title: 'AKB48 BOOKING ALERT', body: event.data && event.data.text() }; }
   const opts = {
     body: d.body || '',
     tag: d.tag,
@@ -21,7 +21,7 @@ self.addEventListener('push', (event) => {
     opts.actions = [{ action: 'apply', title: '申し込む' }, { action: 'open', title: '詳しく見る' }];
   }
   event.waitUntil((async () => {
-    await self.registration.showNotification(d.title || 'AKB48 THEATER ALERT', opts);
+    await self.registration.showNotification(d.title || 'AKB48 BOOKING ALERT', opts);
     if (navigator.setAppBadge) {
       const list = await self.registration.getNotifications();
       navigator.setAppBadge(list.length).catch(() => {});
