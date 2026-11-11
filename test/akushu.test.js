@@ -183,3 +183,12 @@ test('握手会：通し（参加メンバーの表を取り込んで開催日�
   assert.equal(gets.filter((u) => /kobetsu/.test(u)).length, 2, '1日たったら記事と表を読み直す');
   assert.equal(JSON.parse(readFileSync('docs/data/akushu.json', 'utf8')).releases[0].events[0].days[1].lineup['千葉恵里'], '2....1');
 });
+
+test('握手会：シングルのタイトルは、発表後の記事に出たら入る（タイトル未定で上書きしない）', () => {
+  const f = (slug, date, title) => ({ slug, url: 'u', date, title, rel: '69th', relLabel: '69thシングル', song: (title.match(/『([^』]+)』/) || [])[1] === 'タイトル未定' ? '' : (title.match(/『([^』]+)』/) || [, ''])[1], type: 'sale', no: Number(slug), rounds: [{ n: 1, start: '2026-12-01T17:00:00+09:00', end: '2026-12-02T13:00:00+09:00', limit: '' }], resultHour: 16, applyUrl: '' });
+  const now = at('2026-12-01T00:00:00+09:00');
+  assert.equal(buildReleases([f('1', '2026-10-04', '69thシングル『タイトル未定』OS盤 第1販売開始のご案内')], now)[0].song, '');
+  assert.equal(buildReleases([f('1', '2026-10-04', '69thシングル『タイトル未定』OS盤 第1販売開始のご案内'), f('7', '2026-11-20', '69thシングル『春の歌』OS盤 第7販売開始のご案内')], now)[0].song, '春の歌');
+  const it = { slug: 'y', url: `${NEWS}y/`, date: '2026-11-20', title: '69thシングル『春の歌』OS盤 第7販売開始のご案内' };
+  assert.equal(parseArticle(it, PAGES['2026-10-04-3']).song, '春の歌');
+});
