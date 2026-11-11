@@ -194,6 +194,39 @@
   #viewer .vprev{left:8px}#viewer .vnext{right:8px}
   .ferr{margin:0;font-size:13px;font-weight:700;color:#b3261e;min-height:1em}
   .btn.danger{background:#fff;color:#b3261e;border:1px solid #f1c6c3;margin-right:auto}
+  /* 握手会 */
+  .pages{display:flex;gap:8px;margin-top:16px}
+  .page{font:inherit;font-size:14px;font-weight:700;color:#fff;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:7px 16px;cursor:pointer}
+  .page[aria-selected=true]{background:#fff;color:var(--curtain);border-color:#fff}
+  .ak-rel{font-size:14px;font-weight:900;margin:14px 0 6px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+  .ak-rel:first-child{margin-top:0}
+  .ak-rel small{font-size:12px;font-weight:400;color:var(--muted)}
+  .ak-row{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+  .ak-row .t{font-size:14px;font-weight:700}
+  .ak-row .s{font-size:12px;color:var(--muted)}
+  .ak-row .s a{color:inherit}
+  .ak-row.past{opacity:.55}
+  .ak-row .pill{margin-left:6px;white-space:nowrap}
+  .ak-mine{font-size:12px;font-weight:700;color:var(--curtain)}
+  .ak-day{margin-top:12px;border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
+  .ak-day > .h{background:var(--ink);color:#fff;padding:8px 12px;font-size:14px;font-weight:700;display:flex;justify-content:space-between;gap:8px}
+  .ak-day > .h small{font-weight:400;opacity:.8}
+  .ak-tk{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:9px 12px;border-top:1px solid var(--line);width:100%;font:inherit;text-align:left;background:#fff;border-left:0;border-right:0;border-bottom:0;color:var(--ink);cursor:pointer}
+  .ak-tk:first-of-type{border-top:0}
+  .ak-tk .p{font-size:12px;color:var(--muted);min-width:5.5em}
+  .ak-tk .p b{display:block;font-size:13px;color:var(--ink)}
+  .ak-tk .m{font-size:15px;font-weight:700}
+  .ak-tk .m small{display:block;font-size:11px;font-weight:400;color:var(--muted)}
+  .ak-tk .c{font-size:18px;font-weight:900}
+  .ak-tk .c small{font-size:11px;margin-left:1px}
+  .ak-acts{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:0 12px 10px}
+  .ak-acts .s{font-size:12px;color:var(--muted)}
+  .ak-tk .m .pill{display:inline-block;margin:4px 4px 0 0;font-size:11px;font-weight:700}
+  .ak-tk .m .pill.closed{text-decoration:none}
+  details.ak-more{margin-top:10px}
+  details.ak-more > summary{font-size:13px;color:var(--muted);cursor:pointer}
+  .ak-parts{font-size:12px;color:var(--muted);margin:6px 0 0;padding:0;list-style:none;columns:2}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   footer{max-width:720px;margin:0 auto;padding:0 20px 40px;font-size:12px;color:var(--muted)}
   footer a{color:inherit}
   .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:.2s;pointer-events:none;z-index:9}
@@ -205,7 +238,11 @@
 <header>
   <div class="wrap">
     <h1>AKB48 THEATER ALERT</h1>
-    <p>推しが出る劇場公演の受付が始まったら、スマホに通知。メンバー変更で推しが出演することになったときと、締切の6時間前にも届くよ。</p>
+    <p id="lead">推しが出る劇場公演の受付が始まったら、スマホに通知。メンバー変更で推しが出演することになったときと、締切の6時間前にも届くよ。</p>
+    <nav class="pages" role="tablist" aria-label="ページ">
+      <button class="page" role="tab" aria-selected="true" data-page="home">劇場公演</button>
+      <button class="page" role="tab" aria-selected="false" data-page="akushu">握手会</button>
+    </nav>
   </div>
 </header>
 
@@ -253,6 +290,38 @@
   </section>
 </main>
 
+<main id="view-akushu" hidden>
+  <section class="card" aria-labelledby="a1">
+    <h2 id="a1"><span class="n">1</span>申込の開始と締切を通知</h2>
+    <label class="check" style="margin-top:0"><input type="checkbox" id="akOn"> 握手会・お話し会の申込受付が始まったときと、締切の前に通知する</label>
+    <p class="hint" id="akPushHint"></p>
+  </section>
+
+  <section class="card" aria-labelledby="a2">
+    <div class="head-row"><h2 id="a2"><span class="n">2</span>持ってる券</h2><button class="btn primary small" id="akAdd">＋ 申込を記録</button></div>
+    <div class="stats" id="akStats"></div>
+    <div id="akTickets"></div>
+  </section>
+
+  <section class="card" aria-labelledby="a3">
+    <h2 id="a3"><span class="n">3</span>申込中（結果待ち）</h2>
+    <div id="akPending"></div>
+  </section>
+
+  <section class="card" aria-labelledby="a4">
+    <h2 id="a4"><span class="n">4</span>申込受付スケジュール</h2>
+    <div id="akSched"><p class="empty">読み込み中…</p></div>
+  </section>
+
+  <section class="card" aria-labelledby="a5">
+    <h2 id="a5"><span class="n">5</span>開催日程</h2>
+    <div id="akDays"></div>
+  </section>
+
+  <p class="hint" style="padding:0 4px">申込・当選の記録はこの端末の中だけに保存されるよ（公式サイトのマイページとは連動しない）。バックアップは「劇場公演」タブのいちばん下の「書き出す」に一緒に入るよ。</p>
+</main>
+
+
 
 
 <dialog id="logDlg" aria-labelledby="dlgTitle">
@@ -289,6 +358,38 @@
   </form>
 </dialog>
 
+<dialog id="akDlg" aria-labelledby="akDlgTitle">
+  <form class="dlg" id="akForm" method="dialog" novalidate>
+    <h2 id="akDlgTitle">申込の記録</h2>
+    <label class="field"><span>リリース</span><select id="kRel"></select></label>
+    <label class="field" id="kRelFreeWrap" hidden><span>リリース名</span><input id="kRelFree" maxlength="40" placeholder="例：70thシングル" autocomplete="off"></label>
+    <div class="grid2">
+      <label class="field"><span>イベント</span><select id="kKind"></select></label>
+      <label class="field"><span>受付</span><select id="kWin"></select></label>
+    </div>
+    <label class="field"><span>日程</span><select id="kDay"></select></label>
+    <label class="field" id="kDateWrap" hidden><span>開催日</span><input type="date" id="kDate"></label>
+    <div class="grid2">
+      <label class="field"><span>部</span><select id="kPart"></select></label>
+      <label class="field"><span>メンバー</span><select id="kMember"></select></label>
+    </div>
+    <div class="grid2">
+      <label class="field"><span>申込枚数</span><input type="number" id="kApplied" min="0" max="999" inputmode="numeric"></label>
+      <label class="field"><span>当選枚数（空欄＝結果待ち）</span><input type="number" id="kWon" min="0" max="999" inputmode="numeric" placeholder="結果待ち"></label>
+    </div>
+    <p class="hint" id="kSignHint" style="margin:0"></p>
+    <label class="field"><span id="kSignLabel">サイン当選枚数（空欄＝まだ抽選してない）</span><input type="number" id="kSign" min="0" max="999" inputmode="numeric" placeholder="未抽選"></label>
+    <label class="field"><span>メモ</span><input id="kMemo" maxlength="200" autocomplete="off"></label>
+    <p class="ferr" id="kErr" role="alert"></p>
+    <div class="dlg-actions">
+      <button type="button" class="btn danger" id="kDelete" hidden>削除</button>
+      <button type="button" class="btn ghost" id="kCancel">やめる</button>
+      <button type="button" class="btn ghost" id="kMore">保存して続けて追加</button>
+      <button type="submit" class="btn primary">保存</button>
+    </div>
+  </form>
+</dialog>
+
 <dialog id="viewer" aria-label="写真">
   <div class="vwrap">
     <img id="vImg" alt="">
@@ -301,6 +402,7 @@
 
 <footer>
   <p>非公式のファンメイドツールだよ。公演・出演メンバー・受付期間は <a href="https://akb48.zaiko.io/" target="_blank" rel="noopener">AKB48チケットセンター</a> の掲載内容を10分おきに読み取ってるので、申込前に必ずチケットセンターで内容を確認してね。</p>
+  <p>握手会・お話し会の日程は <a href="https://www.universal-music.co.jp/akb48/news/" target="_blank" rel="noopener">公式ニュース</a> から読み取ってるよ。読み違いがあるかもしれないので、申込前に必ず公式の案内を確認してね。</p>
   <p id="updated"></p>
 </footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -316,6 +418,7 @@
   let picked = new Set(prefs.picked || []);
   let box = !!prefs.box;
   let mode = prefs.mode || 'oshi';
+  let akOn = !!prefs.akushu, page = prefs.page || 'home', akushu = [];
   let members = [], shows = [], config = {}, roster = [], archive = [], historyIndex = null;
   const historyCache = {};
   let reg = null, sub = null, busy = false, syncTimer = null, syncMsg = '';
@@ -336,9 +439,9 @@
     return h < 24 ? `あと${h}時間` : `あと${Math.floor(h / 24)}日`;
   };
   const toast = (t) => { const el = $('#toast'); el.textContent = t; el.classList.add('on'); setTimeout(() => el.classList.remove('on'), 2000); };
-  const wanted = () => [...picked, ...(box ? ['*'] : [])];
+  const wanted = () => [...picked, ...(box ? ['*'] : []), ...(akOn ? ['#akushu'] : [])];
   const persist = () => {
-    save({ picked: [...picked], box, mode });
+    save({ picked: [...picked], box, mode, akushu: akOn, page });
     // service worker が購読を更新し直すとき用
     if ('caches' in window) caches.open('oshi-alert-prefs').then((c) => c.put('members', new Response(JSON.stringify(wanted())))).catch(() => {});
   };
@@ -403,14 +506,15 @@
     if (sub) {
       el.innerHTML = `<div class="state"><span class="dot on"></span>通知オン</div>
         <p>${who ? `<b>${who}</b> の出演公演` : ''}${who && box ? '＋' : ''}${box ? '全公演の受付開始' : ''}${!who && !box ? '推しがまだ選ばれてないよ' : 'を通知するよ'}</p>
+        ${akOn ? '<p>握手会・お話し会の申込開始と締切前も通知するよ</p>' : ''}
         <p class="hint">推しを選び直すと自動で反映されるよ。</p>
         <div class="row"><button class="btn ghost" id="testBtn">表示テスト</button><button class="btn ghost" id="offBtn">通知をオフにする</button></div>
         <div class="sync" id="sync">${esc(syncMsg)}</div>`;
       return;
     }
-    const can = names.length || box;
+    const can = names.length || box || akOn;
     el.innerHTML = `<div class="state"><span class="dot"></span>通知オフ</div>
-      <p>${can ? `${who ? `<b>${who}</b> ` : ''}${box ? (who ? '＋全公演' : '全公演') : ''}の受付開始・メンバー変更・締切前をお知らせするよ。` : '先に①で推しを選んでね。'}</p>
+      <p>${can ? `${who ? `<b>${who}</b> ` : ''}${box ? (who ? '＋全公演' : '全公演') : ''}の受付開始・メンバー変更・締切前をお知らせするよ。` : (akOn ? '握手会・お話し会の申込開始と締切前をお知らせするよ。' : '先に①で推しを選んでね。')}</p>
       <button class="btn primary big" id="onBtn" ${can && !busy ? '' : 'disabled'}>${busy ? '設定中…' : '通知をオンにする'}</button>`;
   }
 
@@ -912,7 +1016,7 @@
       const p = await photoGet(id);
       if (p) photos.push({ id: p.id, recordId: p.recordId, w: p.w, h: p.h, createdAt: p.createdAt, data: await new Promise((res) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = () => res(''); fr.readAsDataURL(p.blob); }) });
     }
-    const text = JSON.stringify({ app: 'oshi-gekijo-alert', kind: 'records', version: 2, exportedAt: new Date().toISOString(), records, photos }, null, 1);
+    const text = JSON.stringify({ app: 'oshi-gekijo-alert', kind: 'records', version: 2, exportedAt: new Date().toISOString(), records, photos, akushu: akEntries }, null, 1);
     const file = new File([text], name, { type: 'application/json' });
     try {
       if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: '観覧記録のバックアップ' }); return; }
@@ -947,6 +1051,10 @@
       const got = new Set(rows.map((r) => r.id));
       add.forEach((r) => { r.photos = r.photos.filter((id) => got.has(id)); });
       records = [...records, ...add]; saveRecords(); renderLog(); renderShows();
+      const akHave = new Set(akEntries.map((e) => e.id));
+      const akAdd = (Array.isArray(j.akushu) ? j.akushu : []).map(cleanAk).filter((e) => !akHave.has(e.id));
+      if (akAdd.length) { akEntries = [...akEntries, ...akAdd]; saveAk(); renderAkushu(); }
+      if (akAdd.length && !add.length) { toast(`握手会の記録${akAdd.length}件を読み込んだよ`); return; }
       toast(add.length ? `${add.length}件${rows.length ? `（写真${rows.length}枚）` : ''}を読み込んだよ` : '新しい記録はなかったよ');
     } catch { toast('読み込めなかった（ファイルを確認してね）'); }
   }
@@ -984,7 +1092,253 @@
     const a = document.createElement('a'); a.href = await photoUrl(p.id); a.download = name; document.body.appendChild(a); a.click(); a.remove();
   });
 
-  const renderAll = () => { renderChips(); renderPush(); renderShows(); renderLog(); };
+  /* ---------- 握手会（申込・当選の記録はこの端末のlocalStorageに保存） ---------- */
+  const AKKEY = 'oshi-gekijo-alert:akushu:v1';
+  let akEntries = (() => { try { const r = JSON.parse(localStorage.getItem(AKKEY)); return Array.isArray(r) ? r : []; } catch { return []; } })();
+  const saveAk = () => { try { localStorage.setItem(AKKEY, JSON.stringify(akEntries)); } catch { toast('保存できなかった（容量がいっぱいかも）'); } };
+  const num = (v, max = 999) => Math.max(0, Math.min(max, Math.floor(Number(v) || 0)));
+  const cleanAk = (e) => ({
+    id: String(e.id || uid()).slice(0, 64), rel: String(e.rel || '').slice(0, 40), relLabel: String(e.relLabel || e.rel || '').slice(0, 40),
+    kind: String(e.kind || '').slice(0, 30), date: String(e.date || '').slice(0, 10), venue: String(e.venue || '').slice(0, 40),
+    part: num(e.part, 20), member: String(e.member || '').slice(0, 20), win: String(e.win || '').slice(0, 30), winKey: String(e.winKey || '').slice(0, 60),
+    applied: num(e.applied), won: e.won === null || e.won === undefined || e.won === '' ? null : num(e.won),
+    sign: String(e.sign || '').slice(0, 12), signWon: e.signWon === null || e.signWon === undefined || e.signWon === '' ? null : num(e.signWon), memo: String(e.memo || '').slice(0, 200),
+    createdAt: String(e.createdAt || new Date().toISOString()), updatedAt: String(e.updatedAt || new Date().toISOString()),
+  });
+  const akRel = (id) => akushu.find((r) => r.id === id);
+  const md = (d) => { const [y, m, dd] = d.split('-').map(Number); return `${m}/${dd}(${'日月火水木金土'[new Date(Date.UTC(y, m - 1, dd)).getUTCDay()]})`; };
+  const partTime = (e) => { const p = akRel(e.rel)?.events.find((x) => x.kind === e.kind)?.parts.find((x) => x.n === e.part); return p ? `${p.start}〜${p.end}` : ''; };
+  /* 抽選企画（私物サイン／色紙サイン）：公式の参加メンバー表から、その部がどれか */
+  const nameKey = (n) => String(n).replace(/\s+/g, '').replace(/髙/g, '高').replace(/﨑/g, '崎').replace(/[邉邊]/g, '辺').replace(/濵/g, '浜').replace(/德/g, '徳');
+  const lineupRow = (rel, kind, date, member) => {
+    const ev = akRel(rel)?.events.find((x) => x.kind === kind), lu = ev?.days.find((d) => d.date === date)?.lineup;
+    if (!lu || !member) return null;
+    const k = Object.keys(lu).find((n) => nameKey(n) === nameKey(member));
+    return { ev, row: k ? lu[k] : '' };
+  };
+  // → null（表がまだない） / {absent:true}（その部に出ない） / {label:'私物サイン'}
+  const signOf = (e) => {
+    const x = lineupRow(e.rel, e.kind, e.date, e.member);
+    if (!x || !e.part) return null;
+    const c = x.row[e.part - 1];
+    return !c || c === '.' ? { absent: true } : { label: x.ev.signs[Number(c) - 1] || '' };
+  };
+  const signLabel = (e) => signOf(e)?.label || e.sign || '';
+  const lotteryOpen = (e) => e.date && Date.now() >= new Date(`${e.date}T18:00:00+09:00`).getTime() - 5 * 864e5;
+  const lotteryFrom = (e) => md(new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Tokyo' }).format(new Date(new Date(`${e.date}T18:00:00+09:00`).getTime() - 5 * 864e5)));
+  const signBadge = (e) => {
+    const lb = signLabel(e), ab = signOf(e)?.absent;
+    if (ab && e.won !== 0) return '<span class="pill soon">公式の表だとこの部は不参加</span>';
+    if (!(e.won > 0)) return e.won === null && lb ? `<span class="pill">${esc(lb)}</span>` : '';
+    if (e.signWon > 0) return `<span class="pill open">🖊 ${esc(lb || 'サイン')} 当選 ${e.signWon}枚</span>`;
+    if (e.signWon === 0) return `<span class="pill closed">${esc(lb || 'サイン')}</span> <span class="pill">落選</span>`;
+    return lb ? `<span class="pill">${esc(lb)}</span>` : '';
+  };
+  const signActs = (e) => {
+    if (e.signWon !== null || !lotteryOpen(e) || signOf(e)?.absent) return e.signWon === null && e.date && !lotteryOpen(e) && signLabel(e) ? `<div class="ak-acts"><span class="s">${esc(signLabel(e))}の抽選は ${lotteryFrom(e)} 18:00 から</span></div>` : '';
+    return `<div class="ak-acts"><span class="s">${esc(signLabel(e) || 'サイン')}の抽選：</span><button type="button" class="btn ghost small" data-aksign="${esc(e.id)}" data-v="win">当選</button><button type="button" class="btn ghost small" data-aksign="${esc(e.id)}" data-v="lose">落選</button></div>`;
+  };
+  const winState = (w) => { const n = Date.now(); return n < new Date(w.start) ? 'upcoming' : n < new Date(w.end) ? 'open' : 'closed'; };
+  const winPill = (w) => {
+    const st = winState(w);
+    if (st === 'open') { const soon = new Date(w.end) - Date.now() < 6 * 3600e3; return `<span class="pill ${soon ? 'soon' : 'open'}">受付中 ${left(w.end) || ''}</span>`; }
+    return st === 'upcoming' ? `<span class="pill">${left(w.start) || ''}で開始</span>` : '<span class="pill closed">終了</span>';
+  };
+  const sumBy = (list, f) => list.reduce((a, e) => a + f(e), 0);
+  const byWhen = (a, b) => a.date.localeCompare(b.date) || a.part - b.part || bySenior(a.member, b.member);
+  const akLine = (e, count) => `<button type="button" class="ak-tk" data-ak="${esc(e.id)}">
+      <span class="p"><b>${e.part ? `第${e.part}部` : '—'}</b>${esc(partTime(e))}</span>
+      <span class="m">${memberPhoto(e.member)}${esc(e.member || '（メンバー未入力）')}<small>${esc([e.relLabel, e.win, e.memo].filter(Boolean).join('・'))}</small>${signBadge(e)}</span>
+      <span class="c mono">${count}<small>枚</small></span></button>`;
+  const akGroup = (list, countOf, acts) => {
+    const days = new Map();
+    for (const e of [...list].sort(byWhen)) { const k = `${e.date}|${e.kind}|${e.venue}`; if (!days.has(k)) days.set(k, []); days.get(k).push(e); }
+    return [...days.entries()].map(([k, es]) => {
+      const [date, kind, venue] = k.split('|');
+      return `<div class="ak-day"><div class="h"><span>${date ? md(date) : '日付未入力'} ${esc(kind)}</span><small>${esc(venue)}　計${sumBy(es, countOf)}枚</small></div>
+        ${es.map((e) => akLine(e, countOf(e)) + (acts ? acts(e) : '')).join('')}</div>`;
+    }).join('');
+  };
+
+  function renderAkushu() {
+    const today = todayJst();
+    $('#akOn').checked = akOn;
+    $('#akPushHint').textContent = sub ? (akOn ? '通知オン。受付開始と、締切の3時間前（応募期間が長いものは24時間前）に届くよ。' : 'チェックを入れると、この端末に届くようになるよ。')
+      : (akOn ? '通知自体がまだオフだよ。「劇場公演」タブの②で通知をオンにしてね。' : 'チェックを入れてから、「劇場公演」タブの②で通知をオンにしてね。');
+
+    // 持ってる券
+    const have = akEntries.filter((e) => e.won > 0);
+    const coming = have.filter((e) => !e.date || e.date >= today), gone = have.filter((e) => e.date && e.date < today);
+    const pending = akEntries.filter((e) => e.won === null);
+    const lost = akEntries.filter((e) => e.won === 0);
+    const nextDay = coming.map((e) => e.date).filter(Boolean).sort()[0];
+    $('#akStats').innerHTML = [
+      ['持ってる券', sumBy(coming, (e) => e.won), '枚'], ['結果待ち', sumBy(pending, (e) => e.applied), '枚'],
+      ['次の参加日', nextDay ? md(nextDay) : '—', ''], ['サイン当選', sumBy(coming, (e) => e.signWon || 0), '枚'],
+    ].map(([k, v, u]) => `<div class="stat"><div class="k">${k}</div><div class="v mono">${v}<small>${u}</small></div></div>`).join('');
+    $('#akTickets').innerHTML = (coming.length ? akGroup(coming, (e) => e.won, signActs) : '<p class="empty">まだ券がないよ。申し込んだら「＋ 申込を記録」から入れてね。</p>')
+      + (gone.length ? `<details class="ak-more"><summary>終わった分（${sumBy(gone, (e) => e.won)}枚）</summary>${akGroup(gone, (e) => e.won)}</details>` : '');
+
+    // 申込中
+    $('#akPending').innerHTML = (pending.length
+      ? akGroup(pending, (e) => e.applied, (e) => `<div class="ak-acts"><button type="button" class="btn ghost small" data-akwin="${esc(e.id)}">ぜんぶ当選</button><button type="button" class="btn ghost small" data-aklose="${esc(e.id)}">落選</button><button type="button" class="btn ghost small" data-ak="${esc(e.id)}">一部当選・編集</button></div>`)
+      : '<p class="empty">結果待ちの申込はないよ。</p>')
+      + (lost.length ? `<details class="ak-more"><summary>落選した申込（${lost.length}件）</summary>${akGroup(lost, (e) => e.applied)}</details>` : '');
+
+    // 申込受付スケジュール
+    const mineIn = (key) => { const es = akEntries.filter((e) => e.winKey === key); return es.length ? `<span class="ak-mine">申込 ${sumBy(es, (e) => e.applied)}枚${es.some((e) => e.won !== null) ? `／当選 ${sumBy(es, (e) => e.won || 0)}枚` : ''}</span>` : ''; };
+    const winRow = (r, w, title, extra) => `<div class="ak-row${winState(w) === 'closed' ? ' past' : ''}">
+        <div><div class="t">${esc(title)}${winPill(w)}</div><div class="s">${jst(w.start)} 〜 ${jst(w.end)}${extra ? `　${extra}` : ''}</div>${w.limit ? `<div class="s">${esc(w.limit)}</div>` : ''}${mineIn(w.key)}</div>
+        <button type="button" class="btn ghost small" data-akadd="${esc(r.id)}" data-win="${esc(w.key)}">＋記録</button></div>`;
+    const sched = akushu.map((r) => {
+      const rows = [];
+      for (const s of r.sales) for (const x of s.rounds) rows.push({ w: x, html: winRow(r, x, `第${s.no}販売 第${x.n}次受付`, s.resultHour ? `当落 ${md(new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Tokyo' }).format(new Date(x.end)))} ${s.resultHour}時ごろ` : '') });
+      for (const o of r.others) if (o.apply) rows.push({ w: o.apply, html: winRow(r, o.apply, `「${o.name}」${o.apply.what}`, o.apply.result ? `当選通知 ${jst(o.apply.result)}〜` : '') });
+      if (!rows.length) return '';
+      rows.sort((a, b) => a.w.start.localeCompare(b.w.start));
+      const live = rows.filter((x) => winState(x.w) !== 'closed'), done = rows.filter((x) => winState(x.w) === 'closed');
+      const recent = done.slice(-1), old = done.slice(0, -1);
+      return `<div class="ak-rel">${esc(r.label)}${r.song ? `『${esc(r.song)}』` : ''}${r.applyUrl ? ` <a class="btn primary small" href="${esc(r.applyUrl)}" target="_blank" rel="noopener">申込ページへ</a>` : ''}</div>
+        ${live.length ? '' : '<p class="hint" style="margin:0 0 4px">いま受付中・予定の販売はないよ。次の販売が発表されたらここに出るよ。</p>'}
+        ${[...recent, ...live].map((x) => x.html).join('')}
+        ${old.length ? `<details class="ak-more"><summary>終わった受付（${old.length}件）</summary>${old.map((x) => x.html).join('')}</details>` : ''}`;
+    }).join('');
+    $('#akSched').innerHTML = sched || '<p class="empty">まだデータがないよ（自動チェック後に表示される）</p>';
+
+    // 開催日程
+    const tk = (rel, kind, date) => { const n = sumBy(akEntries.filter((e) => e.rel === rel && e.kind === kind && e.date === date && e.won > 0), (e) => e.won); return n ? `<span class="ak-mine">持ってる券 ${n}枚</span>` : ''; };
+    $('#akDays').innerHTML = akushu.map((r) => {
+      const blocks = r.events.map((ev) => {
+        const days = ev.days.filter((d) => d.date >= today);
+        if (!days.length) return '';
+        return `<div class="ak-row"><div><div class="t">${esc(ev.kind)}</div><div class="s"><a href="${esc(ev.url)}" target="_blank" rel="noopener">公式のご案内</a>${ev.memberUrl ? `　<a href="${esc(ev.memberUrl)}" target="_blank" rel="noopener">参加メンバーの表（PDF）</a>` : ''}</div>
+          ${ev.parts.length ? `<details class="ak-more" style="margin-top:4px"><summary>各部の時間</summary><ul class="ak-parts">${ev.parts.map((p) => `<li>第${p.n}部 ${p.start}〜${p.end}</li>`).join('')}</ul></details>` : ''}
+          ${ev.signs && ev.signs.length ? `<div class="s">抽選企画：${ev.signs.map(esc).join('／')}（部ごとの種類は記録するときに出るよ）${ev.legend.length ? `<br>${ev.legend.map(esc).join('　')}` : ''}</div>` : ''}</div></div>`
+          + days.map((d) => `<div class="ak-row"><div><div class="t">${md(d.date)}　${esc(d.venue || (/オンライン/.test(ev.kind) ? 'オンライン' : ''))}</div><div class="s">${d.open ? `${d.open}〜${d.close}　` : ''}${d.guideUrl ? `<a href="${esc(d.guideUrl)}" target="_blank" rel="noopener">当日のご案内</a>` : ''}</div>${tk(r.id, ev.kind, d.date)}</div>
+            <button type="button" class="btn ghost small" data-akadd="${esc(r.id)}" data-kind="${esc(ev.kind)}" data-date="${d.date}">＋記録</button></div>`).join('');
+      }).join('');
+      const others = r.others.filter((o) => o.dates[o.dates.length - 1] >= today).map((o) => `<div class="ak-row"><div><div class="t">${o.dates.map(md).join('・')}　${esc(o.name)}</div><div class="s">${esc(o.venue)}${o.venue ? '　' : ''}<a href="${esc(o.url)}" target="_blank" rel="noopener">公式のご案内</a></div>${tk(r.id, o.name, o.dates[0])}</div>
+        <button type="button" class="btn ghost small" data-akadd="${esc(r.id)}" data-kind="${esc(o.name)}" data-date="${o.dates[0]}">＋記録</button></div>`).join('');
+      return blocks || others ? `<div class="ak-rel">${esc(r.label)}${r.song ? `『${esc(r.song)}』` : ''}</div>${blocks}${others}` : '';
+    }).join('') || '<p class="empty">これからの開催日程はまだ出てないよ。</p>';
+  }
+
+  /* 申込の記録フォーム */
+  const akDlg = $('#akDlg');
+  let akEditing = null;
+  const FREE = '__free__';
+  const opt = (v, label, sel) => `<option value="${esc(v)}"${sel ? ' selected' : ''}>${esc(label)}</option>`;
+  const allWins = (r) => r ? [...r.sales.flatMap((s) => s.rounds.map((x) => ({ ...x, label: `第${s.no}販売 第${x.n}次` }))), ...r.others.filter((o) => o.apply).map((o) => ({ ...o.apply, label: `${o.name} 事前応募` }))] : [];
+  function fillAkKind(keep) {
+    const r = akRel($('#kRel').value);
+    const kinds = [...new Set([...(r ? [...r.events.map((e) => e.kind), ...r.others.map((o) => o.name)] : []), '個別握手会', 'オンラインお話し会', ...(keep ? [keep] : [])])];
+    $('#kKind').innerHTML = kinds.map((k) => opt(k, k, k === keep)).join('');
+  }
+  function fillAkWin(keepKey, keepLabel) {
+    const wins = allWins(akRel($('#kRel').value));
+    const cur = keepKey || (wins.find((w) => winState(w) === 'open') || [...wins].reverse().find((w) => winState(w) === 'closed') || {}).key || '';
+    $('#kWin').innerHTML = opt('', '指定なし', !cur) + wins.map((w) => opt(w.key, w.label, w.key === cur)).join('')
+      + (keepKey && !wins.some((w) => w.key === keepKey) ? opt(keepKey, keepLabel || keepKey, true) : '');
+  }
+  function fillAkDay(keepDate, keepVenue) {
+    const r = akRel($('#kRel').value), kind = $('#kKind').value;
+    const ev = r?.events.find((e) => e.kind === kind), ot = r?.others.filter((o) => o.name === kind) || [];
+    const days = ev ? ev.days : ot.flatMap((o) => o.dates.map((date) => ({ date, venue: o.venue })));
+    const known = days.some((d) => d.date === keepDate);
+    $('#kDay').innerHTML = days.map((d) => opt(`${d.date}|${d.venue || ''}`, `${md(d.date)} ${d.venue || ''}`, d.date === keepDate)).join('') + opt(FREE, 'ほかの日（手入力）', !days.length || (!!keepDate && !known));
+    $('#kDay').dataset.venue = keepVenue || '';
+    $('#kDate').value = keepDate && !known ? keepDate : '';
+    $('#kDateWrap').hidden = $('#kDay').value !== FREE;
+    const parts = ev?.parts.length ? ev.parts : Array.from({ length: 9 }, (_, i) => ({ n: i + 1 }));
+    const keepPart = Number($('#kPart').dataset.keep) || 0;
+    $('#kPart').innerHTML = opt('0', '—', !keepPart) + parts.map((p) => `<option value="${p.n}" data-base="${esc(`第${p.n}部${p.start ? ` ${p.start}〜` : ''}`)}"${p.n === keepPart ? ' selected' : ''}>第${p.n}部${p.start ? ` ${p.start}〜` : ''}</option>`).join('');
+  }
+  // 選んだメンバー・日程に合わせて、部のプルダウンと案内に「私物サイン／色紙サイン」を出す
+  function refreshSign() {
+    const dayV = $('#kDay').value, date = dayV === FREE ? $('#kDate').value : dayV.split('|')[0];
+    const rel = $('#kRel').value, kind = $('#kKind').value, member = $('#kMember').value, part = Number($('#kPart').value);
+    const x = lineupRow(rel, kind, date, member);
+    for (const o of $('#kPart').options) {
+      const n = Number(o.value);
+      if (!n) continue;
+      o.textContent = o.dataset.base + (x ? (x.row[n - 1] && x.row[n - 1] !== '.' ? `・${x.ev.signs[Number(x.row[n - 1]) - 1]}` : '（不参加）') : '');
+    }
+    const sg = signOf({ rel, kind, date, member, part });
+    $('#kSignHint').textContent = !member || !part ? '' : !sg ? '公式の参加メンバー表がまだ読めてないので、サインの種類は出せないよ。'
+      : sg.absent ? `公式の表だと、${member}はこの部に出ないみたい。日程と部を確認してね。` : `この部の抽選企画は【${sg.label}】（公式の参加メンバー表より）`;
+    $('#kSignLabel').textContent = `${sg?.label || 'サイン'} 当選枚数（空欄＝まだ抽選してない）`;
+    return sg;
+  }
+  function openAk({ entry, rel, kind, date, win, keepFrom } = {}) {
+    akEditing = entry || null;
+    const e = entry || keepFrom || {};
+    const relId = e.rel || rel || (akushu.find((r) => allWins(r).some((w) => winState(w) === 'open')) || akushu[0] || {}).id || '';
+    $('#akDlgTitle').textContent = entry ? '申込の記録を編集' : '申込を記録';
+    $('#kRel').innerHTML = akushu.map((r) => opt(r.id, r.label + (r.song ? `『${r.song}』` : ''), r.id === relId)).join('')
+      + (relId && !akRel(relId) ? opt(relId, e.relLabel || relId, true) : '') + opt(FREE, 'その他（手入力）', !relId);
+    $('#kRelFree').value = ''; $('#kRelFreeWrap').hidden = $('#kRel').value !== FREE;
+    fillAkKind(e.kind || kind);
+    fillAkWin(e.winKey || win, e.win);
+    $('#kPart').dataset.keep = entry ? entry.part : 0;
+    fillAkDay(e.date || date, e.venue);
+    const names = [...new Set([...roster.map((r) => r.name), ...members.map((m) => m.name), ...(entry?.member ? [entry.member] : [])])].sort(bySenior);
+    const pick = entry?.member || '';
+    const gs = [];
+    for (const n of names) { const g = roster.find((r) => r.name === n)?.gen || 'その他'; if (!gs.length || gs[gs.length - 1].g !== g) gs.push({ g, names: [] }); gs[gs.length - 1].names.push(n); }
+    const fav = [...picked].sort(bySenior);
+    $('#kMember').innerHTML = opt('', '選ぶ', !pick) + (fav.length ? `<optgroup label="推し">${fav.map((n) => opt(n, n, false)).join('')}</optgroup>` : '')
+      + gs.map(({ g, names: ns }) => `<optgroup label="${esc(g)}">${ns.map((n) => opt(n, n, n === pick)).join('')}</optgroup>`).join('');
+    $('#kApplied').value = entry ? entry.applied : '';
+    $('#kWon').value = entry && entry.won !== null ? entry.won : '';
+    $('#kSign').value = entry && entry.signWon !== null ? entry.signWon : '';
+    $('#kMemo').value = entry ? entry.memo : '';
+    $('#kErr').textContent = '';
+    refreshSign();
+    $('#kDelete').hidden = !entry; $('#kMore').hidden = !!entry;
+    if (!akDlg.open) akDlg.showModal();
+  }
+  function saveAkForm() {
+    const relSel = $('#kRel').value, r = akRel(relSel);
+    const relLabel = relSel === FREE ? $('#kRelFree').value.trim() : r ? r.label : $('#kRel').selectedOptions[0].textContent;
+    const dayV = $('#kDay').value;
+    const [date, venue] = dayV === FREE ? [$('#kDate').value, $('#kDay').dataset.venue || ''] : dayV.split('|');
+    const applied = $('#kApplied').value === '' ? 0 : num($('#kApplied').value);
+    const won = $('#kWon').value === '' ? null : num($('#kWon').value);
+    const signWon = $('#kSign').value === '' ? null : num($('#kSign').value);
+    const sg = refreshSign();
+    const err = !relLabel ? 'リリース名を入れてね' : !/^\d{4}-\d{2}-\d{2}$/.test(date) ? '開催日を選んでね' : !$('#kMember').value ? 'メンバーを選んでね'
+      : !applied && won === null ? '申込枚数か当選枚数を入れてね' : won !== null && applied && won > applied ? '当選枚数が申込枚数より多いよ'
+      : signWon !== null && !(won > 0) ? 'サインの当落は、券が当選してから入れてね' : signWon !== null && signWon > won ? 'サイン当選枚数が持ってる券より多いよ' : '';
+    if (err) { $('#kErr').textContent = err; return null; }
+    const wsel = $('#kWin').selectedOptions[0];
+    const e = cleanAk({
+      ...(akEditing || {}), rel: relSel === FREE ? relLabel : relSel, relLabel, kind: $('#kKind').value, date, venue, part: $('#kPart').value, member: $('#kMember').value,
+      winKey: $('#kWin').value, win: $('#kWin').value ? wsel.textContent : '', applied: applied || won || 0, won, sign: sg?.label || (akEditing ? akEditing.sign : ''), signWon, memo: $('#kMemo').value.trim(), updatedAt: new Date().toISOString(),
+    });
+    akEntries = akEditing ? akEntries.map((x) => (x.id === e.id ? e : x)) : [...akEntries, e];
+    saveAk(); renderAkushu();
+    return e;
+  }
+  $('#akForm').addEventListener('submit', (ev) => { ev.preventDefault(); if (saveAkForm()) { akDlg.close(); toast('記録したよ'); } });
+  $('#kMore').addEventListener('click', () => { const e = saveAkForm(); if (e) { toast(`${e.member} 第${e.part || '—'}部を記録したよ`); openAk({ keepFrom: { ...e, member: '' } }); $('#kPart').value = String(e.part); refreshSign(); } });
+  $('#kCancel').addEventListener('click', () => akDlg.close());
+  $('#kDelete').addEventListener('click', () => { if (akEditing && confirm('この記録を消す？')) { akEntries = akEntries.filter((x) => x.id !== akEditing.id); saveAk(); renderAkushu(); akDlg.close(); toast('消したよ'); } });
+  $('#kRel').addEventListener('change', () => { $('#kRelFreeWrap').hidden = $('#kRel').value !== FREE; fillAkKind(); fillAkWin(); fillAkDay(); refreshSign(); });
+  $('#kKind').addEventListener('change', () => { fillAkDay(); refreshSign(); });
+  $('#kDay').addEventListener('change', () => { $('#kDateWrap').hidden = $('#kDay').value !== FREE; refreshSign(); });
+  ['#kDate', '#kPart', '#kMember'].forEach((q) => $(q).addEventListener('change', refreshSign));
+  $('#akOn').addEventListener('change', (e) => { akOn = e.target.checked; scheduleSync(akOn ? '握手会の通知をオンにしたよ' : '握手会の通知をオフにしたよ'); renderPush(); renderAkushu(); });
+
+  function showPage(p) {
+    page = p === 'akushu' ? 'akushu' : 'home';
+    $('#view-home').hidden = page !== 'home'; $('#view-akushu').hidden = page !== 'akushu';
+    document.querySelectorAll('.page').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.page === page)));
+    $('#lead').textContent = page === 'akushu'
+      ? '握手会・お話し会の申込スケジュールと、自分が申し込んだ分・持ってる券をまとめて見られるよ。受付開始と締切前には通知も届く。'
+      : '推しが出る劇場公演の受付が始まったら、スマホに通知。メンバー変更で推しが出演することになったときと、締切の6時間前にも届くよ。';
+  }
+
+  const renderAll = () => { renderChips(); renderPush(); renderShows(); renderLog(); renderAkushu(); };
 
   /* ---------- 通知タップからの遷移（?show=ID / ?view=oshi） ---------- */
   function route(href) {
@@ -992,6 +1346,8 @@
     const id = u.searchParams.get('show');
     if (u.searchParams.get('view') === 'log') document.getElementById('l1').scrollIntoView({ behavior: 'smooth' });
     const view = u.searchParams.get('view');
+    if (view === 'akushu') { showPage('akushu'); persist(); window.scrollTo({ top: 0 }); }
+    else if (u.search) showPage('home');
     if (view === 'oshi' || view === 'open') { mode = view; renderShows(); }
     if (id) {
       if (!document.getElementById(`show-${id}`)) { mode = 'all'; renderShows(); }
@@ -1009,6 +1365,27 @@
     if (e.target instanceof HTMLImageElement && e.target.classList.contains('member-photo')) e.target.remove();
   }, true);
   document.addEventListener('click', (e) => {
+    const pg = e.target.closest('.page');
+    if (pg) { showPage(pg.dataset.page); persist(); return; }
+    const akw = e.target.closest('[data-akwin]'), akl = e.target.closest('[data-aklose]');
+    if (akw || akl) {
+      const id = (akw || akl).dataset.akwin || (akw || akl).dataset.aklose;
+      akEntries = akEntries.map((x) => (x.id === id ? { ...x, won: akw ? x.applied : 0, updatedAt: new Date().toISOString() } : x));
+      saveAk(); renderAkushu(); toast(akw ? '当選おめでとう！持ってる券に入れたよ' : '落選にしたよ'); return;
+    }
+    const aks = e.target.closest('[data-aksign]');
+    if (aks) {
+      const en = akEntries.find((x) => x.id === aks.dataset.aksign);
+      if (!en) return;
+      if (aks.dataset.v === 'win' && en.won > 1) { openAk({ entry: en }); $('#kSign').focus(); toast('何枚当たったか入れてね'); return; }
+      akEntries = akEntries.map((x) => (x.id === en.id ? { ...x, sign: signLabel(x), signWon: aks.dataset.v === 'win' ? 1 : 0, updatedAt: new Date().toISOString() } : x));
+      saveAk(); renderAkushu(); toast(aks.dataset.v === 'win' ? `${signLabel(en) || 'サイン'} 当選おめでとう！` : '落選にしたよ'); return;
+    }
+    const akE = e.target.closest('[data-ak]');
+    if (akE) { const en = akEntries.find((x) => x.id === akE.dataset.ak); if (en) openAk({ entry: en }); return; }
+    const akA = e.target.closest('[data-akadd]');
+    if (akA) { openAk({ rel: akA.dataset.akadd, kind: akA.dataset.kind, date: akA.dataset.date, win: akA.dataset.win }); return; }
+    if (e.target.closest('#akAdd')) { openAk(); return; }
     const tag = e.target.closest('.tag');
     if (tag) { picked.delete(tag.dataset.name); renderChips(); renderShows(); renderLog(); scheduleSync(); renderPush(); return; }
     const tab = e.target.closest('.tab');
@@ -1046,12 +1423,13 @@
         navigator.serviceWorker.addEventListener('message', (e) => { if (e.data && e.data.type === 'navigate') route(e.data.url); });
       } catch {}
     }
-    const [m, s, c, r, a, hi, un] = await Promise.all([get('data/members.json'), get('data/shows.json'), get('data/config.json'), get('data/roster.json'), get('data/archive.json'), get('data/history/index.json'), get('data/units.json')]);
-    members = m || []; shows = s || [];
+    const [m, s, c, r, a, hi, un, ak] = await Promise.all([get('data/members.json'), get('data/shows.json'), get('data/config.json'), get('data/roster.json'), get('data/archive.json'), get('data/history/index.json'), get('data/units.json'), get('data/akushu.json')]);
+    members = m || []; shows = s || []; akushu = (ak && ak.releases) || [];
     if (shows.length) { const live = new Set(shows.map((x) => String(x.id))); let ch = false; for (const k of Object.keys(applied)) if (!live.has(k)) { delete applied[k]; ch = true; } if (ch) saveApplied(); }
  config = c || {}; roster = (r && r.members) || []; archive = a || []; historyIndex = hi; unitTable = (un && un.stages) || {};
     if (config.updatedAt) $('#updated').textContent = `データ更新：${jst(config.updatedAt)}`;
     if (!members.length && !roster.length) $('#memberHint').textContent = 'まだデータがないよ（初回の自動チェック後に表示される）';
+    showPage(page);
     renderAll();
     route(location.href);
   })();

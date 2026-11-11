@@ -5,6 +5,7 @@ import { dirname } from 'node:path';
 import webpush from 'web-push';
 import { ORIGIN, parseList, parseDetail, mergeDetail, fingerprint, isOpen, parseSitemap, parseEventPage } from './zaiko.js';
 import { composeFor, diffMembers, dueReminders } from './core.js';
+import { NEWS, wanted, parseNewsList, parseArticle, buildReleases, windows, dueAkushu, composeAkushu, packLineups } from './akushu.js';
 
 const env = process.env;
 const UA = 'oshi-gekijo-alert (fan-made notifier; checks the event list every 10 min)';
@@ -15,6 +16,8 @@ const PATHS = {
   members: 'docs/data/members.json',
   archive: 'docs/data/archive.json',
   config: 'docs/data/config.json',
+  akushu: 'docs/data/akushu.json',
+  akushuState: 'state/akushu.json',
 };
 
 async function readJson(p, fallback) {
@@ -40,6 +43,80 @@ async function fetchText(url, fetchImpl) {
     await sleep(3000 * (i + 1));
   }
   throw last;
+}
+
+/**
+ * 握手会・お話し会：公式ニュースを読んで、申込受付の開始・締切前を拾う。
+ * 受付の日時は記事に書いてあるので、通知は毎回のチェックで時刻を見て出す。
+ * ここで失敗しても劇場公演のチェックは止めない。
+ */
+export async function checkAkushu({ now, fetchImpl }) {
+  const st = await readJson(PATHS.akushuState, { bootstrapped: false, checkedAt: '', articles: {}, notified: [] });
+  const first = !st.bootstrapped;
+  const today = new Date(now.getTime() + 9 * 3600e3).toISOString().slice(0, 10);
+  const upcoming = (f) => f.days.some((d) => d.date >= today);
+  const get = async (url) => {
+    const r = await fetchImpl(url, { headers: { 'user-agent': UA, 'accept-language': 'ja' }, signal: AbortSignal.timeout(20000) });
+    if (!r.ok) throw new Error(`HTTP ${r.status} ${url}`);
+    return r.text();
+  };
+  if (!st.checkedAt || now - new Date(st.checkedAt) >= 8 * 60e3) {
+    try {
+      let read = 0;
+      for (let page = 1; page <= (first ? 5 : 1); page++) {
+        const items = parseNewsList(await get(page === 1 ? NEWS : `${NEWS}page/${page}/`));
+        if (!items.length) { if (page === 1) console.warn('握手会：ニュース一覧が読めなかった（ページ構造が変わった可能性）'); break; }
+        for (const it of items.filter((x) => wanted(x.title))) {
+          const old = st.articles[it.slug];
+          // 開催日程の記事は、参加メンバーの表が差し替わることがあるので1日おきに読み直す
+          const stale = old && old.frag && old.frag.type === 'event' && upcoming(old.frag) && now - new Date(old.readAt || 0) >= 24 * 3600e3;
+          if (old && old.title === it.title && !stale) continue;
+          try {
+            const frag = parseArticle(it, await get(it.url));
+            if (frag && old && old.frag && old.frag.memberUrl === frag.memberUrl) { frag.lineup = old.frag.lineup; frag.lineupAt = old.frag.lineupAt; }
+            st.articles[it.slug] = { title: it.title, date: it.date, readAt: now.toISOString(), frag };
+            read++;
+          } catch (e) { console.warn(`握手会：記事を読めなかった ${it.url}: ${e.message}`); }
+          await sleep(1500);
+        }
+        if (page > 1 || first) await sleep(1500);
+      }
+      // 参加メンバーの表（PDF）：どの部が私物サイン／色紙サインか。新しい表はすぐ、それ以外は6時間おきに読み直す
+      for (const a of Object.values(st.articles)) {
+        const f = a.frag;
+        if (!f || f.type !== 'event' || !f.memberUrl || !upcoming(f)) continue;
+        if (f.lineupAt && now - new Date(f.lineupAt) < 6 * 3600e3) continue;
+        try {
+          const r = await fetchImpl(f.memberUrl, { headers: { 'user-agent': UA }, signal: AbortSignal.timeout(30000) });
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          const { pdfPages } = await import('./pdf.js');
+          const packed = packLineups(await pdfPages(await r.arrayBuffer()));
+          if (packed) f.lineup = packed; else console.warn(`握手会：参加メンバーの表を読み取れなかった ${f.memberUrl}`);
+        } catch (e) { console.warn(`握手会：参加メンバーの表を読めなかった ${f.memberUrl}: ${e.message}`); }
+        f.lineupAt = now.toISOString();
+        await sleep(1500);
+      }
+      st.checkedAt = now.toISOString();
+      if (read) console.log(`握手会：記事 ${read}本を読んだ`);
+    } catch (e) { console.warn(`握手会：ニュースを読めなかった（次回また試す） ${e.message}`); }
+  }
+  const releases = buildReleases(Object.values(st.articles).map((a) => a.frag).filter(Boolean), now);
+  const notified = new Set(st.notified);
+  let due = dueAkushu(releases, notified, now);
+  if (first) due = { opened: [], closing: [] };
+
+  // 保存（古い記事と、もう無い受付の「送った印」は捨てる）
+  const cut = new Date(now.getTime() - 200 * 864e5).toISOString().slice(0, 10);
+  const articles = Object.fromEntries(Object.entries(st.articles).filter(([, a]) => (a.date || '9') >= cut));
+  const keys = new Set(windows(releases).map((w) => w.key));
+  const prev = await readJson(PATHS.akushu, {});
+  const changed = JSON.stringify(prev.releases || []) !== JSON.stringify(releases);
+  await writeJson(PATHS.akushu, { source: NEWS, updatedAt: changed || !prev.updatedAt ? now.toISOString() : prev.updatedAt, releases });
+  await writeJson(PATHS.akushuState, {
+    bootstrapped: st.bootstrapped || !!st.checkedAt, checkedAt: st.checkedAt, articles,
+    notified: [...notified].filter((k) => keys.has(k.replace(/^(open|close):/, ''))),
+  });
+  return { releases, due };
 }
 
 /** 購読サーバーから全購読を取る */
@@ -150,8 +227,14 @@ export async function run({ now = new Date(), fetchImpl = fetch, sendImpl } = {}
   due.forEach((r) => sent.add(r.key));
   if (!firstRun && env.REMINDERS !== '0') ev.reminders = due;
 
+  // 3.5 握手会・お話し会の申込受付
+  let ak = { releases: [], due: { opened: [], closing: [] } };
+  if (env.AKUSHU !== '0') {
+    try { ak = await checkAkushu({ now, fetchImpl }); } catch (e) { console.warn(`握手会のチェックに失敗: ${e.message}`); }
+  }
+
   // 4. 送信
-  const anything = ev.opened.length || ev.changes.length || ev.reminders.length;
+  const anything = ev.opened.length || ev.changes.length || ev.reminders.length || ak.due.opened.length || ak.due.closing.length;
   let jobs = [];
   if (anything) {
     if (!canSend && !sendImpl) {
@@ -159,7 +242,7 @@ export async function run({ now = new Date(), fetchImpl = fetch, sendImpl } = {}
     } else {
       const subs = await loadSubscriptions(fetchImpl);
       for (const sub of subs) {
-        for (const payload of composeFor(sub.members, ev, now, sub.applied || [])) jobs.push({ subscription: sub.subscription, payload });
+        for (const payload of [...composeFor(sub.members, ev, now, sub.applied || []), ...composeAkushu(sub.members, ak.due)]) jobs.push({ subscription: sub.subscription, payload });
       }
     }
   }
@@ -168,7 +251,7 @@ export async function run({ now = new Date(), fetchImpl = fetch, sendImpl } = {}
     jobs = [];
   }
   const res = jobs.length ? await deliver(jobs, { sendImpl, fetchImpl }) : { ok: 0, ng: 0, gone: 0 };
-  console.log(`公演 ${shows.length}件 / 新規受付 ${ev.opened.length} / 変更 ${ev.changes.length} / リマインド ${ev.reminders.length} / 送信 成功${res.ok} 失敗${res.ng} 失効${res.gone}`);
+  console.log(`公演 ${shows.length}件 / 新規受付 ${ev.opened.length} / 変更 ${ev.changes.length} / リマインド ${ev.reminders.length} / 握手会 開始${ak.due.opened.length} 締切前${ak.due.closing.length} / 送信 成功${res.ok} 失敗${res.ng} 失効${res.gone}`);
 
   // 5. メンバー一覧（180日出演がなければ外す）
   const mm = new Map(members.map((m) => [m.name, m]));
@@ -223,7 +306,7 @@ export async function run({ now = new Date(), fetchImpl = fetch, sendImpl } = {}
     openNotified: [...openNotified].filter((id) => ids.has(id)),
     sentReminders: [...sent].filter((k) => ids.has(Number(k.split(':')[0]))),
   });
-  return { ev, jobs, shows, memberList, res };
+  return { ev, jobs, shows, memberList, res, ak };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

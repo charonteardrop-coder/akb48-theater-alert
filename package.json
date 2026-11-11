@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "node-html-parser": "^6.1.13",
+    "pdfjs-dist": "4.6.82",
     "web-push": "^3.6.7"
   }
 }

@@ -90,6 +90,7 @@ test('通し：初回は通知なし → 受付開始・メンバー変更・リ
   process.chdir(mkdtempSync(join(tmpdir(), 'akb-')));
   Object.assign(process.env, { API_BASE: 'https://api.test', ADMIN_TOKEN: 'test-admin-token-123456', VAPID_PUBLIC_KEY: 'x', VAPID_PRIVATE_KEY: 'y' });
   delete process.env.DRY_RUN;
+  process.env.AKUSHU = '0'; // 握手会のチェックは akushu.test.js で見る
   const { run } = await import('../src/run.js');
 
   const wenv = { DB: makeD1(readFileSync(new URL('../worker/schema.sql', import.meta.url), 'utf8')), ADMIN_TOKEN: process.env.ADMIN_TOKEN };
