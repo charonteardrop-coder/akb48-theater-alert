@@ -33,7 +33,7 @@
   main{max-width:720px;margin:-34px auto 0;padding:0 16px 48px;position:relative;z-index:2}
   .card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:16px;box-shadow:0 1px 0 rgba(0,0,0,.03),0 8px 24px -16px rgba(60,20,30,.25)}
   h2{font-size:16px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
-  h2 .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--curtain);color:#fff;font-size:12px}
+  h2 .n{font-size:14px;line-height:1}
   input[type=search]{width:100%;font:inherit;font-size:16px;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:#fff}
   input[type=search]:focus{outline:2px solid var(--gold);border-color:transparent}
   .select{position:relative}
@@ -254,20 +254,20 @@
 
 <main id="view-home">
   <section class="card" aria-labelledby="s1">
-    <h2 id="s1"><span class="n">1</span>推しを選ぶ</h2>
+    <h2 id="s1"><span class="n" aria-hidden="true">▫️</span>推しを選ぶ</h2>
     <div class="select"><select id="add" aria-label="推しを追加"><option value="">＋ 推しを追加</option></select></div>
     <div class="tags" id="tags" aria-live="polite"></div>
     <p class="hint" id="memberHint">何人でも選べるよ。外すときはタップ。</p>
   </section>
 
   <section class="card" aria-labelledby="s2">
-    <h2 id="s2"><span class="n">2</span>通知をオンにする</h2>
+    <h2 id="s2"><span class="n" aria-hidden="true">▫️</span>通知をオンにする</h2>
     <div class="push" id="push"><p class="hint">読み込み中…</p></div>
     <label class="check"><input type="checkbox" id="box"> 推し以外も含めて、全公演の受付開始を受け取る（箱推し）</label>
   </section>
 
   <section class="card" aria-labelledby="s3">
-    <h2 id="s3"><span class="n">3</span>チケットセンターに出てる公演</h2>
+    <h2 id="s3"><span class="n" aria-hidden="true">▫️</span>チケットセンターに出てる公演</h2>
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" aria-selected="true" data-mode="oshi">推しの出演だけ</button>
       <button class="tab" role="tab" aria-selected="false" data-mode="open">受付中</button>
@@ -277,16 +277,16 @@
   </section>
 
   <section class="card" aria-labelledby="l1">
-    <h2 id="l1"><span class="n">4</span>観覧記録</h2>
+    <h2 id="l1"><span class="n" aria-hidden="true">▫️</span>観覧記録</h2>
     <div class="stats" id="stats"></div>
     <div class="bars" id="bars"></div>
   </section>
   <section class="card">
-    <div class="head-row"><h2>行った公演</h2><button class="btn primary small" id="addLog">＋ 記録を追加</button></div>
+    <div class="head-row"><h2 id="l2"><span class="n" aria-hidden="true">▫️</span>行った公演</h2><button class="btn primary small" id="addLog">＋ 記録を追加</button></div>
     <div id="logs"></div>
   </section>
   <section class="card" aria-labelledby="l3">
-    <h2 id="l3">バックアップ</h2>
+    <h2 id="l3"><span class="n" aria-hidden="true">▫️</span>バックアップ</h2>
     <p class="hint" style="margin-top:0">記録はこの端末の中だけに保存されてるよ。ホーム画面のアイコンを消したり機種変更したりする前に書き出しておいてね。</p>
     <div class="row">
       <button class="btn ghost" id="exportLog">書き出す</button>
@@ -298,29 +298,29 @@
 
 <main id="view-akushu" hidden>
   <section class="card" aria-labelledby="a1">
-    <h2 id="a1"><span class="n">1</span>申込の開始と締切を通知</h2>
+    <h2 id="a1"><span class="n" aria-hidden="true">▫️</span>申込の開始と締切を通知</h2>
     <label class="check" style="margin-top:0"><input type="checkbox" id="akOn"> 握手会・お話し会の申込受付が始まったときと、締切の前に通知する</label>
     <p class="hint" id="akPushHint"></p>
   </section>
 
   <section class="card" aria-labelledby="a2">
-    <div class="head-row"><h2 id="a2"><span class="n">2</span>持ってる券</h2><button class="btn primary small" id="akAdd">＋ 申込を記録</button></div>
+    <div class="head-row"><h2 id="a2"><span class="n" aria-hidden="true">▫️</span>持ってる券</h2><button class="btn primary small" id="akAdd">＋ 申込を記録</button></div>
     <div class="stats" id="akStats"></div>
     <div id="akTickets"></div>
   </section>
 
   <section class="card" aria-labelledby="a3">
-    <h2 id="a3"><span class="n">3</span>申込中（結果待ち）</h2>
+    <h2 id="a3"><span class="n" aria-hidden="true">▫️</span>申込中（結果待ち）</h2>
     <div id="akPending"></div>
   </section>
 
   <section class="card" aria-labelledby="a4">
-    <h2 id="a4"><span class="n">4</span>申込受付スケジュール</h2>
+    <h2 id="a4"><span class="n" aria-hidden="true">▫️</span>申込受付スケジュール</h2>
     <div id="akSched"><p class="empty">読み込み中…</p></div>
   </section>
 
   <section class="card" aria-labelledby="a5">
-    <h2 id="a5"><span class="n">5</span>開催日程</h2>
+    <h2 id="a5"><span class="n" aria-hidden="true">▫️</span>開催日程</h2>
     <div id="akDays"></div>
   </section>
 
@@ -520,7 +520,7 @@
     }
     const can = names.length || box || akOn;
     el.innerHTML = `<div class="state"><span class="dot"></span>通知オフ</div>
-      <p>${can ? `${who ? `<b>${who}</b> ` : ''}${box ? (who ? '＋全公演' : '全公演') : ''}の受付開始・メンバー変更・締切前をお知らせするよ。` : (akOn ? '握手会・お話し会の申込開始と締切前をお知らせするよ。' : '先に①で推しを選んでね。')}</p>
+      <p>${can ? `${who ? `<b>${who}</b> ` : ''}${box ? (who ? '＋全公演' : '全公演') : ''}の受付開始・メンバー変更・締切前をお知らせするよ。` : (akOn ? '握手会・お話し会の申込開始と締切前をお知らせするよ。' : '先に「推しを選ぶ」で推しを選んでね。')}</p>
       <button class="btn primary big" id="onBtn" ${can && !busy ? '' : 'disabled'}>${busy ? '設定中…' : '通知をオンにする'}</button>`;
   }
 
@@ -1179,7 +1179,7 @@
     const today = todayJst();
     $('#akOn').checked = akOn;
     $('#akPushHint').textContent = sub ? (akOn ? '通知オン。受付開始と、締切の3時間前（応募期間が長いものは24時間前）に届くよ。' : 'チェックを入れると、この端末に届くようになるよ。')
-      : (akOn ? '通知自体がまだオフだよ。「劇場公演」タブの②で通知をオンにしてね。' : 'チェックを入れてから、「劇場公演」タブの②で通知をオンにしてね。');
+      : (akOn ? '通知自体がまだオフだよ。「劇場公演」タブの「通知をオンにする」で通知をオンにしてね。' : 'チェックを入れてから、「劇場公演」タブの「通知をオンにする」で通知をオンにしてね。');
 
     // 持ってる券
     const have = akEntries.filter((e) => e.won > 0);
@@ -1384,7 +1384,7 @@
       : '推しが出る劇場公演の受付が始まったら、スマホに通知。メンバー変更で推しが出演することになったときと、締切の6時間前にも届くよ。';
   }
 
-  /* ---------- 折りたたみ（公演一覧・持ってる券・申込中。開閉はこの端末に覚えておく） ---------- */
+  /* ---------- 折りたたみ（全部のカード。開閉はこの端末に覚えておく） ---------- */
   const FOLDKEY = 'oshi-gekijo-alert:fold:v1';
   let folds = (() => { try { const o = JSON.parse(localStorage.getItem(FOLDKEY)); return o && typeof o === 'object' ? o : {}; } catch { return {}; } })();
   function setFold(id, on) {
@@ -1395,15 +1395,18 @@
     if (b) { b.textContent = on ? '開く ▾' : 'たたむ ▴'; b.setAttribute('aria-expanded', String(!on)); }
     if (!!folds[id] !== !!on) { folds[id] = !!on; try { localStorage.setItem(FOLDKEY, JSON.stringify(folds)); } catch {} }
   }
-  for (const id of ['s3', 'a2', 'a3']) {
-    const h = document.getElementById(id);
-    if (!h) continue;
+  // カードはぜんぶ畳める（見出しにidがないカードには順番で名前を付ける）
+  document.querySelectorAll('main section.card').forEach((sec, i) => {
+    const h = sec.querySelector('h2');
+    if (!h) return;
+    if (!h.id) h.id = `card${i}`;
+    const id = h.id;
     h.classList.add('fold-h');
     (h.parentElement.classList.contains('head-row') ? h.parentElement : h).classList.add('fold-head');
     h.insertAdjacentHTML('beforeend', `<button type="button" class="fold" aria-controls="${id}"></button>`);
     h.addEventListener('click', () => setFold(id, !folds[id]));
     setFold(id, !!folds[id]);
-  }
+  });
 
   const renderAll = () => { renderChips(); renderPush(); renderShows(); renderLog(); renderAkushu(); };
 
@@ -1412,6 +1415,7 @@
     const u = new URL(href, location.href);
     const id = u.searchParams.get('show');
     if (id || u.searchParams.has('view')) setFold('s3', false);
+    if (u.searchParams.get('view') === 'log') { setFold('l1', false); setFold('l2', false); }
     if (u.searchParams.get('view') === 'log') document.getElementById('l1').scrollIntoView({ behavior: 'smooth' });
     const view = u.searchParams.get('view');
     if (view === 'akushu') { showPage('akushu'); persist(); window.scrollTo({ top: 0 }); }
