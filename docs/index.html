@@ -227,6 +227,12 @@
   details.ak-more > summary{font-size:13px;color:var(--muted);cursor:pointer}
   .ak-parts{font-size:12px;color:var(--muted);margin:6px 0 0;padding:0;list-style:none;columns:2}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  /* 折りたたみ */
+  h2.fold-h{cursor:pointer;user-select:none;-webkit-user-select:none}
+  .fold{font:inherit;font-size:12px;font-weight:700;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:999px;padding:2px 10px;cursor:pointer;white-space:nowrap}
+  h2.fold-h .fold{margin-left:4px}
+  .card.folded > :not(.fold-head){display:none}
+  .card.folded > .fold-head, .card.folded > .fold-head h2, .card.folded > h2.fold-head{margin-bottom:0}
   footer{max-width:720px;margin:0 auto;padding:0 20px 40px;font-size:12px;color:var(--muted)}
   footer a{color:inherit}
   .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:.2s;pointer-events:none;z-index:9}
@@ -1378,12 +1384,34 @@
       : '推しが出る劇場公演の受付が始まったら、スマホに通知。メンバー変更で推しが出演することになったときと、締切の6時間前にも届くよ。';
   }
 
+  /* ---------- 折りたたみ（公演一覧・持ってる券・申込中。開閉はこの端末に覚えておく） ---------- */
+  const FOLDKEY = 'oshi-gekijo-alert:fold:v1';
+  let folds = (() => { try { const o = JSON.parse(localStorage.getItem(FOLDKEY)); return o && typeof o === 'object' ? o : {}; } catch { return {}; } })();
+  function setFold(id, on) {
+    const h = document.getElementById(id), sec = h && h.closest('section');
+    if (!sec) return;
+    sec.classList.toggle('folded', !!on);
+    const b = h.querySelector('.fold');
+    if (b) { b.textContent = on ? '開く ▾' : 'たたむ ▴'; b.setAttribute('aria-expanded', String(!on)); }
+    if (!!folds[id] !== !!on) { folds[id] = !!on; try { localStorage.setItem(FOLDKEY, JSON.stringify(folds)); } catch {} }
+  }
+  for (const id of ['s3', 'a2', 'a3']) {
+    const h = document.getElementById(id);
+    if (!h) continue;
+    h.classList.add('fold-h');
+    (h.parentElement.classList.contains('head-row') ? h.parentElement : h).classList.add('fold-head');
+    h.insertAdjacentHTML('beforeend', `<button type="button" class="fold" aria-controls="${id}"></button>`);
+    h.addEventListener('click', () => setFold(id, !folds[id]));
+    setFold(id, !!folds[id]);
+  }
+
   const renderAll = () => { renderChips(); renderPush(); renderShows(); renderLog(); renderAkushu(); };
 
   /* ---------- 通知タップからの遷移（?show=ID / ?view=oshi） ---------- */
   function route(href) {
     const u = new URL(href, location.href);
     const id = u.searchParams.get('show');
+    if (id || u.searchParams.has('view')) setFold('s3', false);
     if (u.searchParams.get('view') === 'log') document.getElementById('l1').scrollIntoView({ behavior: 'smooth' });
     const view = u.searchParams.get('view');
     if (view === 'akushu') { showPage('akushu'); persist(); window.scrollTo({ top: 0 }); }
