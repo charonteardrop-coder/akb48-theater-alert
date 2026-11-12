@@ -457,8 +457,8 @@
         "name": "映像倉庫会員枠",
         "short": "映像倉庫",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-01T07:00:00.000000Z",
         "end": "2026-11-10T07:00:00.000000Z",
         "applyUrl": null,
@@ -469,8 +469,8 @@
         "name": "柱の会 会員枠",
         "short": "柱の会",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-01T07:00:00.000000Z",
         "end": "2026-11-10T07:00:00.000000Z",
         "applyUrl": null,
@@ -517,8 +517,8 @@
         "name": "100発98中権利",
         "short": "100発98中",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-01T07:00:00.000000Z",
         "end": "2026-11-10T07:00:00.000000Z",
         "applyUrl": null,
@@ -537,7 +537,7 @@
         "price": 1800
       }
     ],
-    "fp": "213306:ended,213307:ended,213308:ended,213309:ended,213310:ended,213311:ended,213312:open|秋山由奈,黒須遥香,迫由芽実,千葉恵里,徳永羚海,八木愛月,山内瑞葵,山根涼羽"
+    "fp": "213306:soldout,213307:soldout,213308:ended,213309:ended,213310:ended,213311:soldout,213312:open|秋山由奈,黒須遥香,迫由芽実,千葉恵里,徳永羚海,八木愛月,山内瑞葵,山根涼羽"
   },
   {
     "id": 386018,
