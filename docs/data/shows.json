@@ -313,15 +313,15 @@
         "name": "お見送り会参加権付きロビー観覧チケット",
         "short": "ロビー観覧",
         "lobby": true,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-01T07:00:00.000000Z",
         "end": "2026-11-15T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cq6:TuE:2cadd",
+        "applyUrl": null,
         "price": 1800
       }
     ],
-    "fp": "213314:soldout,213315:soldout,213316:ended,213317:ended,213318:ended,213319:soldout,213320:open|新井彩永,行天優莉奈,黒須遥香,永野芹佳,橋本恵理子,水島美結,山根涼羽,大賀彩姫"
+    "fp": "213314:soldout,213315:soldout,213316:ended,213317:ended,213318:ended,213319:soldout,213320:ended|新井彩永,行天優莉奈,黒須遥香,永野芹佳,橋本恵理子,水島美結,山根涼羽,大賀彩姫"
   },
   {
     "id": 386019,
@@ -381,11 +381,11 @@
         "name": "一般枠",
         "short": "一般",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-01T07:00:00.000000Z",
         "end": "2026-11-15T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cq7:TuH:d5144",
+        "applyUrl": null,
         "price": 4300
       },
       {
@@ -393,11 +393,11 @@
         "name": "ファミリー・カップル枠",
         "short": "ファミカプ",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-01T07:00:00.000000Z",
         "end": "2026-11-15T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cq7:TuI:7d04d",
+        "applyUrl": null,
         "price": 4300
       },
       {
@@ -405,11 +405,11 @@
         "name": "女性・小中学生枠",
         "short": "女性・小中学生",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-01T07:00:00.000000Z",
         "end": "2026-11-15T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cq7:TuJ:46757",
+        "applyUrl": null,
         "price": 4300
       },
       {
@@ -437,7 +437,7 @@
         "price": 1800
       }
     ],
-    "fp": "213321:ended,213322:ended,213323:open,213324:open,213325:open,213326:ended,213327:open|秋山由奈,太田有紀,川村結衣,工藤華純,倉野尾成美,迫由芽実,佐藤綺星,髙橋彩音,徳永羚海,永野芹佳,橋本陽菜,平田侑希,正鋳真優,水島美結,山内瑞葵,山口結愛"
+    "fp": "213321:ended,213322:ended,213323:ended,213324:ended,213325:ended,213326:ended,213327:open|秋山由奈,太田有紀,川村結衣,工藤華純,倉野尾成美,迫由芽実,佐藤綺星,髙橋彩音,徳永羚海,永野芹佳,橋本陽菜,平田侑希,正鋳真優,水島美結,山内瑞葵,山口結愛"
   },
   {
     "id": 386446,
