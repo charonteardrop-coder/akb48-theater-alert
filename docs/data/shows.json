@@ -97,15 +97,15 @@
         "name": "お見送り会参加権付きロビー観覧チケット",
         "short": "ロビー観覧",
         "lobby": true,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-01T07:00:00.000000Z",
         "end": "2026-11-13T07:00:00.000000Z",
         "applyUrl": null,
         "price": 1800
       }
     ],
-    "fp": "213299:soldout,213300:soldout,213301:soldout,213302:soldout,213303:soldout,213304:soldout,213305:ended|岩立沙穂,久保姫菜乃,橋本恵理子,橋本陽菜,畠山希美,平田侑希,武藤小麟,山口結愛"
+    "fp": "213299:soldout,213300:soldout,213301:soldout,213302:soldout,213303:soldout,213304:soldout,213305:soldout|岩立沙穂,久保姫菜乃,橋本恵理子,橋本陽菜,畠山希美,平田侑希,武藤小麟,山口結愛"
   },
   {
     "id": 386017,
@@ -265,8 +265,8 @@
         "name": "一般枠",
         "short": "一般",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-01T07:00:00.000000Z",
         "end": "2026-11-13T07:00:00.000000Z",
         "applyUrl": null,
@@ -277,8 +277,8 @@
         "name": "ファミリー・カップル枠",
         "short": "ファミカプ",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-01T07:00:00.000000Z",
         "end": "2026-11-13T07:00:00.000000Z",
         "applyUrl": null,
@@ -289,8 +289,8 @@
         "name": "女性・小中学生枠",
         "short": "女性・小中学生",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-01T07:00:00.000000Z",
         "end": "2026-11-13T07:00:00.000000Z",
         "applyUrl": null,
@@ -321,7 +321,7 @@
         "price": 1800
       }
     ],
-    "fp": "213314:soldout,213315:soldout,213316:ended,213317:ended,213318:ended,213319:soldout,213320:ended|新井彩永,行天優莉奈,黒須遥香,永野芹佳,橋本恵理子,水島美結,山根涼羽,大賀彩姫"
+    "fp": "213314:soldout,213315:soldout,213316:soldout,213317:soldout,213318:soldout,213319:soldout,213320:ended|新井彩永,行天優莉奈,黒須遥香,永野芹佳,橋本恵理子,水島美結,山根涼羽,大賀彩姫"
   },
   {
     "id": 386019,
@@ -357,8 +357,8 @@
         "name": "映像倉庫会員枠",
         "short": "映像倉庫",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-01T07:00:00.000000Z",
         "end": "2026-11-13T07:00:00.000000Z",
         "applyUrl": null,
@@ -369,8 +369,8 @@
         "name": "柱の会 会員枠",
         "short": "柱の会",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-01T07:00:00.000000Z",
         "end": "2026-11-13T07:00:00.000000Z",
         "applyUrl": null,
@@ -417,8 +417,8 @@
         "name": "100発98中権利",
         "short": "100発98中",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-01T07:00:00.000000Z",
         "end": "2026-11-13T07:00:00.000000Z",
         "applyUrl": null,
@@ -437,7 +437,7 @@
         "price": 1800
       }
     ],
-    "fp": "213321:ended,213322:ended,213323:ended,213324:ended,213325:ended,213326:ended,213327:open|秋山由奈,太田有紀,川村結衣,工藤華純,倉野尾成美,迫由芽実,佐藤綺星,髙橋彩音,徳永羚海,永野芹佳,橋本陽菜,平田侑希,正鋳真優,水島美結,山内瑞葵,山口結愛"
+    "fp": "213321:soldout,213322:soldout,213323:ended,213324:ended,213325:ended,213326:soldout,213327:open|秋山由奈,太田有紀,川村結衣,工藤華純,倉野尾成美,迫由芽実,佐藤綺星,髙橋彩音,徳永羚海,永野芹佳,橋本陽菜,平田侑希,正鋳真優,水島美結,山内瑞葵,山口結愛"
   },
   {
     "id": 386446,
