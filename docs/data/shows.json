@@ -465,11 +465,11 @@
         "name": "映像倉庫会員枠",
         "short": "映像倉庫",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-16T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx0:TMR:92c92",
+        "applyUrl": null,
         "price": 4100
       },
       {
@@ -477,11 +477,11 @@
         "name": "柱の会 会員枠",
         "short": "柱の会",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-16T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx0:TMS:ff582",
+        "applyUrl": null,
         "price": 4100
       },
       {
@@ -525,11 +525,11 @@
         "name": "100発98中権利",
         "short": "100発98中",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-16T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx0:TMW:c5fe4",
+        "applyUrl": null,
         "price": 4100
       },
       {
@@ -545,7 +545,7 @@
         "price": 1800
       }
     ],
-    "fp": "214449:open,214450:open,214451:open,214452:open,214453:open,214454:open,214455:open|奥本カイリ,正鋳真優,大賀彩姫,丸山ひなた,髙橋舞桜,田中沙友利,森川優,渡邉葵心"
+    "fp": "214449:ended,214450:ended,214451:open,214452:open,214453:open,214454:ended,214455:open|奥本カイリ,正鋳真優,大賀彩姫,丸山ひなた,髙橋舞桜,田中沙友利,森川優,渡邉葵心"
   },
   {
     "id": 386447,
@@ -573,11 +573,11 @@
         "name": "映像倉庫会員枠",
         "short": "映像倉庫",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-16T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx1:TMY:8dac7",
+        "applyUrl": null,
         "price": 4100
       },
       {
@@ -585,11 +585,11 @@
         "name": "柱の会 会員枠",
         "short": "柱の会",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-16T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx1:TMZ:07f73",
+        "applyUrl": null,
         "price": 4100
       },
       {
@@ -633,11 +633,11 @@
         "name": "100発98中権利",
         "short": "100発98中",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-16T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx1:TN3:327be",
+        "applyUrl": null,
         "price": 4100
       },
       {
@@ -653,7 +653,7 @@
         "price": 1800
       }
     ],
-    "fp": "214456:open,214457:open,214458:open,214459:open,214460:open,214461:open,214462:open|奥本カイリ,正鋳真優,大賀彩姫,丸山ひなた,髙橋舞桜,田中沙友利,森川優,渡邉葵心"
+    "fp": "214456:ended,214457:ended,214458:open,214459:open,214460:open,214461:ended,214462:open|奥本カイリ,正鋳真優,大賀彩姫,丸山ひなた,髙橋舞桜,田中沙友利,森川優,渡邉葵心"
   },
   {
     "id": 386448,
