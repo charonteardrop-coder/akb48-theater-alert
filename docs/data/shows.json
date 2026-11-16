@@ -1,113 +1,5 @@
 [
   {
-    "id": 386016,
-    "url": "https://akb48.zaiko.io/e/2026-nov16-1830",
-    "name": "11月16日 18:30開演「ＲＥＳＥＴ」公演",
-    "title": "「ＲＥＳＥＴ」公演",
-    "note": "",
-    "date": "2026-11-16",
-    "label": "11/16(月)",
-    "time": "18:30",
-    "start": "2026-11-16T09:30:00.000000Z",
-    "members": [
-      "岩立沙穂",
-      "久保姫菜乃",
-      "橋本恵理子",
-      "橋本陽菜",
-      "畠山希美",
-      "平田侑希",
-      "武藤小麟",
-      "山口結愛"
-    ],
-    "slots": [
-      {
-        "id": 213299,
-        "name": "映像倉庫会員枠",
-        "short": "映像倉庫",
-        "lobby": false,
-        "status": "soldout",
-        "label": "在庫なし",
-        "start": "2026-11-01T07:00:00.000000Z",
-        "end": "2026-11-09T07:00:00.000000Z",
-        "applyUrl": null,
-        "price": 4300
-      },
-      {
-        "id": 213300,
-        "name": "柱の会 会員枠",
-        "short": "柱の会",
-        "lobby": false,
-        "status": "soldout",
-        "label": "在庫なし",
-        "start": "2026-11-01T07:00:00.000000Z",
-        "end": "2026-11-09T07:00:00.000000Z",
-        "applyUrl": null,
-        "price": 4300
-      },
-      {
-        "id": 213301,
-        "name": "一般枠",
-        "short": "一般",
-        "lobby": false,
-        "status": "soldout",
-        "label": "在庫なし",
-        "start": "2026-11-01T07:00:00.000000Z",
-        "end": "2026-11-11T07:00:00.000000Z",
-        "applyUrl": null,
-        "price": 4300
-      },
-      {
-        "id": 213302,
-        "name": "ファミリー・カップル枠",
-        "short": "ファミカプ",
-        "lobby": false,
-        "status": "soldout",
-        "label": "在庫なし",
-        "start": "2026-11-01T07:00:00.000000Z",
-        "end": "2026-11-11T07:00:00.000000Z",
-        "applyUrl": null,
-        "price": 4300
-      },
-      {
-        "id": 213303,
-        "name": "女性・小中学生枠",
-        "short": "女性・小中学生",
-        "lobby": false,
-        "status": "soldout",
-        "label": "在庫なし",
-        "start": "2026-11-01T07:00:00.000000Z",
-        "end": "2026-11-11T07:00:00.000000Z",
-        "applyUrl": null,
-        "price": 4300
-      },
-      {
-        "id": 213304,
-        "name": "100発98中権利",
-        "short": "100発98中",
-        "lobby": false,
-        "status": "soldout",
-        "label": "在庫なし",
-        "start": "2026-11-01T07:00:00.000000Z",
-        "end": "2026-11-09T07:00:00.000000Z",
-        "applyUrl": null,
-        "price": 4300
-      },
-      {
-        "id": 213305,
-        "name": "お見送り会参加権付きロビー観覧チケット",
-        "short": "ロビー観覧",
-        "lobby": true,
-        "status": "soldout",
-        "label": "在庫なし",
-        "start": "2026-11-01T07:00:00.000000Z",
-        "end": "2026-11-13T07:00:00.000000Z",
-        "applyUrl": null,
-        "price": 1800
-      }
-    ],
-    "fp": "213299:soldout,213300:soldout,213301:soldout,213302:soldout,213303:soldout,213304:soldout,213305:soldout|岩立沙穂,久保姫菜乃,橋本恵理子,橋本陽菜,畠山希美,平田侑希,武藤小麟,山口結愛"
-  },
-  {
     "id": 386017,
     "url": "https://akb48.zaiko.io/e/2026e-1117-1830",
     "name": "11月17日 18:30開演「ＲＥＳＥＴ」公演　千葉恵里 生誕祭",
@@ -205,15 +97,15 @@
         "name": "お見送り会参加権付きロビー観覧チケット",
         "short": "ロビー観覧",
         "lobby": true,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-01T07:00:00.000000Z",
         "end": "2026-11-14T07:00:00.000000Z",
         "applyUrl": null,
         "price": 1800
       }
     ],
-    "fp": "213306:soldout,213307:soldout,213308:soldout,213309:soldout,213310:soldout,213311:soldout,213312:ended|秋山由奈,黒須遥香,迫由芽実,千葉恵里,徳永羚海,八木愛月,山内瑞葵,山根涼羽"
+    "fp": "213306:soldout,213307:soldout,213308:soldout,213309:soldout,213310:soldout,213311:soldout,213312:soldout|秋山由奈,黒須遥香,迫由芽実,千葉恵里,徳永羚海,八木愛月,山内瑞葵,山根涼羽"
   },
   {
     "id": 386018,
@@ -1190,5 +1082,113 @@
       }
     ],
     "fp": "214494:open,214495:open,214496:open,214497:open,214498:open,214499:open,214500:open|奥本カイリ,黒須遥香,迫由芽実,正鋳真優,丸山ひなた,髙橋舞桜,田中沙友利,森川優"
+  },
+  {
+    "id": 386016,
+    "url": "https://akb48.zaiko.io/e/2026-nov16-1830",
+    "name": "11月16日 18:30開演「ＲＥＳＥＴ」公演",
+    "title": "「ＲＥＳＥＴ」公演",
+    "note": "",
+    "date": "2026-11-16",
+    "label": "11/16(月)",
+    "time": "18:30",
+    "start": "2026-11-16T09:30:00.000000Z",
+    "members": [
+      "岩立沙穂",
+      "久保姫菜乃",
+      "橋本恵理子",
+      "橋本陽菜",
+      "畠山希美",
+      "平田侑希",
+      "武藤小麟",
+      "山口結愛"
+    ],
+    "slots": [
+      {
+        "id": 213299,
+        "name": "映像倉庫会員枠",
+        "short": "映像倉庫",
+        "lobby": false,
+        "status": "soldout",
+        "label": "在庫なし",
+        "start": "2026-11-01T07:00:00.000000Z",
+        "end": "2026-11-09T07:00:00.000000Z",
+        "applyUrl": null,
+        "price": 4300
+      },
+      {
+        "id": 213300,
+        "name": "柱の会 会員枠",
+        "short": "柱の会",
+        "lobby": false,
+        "status": "soldout",
+        "label": "在庫なし",
+        "start": "2026-11-01T07:00:00.000000Z",
+        "end": "2026-11-09T07:00:00.000000Z",
+        "applyUrl": null,
+        "price": 4300
+      },
+      {
+        "id": 213301,
+        "name": "一般枠",
+        "short": "一般",
+        "lobby": false,
+        "status": "soldout",
+        "label": "在庫なし",
+        "start": "2026-11-01T07:00:00.000000Z",
+        "end": "2026-11-11T07:00:00.000000Z",
+        "applyUrl": null,
+        "price": 4300
+      },
+      {
+        "id": 213302,
+        "name": "ファミリー・カップル枠",
+        "short": "ファミカプ",
+        "lobby": false,
+        "status": "soldout",
+        "label": "在庫なし",
+        "start": "2026-11-01T07:00:00.000000Z",
+        "end": "2026-11-11T07:00:00.000000Z",
+        "applyUrl": null,
+        "price": 4300
+      },
+      {
+        "id": 213303,
+        "name": "女性・小中学生枠",
+        "short": "女性・小中学生",
+        "lobby": false,
+        "status": "soldout",
+        "label": "在庫なし",
+        "start": "2026-11-01T07:00:00.000000Z",
+        "end": "2026-11-11T07:00:00.000000Z",
+        "applyUrl": null,
+        "price": 4300
+      },
+      {
+        "id": 213304,
+        "name": "100発98中権利",
+        "short": "100発98中",
+        "lobby": false,
+        "status": "soldout",
+        "label": "在庫なし",
+        "start": "2026-11-01T07:00:00.000000Z",
+        "end": "2026-11-09T07:00:00.000000Z",
+        "applyUrl": null,
+        "price": 4300
+      },
+      {
+        "id": 213305,
+        "name": "お見送り会参加権付きロビー観覧チケット",
+        "short": "ロビー観覧",
+        "lobby": true,
+        "status": "soldout",
+        "label": "在庫なし",
+        "start": "2026-11-01T07:00:00.000000Z",
+        "end": "2026-11-13T07:00:00.000000Z",
+        "applyUrl": null,
+        "price": 1800
+      }
+    ],
+    "fp": "213299:soldout,213300:soldout,213301:soldout,213302:soldout,213303:soldout,213304:soldout,213305:soldout|岩立沙穂,久保姫菜乃,橋本恵理子,橋本陽菜,畠山希美,平田侑希,武藤小麟,山口結愛"
   }
 ]
