@@ -273,11 +273,11 @@
         "name": "一般枠",
         "short": "一般",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-18T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx0:TMT:d5298",
+        "applyUrl": null,
         "price": 4100
       },
       {
@@ -285,11 +285,11 @@
         "name": "ファミリー・カップル枠",
         "short": "ファミカプ",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-18T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx0:TMU:018ba",
+        "applyUrl": null,
         "price": 4100
       },
       {
@@ -297,11 +297,11 @@
         "name": "女性・小中学生枠",
         "short": "女性・小中学生",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-18T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx0:TMV:c4dfe",
+        "applyUrl": null,
         "price": 4100
       },
       {
@@ -329,7 +329,7 @@
         "price": 1800
       }
     ],
-    "fp": "214449:ended,214450:ended,214451:open,214452:open,214453:open,214454:ended,214455:open|奥本カイリ,正鋳真優,大賀彩姫,丸山ひなた,髙橋舞桜,田中沙友利,森川優,渡邉葵心"
+    "fp": "214449:ended,214450:ended,214451:ended,214452:ended,214453:ended,214454:ended,214455:open|奥本カイリ,正鋳真優,大賀彩姫,丸山ひなた,髙橋舞桜,田中沙友利,森川優,渡邉葵心"
   },
   {
     "id": 386447,
@@ -381,11 +381,11 @@
         "name": "一般枠",
         "short": "一般",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-18T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx1:TN0:270a4",
+        "applyUrl": null,
         "price": 4100
       },
       {
@@ -393,11 +393,11 @@
         "name": "ファミリー・カップル枠",
         "short": "ファミカプ",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-18T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx1:TN1:a4dcb",
+        "applyUrl": null,
         "price": 4100
       },
       {
@@ -405,11 +405,11 @@
         "name": "女性・小中学生枠",
         "short": "女性・小中学生",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-18T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx1:TN2:14d00",
+        "applyUrl": null,
         "price": 4100
       },
       {
@@ -437,7 +437,7 @@
         "price": 1800
       }
     ],
-    "fp": "214456:ended,214457:ended,214458:open,214459:open,214460:open,214461:ended,214462:open|奥本カイリ,正鋳真優,大賀彩姫,丸山ひなた,髙橋舞桜,田中沙友利,森川優,渡邉葵心"
+    "fp": "214456:ended,214457:ended,214458:ended,214459:ended,214460:ended,214461:ended,214462:open|奥本カイリ,正鋳真優,大賀彩姫,丸山ひなた,髙橋舞桜,田中沙友利,森川優,渡邉葵心"
   },
   {
     "id": 386448,
