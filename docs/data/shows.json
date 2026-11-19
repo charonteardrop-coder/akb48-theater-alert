@@ -105,15 +105,15 @@
         "name": "お見送り会参加権付きロビー観覧チケット",
         "short": "ロビー観覧",
         "lobby": true,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-01T07:00:00.000000Z",
         "end": "2026-11-17T07:00:00.000000Z",
         "applyUrl": null,
         "price": 1800
       }
     ],
-    "fp": "213321:soldout,213322:soldout,213323:soldout,213324:soldout,213325:soldout,213326:soldout,213327:ended|秋山由奈,太田有紀,川村結衣,工藤華純,倉野尾成美,迫由芽実,佐藤綺星,髙橋彩音,徳永羚海,永野芹佳,橋本陽菜,平田侑希,正鋳真優,水島美結,山内瑞葵,山口結愛"
+    "fp": "213321:soldout,213322:soldout,213323:soldout,213324:soldout,213325:soldout,213326:soldout,213327:soldout|秋山由奈,太田有紀,川村結衣,工藤華純,倉野尾成美,迫由芽実,佐藤綺星,髙橋彩音,徳永羚海,永野芹佳,橋本陽菜,平田侑希,正鋳真優,水島美結,山内瑞葵,山口結愛"
   },
   {
     "id": 386446,
@@ -357,11 +357,11 @@
         "name": "映像倉庫会員枠",
         "short": "映像倉庫",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-19T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx2:TN5:7c550",
+        "applyUrl": null,
         "price": 4100
       },
       {
@@ -369,11 +369,11 @@
         "name": "柱の会 会員枠",
         "short": "柱の会",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-19T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx2:TN6:cf859",
+        "applyUrl": null,
         "price": 4100
       },
       {
@@ -417,11 +417,11 @@
         "name": "100発98中権利",
         "short": "100発98中",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-19T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx2:TNa:5a2ae",
+        "applyUrl": null,
         "price": 4100
       },
       {
@@ -437,7 +437,7 @@
         "price": 1800
       }
     ],
-    "fp": "214463:open,214464:open,214465:open,214466:open,214467:open,214468:open,214469:open|奥本カイリ,正鋳真優,大賀彩姫,丸山ひなた,髙橋舞桜,田中沙友利,森川優,渡邉葵心"
+    "fp": "214463:ended,214464:ended,214465:open,214466:open,214467:open,214468:ended,214469:open|奥本カイリ,正鋳真優,大賀彩姫,丸山ひなた,髙橋舞桜,田中沙友利,森川優,渡邉葵心"
   },
   {
     "id": 386450,

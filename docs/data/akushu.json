@@ -1,6 +1,6 @@
 {
   "source": "https://www.universal-music.co.jp/akb48/news/",
-  "updatedAt": "2026-11-17T09:07:58.485Z",
+  "updatedAt": "2026-11-19T13:44:33.828Z",
   "releases": [
     {
       "id": "69th",
@@ -1487,7 +1487,18 @@
           ]
         }
       ],
-      "others": []
+      "others": [
+        {
+          "name": "2ショット写真会",
+          "dates": [
+            "2026-11-21",
+            "2026-11-22"
+          ],
+          "venue": "",
+          "url": "https://www.universal-music.co.jp/akb48/news/2026-11-19/",
+          "apply": null
+        }
+      ]
     },
     {
       "id": "68th",
