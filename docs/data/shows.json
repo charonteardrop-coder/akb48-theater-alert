@@ -49,8 +49,8 @@
         "name": "一般枠",
         "short": "一般",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-18T07:00:00.000000Z",
         "applyUrl": null,
@@ -61,8 +61,8 @@
         "name": "ファミリー・カップル枠",
         "short": "ファミカプ",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-18T07:00:00.000000Z",
         "applyUrl": null,
@@ -73,8 +73,8 @@
         "name": "女性・小中学生枠",
         "short": "女性・小中学生",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-18T07:00:00.000000Z",
         "applyUrl": null,
@@ -105,7 +105,7 @@
         "price": 1800
       }
     ],
-    "fp": "214449:soldout,214450:soldout,214451:ended,214452:ended,214453:ended,214454:soldout,214455:ended|奥本カイリ,正鋳真優,大賀彩姫,丸山ひなた,髙橋舞桜,田中沙友利,森川優,渡邉葵心"
+    "fp": "214449:soldout,214450:soldout,214451:soldout,214452:soldout,214453:soldout,214454:soldout,214455:ended|奥本カイリ,正鋳真優,大賀彩姫,丸山ひなた,髙橋舞桜,田中沙友利,森川優,渡邉葵心"
   },
   {
     "id": 386447,
@@ -157,8 +157,8 @@
         "name": "一般枠",
         "short": "一般",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-18T07:00:00.000000Z",
         "applyUrl": null,
@@ -169,8 +169,8 @@
         "name": "ファミリー・カップル枠",
         "short": "ファミカプ",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-18T07:00:00.000000Z",
         "applyUrl": null,
@@ -181,8 +181,8 @@
         "name": "女性・小中学生枠",
         "short": "女性・小中学生",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-18T07:00:00.000000Z",
         "applyUrl": null,
@@ -213,7 +213,7 @@
         "price": 1800
       }
     ],
-    "fp": "214456:soldout,214457:soldout,214458:ended,214459:ended,214460:ended,214461:soldout,214462:ended|奥本カイリ,正鋳真優,大賀彩姫,丸山ひなた,髙橋舞桜,田中沙友利,森川優,渡邉葵心"
+    "fp": "214456:soldout,214457:soldout,214458:soldout,214459:soldout,214460:soldout,214461:soldout,214462:ended|奥本カイリ,正鋳真優,大賀彩姫,丸山ひなた,髙橋舞桜,田中沙友利,森川優,渡邉葵心"
   },
   {
     "id": 386448,
