@@ -97,15 +97,15 @@
         "name": "お見送り会参加権付きロビー観覧チケット",
         "short": "ロビー観覧",
         "lobby": true,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-20T07:00:00.000000Z",
         "applyUrl": null,
         "price": 1800
       }
     ],
-    "fp": "214449:soldout,214450:soldout,214451:soldout,214452:soldout,214453:soldout,214454:soldout,214455:ended|奥本カイリ,正鋳真優,大賀彩姫,丸山ひなた,髙橋舞桜,田中沙友利,森川優,渡邉葵心"
+    "fp": "214449:soldout,214450:soldout,214451:soldout,214452:soldout,214453:soldout,214454:soldout,214455:soldout|奥本カイリ,正鋳真優,大賀彩姫,丸山ひなた,髙橋舞桜,田中沙友利,森川優,渡邉葵心"
   },
   {
     "id": 386447,
@@ -373,11 +373,11 @@
         "name": "一般枠",
         "short": "一般",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-22T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx4:TNh:b6162",
+        "applyUrl": null,
         "price": 4300
       },
       {
@@ -385,11 +385,11 @@
         "name": "ファミリー・カップル枠",
         "short": "ファミカプ",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-22T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx4:TNi:7cbc0",
+        "applyUrl": null,
         "price": 4300
       },
       {
@@ -397,11 +397,11 @@
         "name": "女性・小中学生枠",
         "short": "女性・小中学生",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-22T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx4:TNj:83989",
+        "applyUrl": null,
         "price": 4300
       },
       {
@@ -429,7 +429,7 @@
         "price": 1800
       }
     ],
-    "fp": "214473:ended,214474:ended,214475:open,214476:open,214477:open,214478:ended,214479:open|太田有紀,黒須遥香,橋本陽菜,畠山希美,平田侑希,武藤小麟,山口結愛,山根涼羽"
+    "fp": "214473:ended,214474:ended,214475:ended,214476:ended,214477:ended,214478:ended,214479:open|太田有紀,黒須遥香,橋本陽菜,畠山希美,平田侑希,武藤小麟,山口結愛,山根涼羽"
   },
   {
     "id": 386451,
@@ -573,11 +573,11 @@
         "name": "映像倉庫会員枠",
         "short": "映像倉庫",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-22T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx6:TNt:9d88c",
+        "applyUrl": null,
         "price": 4300
       },
       {
@@ -585,11 +585,11 @@
         "name": "柱の会 会員枠",
         "short": "柱の会",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-22T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx6:TNu:2d153",
+        "applyUrl": null,
         "price": 4300
       },
       {
@@ -641,7 +641,7 @@
         "price": 1800
       }
     ],
-    "fp": "214487:open,214488:open,214489:open,214490:open,214491:open,214492:open|秋山由奈,新井彩永,伊藤百花,小栗有以,行天優莉奈,倉野尾成美,坂川陽香,佐藤綺星,下尾みう,長友彩海,成田香姫奈,福岡聖菜,八木愛月,山内瑞葵,山﨑空,近藤沙樹"
+    "fp": "214487:ended,214488:ended,214489:open,214490:open,214491:open,214492:open|秋山由奈,新井彩永,伊藤百花,小栗有以,行天優莉奈,倉野尾成美,坂川陽香,佐藤綺星,下尾みう,長友彩海,成田香姫奈,福岡聖菜,八木愛月,山内瑞葵,山﨑空,近藤沙樹"
   },
   {
     "id": 386453,
