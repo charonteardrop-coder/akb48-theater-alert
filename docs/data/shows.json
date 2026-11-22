@@ -205,15 +205,15 @@
         "name": "お見送り会参加権付きロビー観覧チケット",
         "short": "ロビー観覧",
         "lobby": true,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-20T07:00:00.000000Z",
         "applyUrl": null,
         "price": 1800
       }
     ],
-    "fp": "214456:soldout,214457:soldout,214458:soldout,214459:soldout,214460:soldout,214461:soldout,214462:ended|奥本カイリ,正鋳真優,大賀彩姫,丸山ひなた,髙橋舞桜,田中沙友利,森川優,渡邉葵心"
+    "fp": "214456:soldout,214457:soldout,214458:soldout,214459:soldout,214460:soldout,214461:soldout,214462:soldout|奥本カイリ,正鋳真優,大賀彩姫,丸山ひなた,髙橋舞桜,田中沙友利,森川優,渡邉葵心"
   },
   {
     "id": 386448,
@@ -349,8 +349,8 @@
         "name": "映像倉庫会員枠",
         "short": "映像倉庫",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-20T07:00:00.000000Z",
         "applyUrl": null,
@@ -361,8 +361,8 @@
         "name": "柱の会 会員枠",
         "short": "柱の会",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-20T07:00:00.000000Z",
         "applyUrl": null,
@@ -409,8 +409,8 @@
         "name": "100発98中権利",
         "short": "100発98中",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-20T07:00:00.000000Z",
         "applyUrl": null,
@@ -429,7 +429,7 @@
         "price": 1800
       }
     ],
-    "fp": "214473:ended,214474:ended,214475:ended,214476:ended,214477:ended,214478:ended,214479:open|太田有紀,黒須遥香,橋本陽菜,畠山希美,平田侑希,武藤小麟,山口結愛,山根涼羽"
+    "fp": "214473:soldout,214474:soldout,214475:ended,214476:ended,214477:ended,214478:soldout,214479:open|太田有紀,黒須遥香,橋本陽菜,畠山希美,平田侑希,武藤小麟,山口結愛,山根涼羽"
   },
   {
     "id": 386451,
