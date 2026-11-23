@@ -1,4 +1,5 @@
 // 握手会・お話し会・写真会の当選メール（AKB48 Official Shop）を読む。docs/index.html と同じロジック（テスト用）
+//   ・「申込受付のご連絡」…商品名：【…】 … 第1部 ／ 数量：2枚（結果待ちの申込として記録）
 //   ・「抽選結果のお知らせ」…商品名：【1月9日(土) 幕張メッセ】 AKB48 大賀 彩姫 第1部 ／ 申込数：2枚 当選数：2枚
 //   ・「ご注文完了のご案内」…商品名: 【10月14日 新宿住友ホール】長友 彩海 第2部 | 〇〇【イベント参加権利付き】 ／ 数量：1
 // 本文のコピペでも、スクショを文字認識（OCR）したテキストでも読めるように、記号の崩れや余計な空白に強くしてある。
@@ -37,14 +38,21 @@ export function parseAkMail(text, now = new Date()) {
     const lot = after.match(/申込数\s*[:：]?\s*(\d+)[\s\S]{0,40}?当選数\s*[:：]?\s*(\d+)/);
     const qty = !lot && after.match(/数量\s*[:：]?\s*(\d+)/);
     if (!lot && !qty) continue;
-    const head = lot ? lastBefore(/抽選申込\s*\/\s*([^】\]\n]*)[】\]]\s*([^\n]*)/g, m.index) : null;
-    const win = head && head[1].match(/第\s*(\d+)\s*販売(?:\s*第\s*(\d+)\s*次)?/);
-    const applied = +(lot ? lot[1] : qty[1]), won = +(lot ? lot[2] : qty[1]);
-    const date = dateFor(p.mo, p.d, lot ? refDate(m.index) : now);
+    // どのメールか：申込受付（申込の控え）／抽選結果／ご注文完了（先着）
+    const mk = lastBefore(/(申込受付内容|申込受付のご連絡|申込内容確認ご案内)|(抽選\(当落\)結果|当選結果)|(ご注文番号|ご注文内容|ご注文情報)/g, m.index);
+    const head = lastBefore(/抽選申込\s*\/\s*([^】\]\n]*)[】\]]\s*([^\n]*)/g, m.index);
+    const type = lot ? 'result' : mk ? (mk[1] ? 'apply' : mk[3] ? 'order' : null) : head ? 'apply' : 'order';
+    if (!type) continue;
+    const useHead = type !== 'order' ? head : null;
+    const win = useHead && useHead[1].match(/第\s*(\d+)\s*販売(?:\s*第\s*(\d+)\s*次)?/);
+    const noM = type !== 'order' && lastBefore(/申込番号[:：]?\s*([\d-]{6,})/g, m.index);
+    const no = noM && m.index - noM.index < 400 ? noM[1] : '';
+    const applied = +(lot ? lot[1] : qty[1]), won = type === 'apply' ? null : +(lot ? lot[2] : qty[1]);
+    const date = dateFor(p.mo, p.d, type === 'result' ? refDate(m.index) : now);
     out.push({
-      ref: `${lot ? '抽選' : '注文'}:${win ? win[0].replace(/\s/g, '') : ''}:${date}:${p.member}:${p.part}:${applied}:${won}`,
-      relText: (head && head[2] ? head[2].trim() : '') || p.relText, sale: win ? +win[1] : 0, round: win && win[2] ? +win[2] : 0,
-      date, venue: p.venue, member: p.member, part: p.part, applied, won, lottery: !!lot,
+      ref: `${{ apply: '申込', result: '抽選', order: '注文' }[type]}:${no || (win ? win[0].replace(/\s/g, '') : '')}:${date}:${p.member}:${p.part}:${applied}:${won}`,
+      type, no, relText: (useHead && useHead[2] ? useHead[2].trim() : '') || p.relText, sale: win ? +win[1] : 0, round: win && win[2] ? +win[2] : 0,
+      date, venue: p.venue, member: p.member, part: p.part, applied, won, lottery: type !== 'order',
     });
   }
   // 同じ内容が重なってたら1つに（スクショを重ねて撮ったとき用）

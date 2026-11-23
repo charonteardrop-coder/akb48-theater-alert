@@ -333,6 +333,8 @@
   </section>
 
   <p class="hint" style="padding:0 4px">申込・当選の記録はこの端末の中だけに保存されるよ（公式サイトのマイページとは連動しない）。バックアップは「劇場公演」タブのいちばん下の「書き出す」に一緒に入るよ。</p>
+  <p style="padding:0 4px;margin-top:4px"><button type="button" class="btn danger small" id="akWipe">握手会の記録を全部消す</button></p>
+  <p style="padding:0 4px;margin:4px 0 0"><button type="button" class="btn danger small" id="akWipe">握手会の記録を全部消す</button></p>
 </main>
 
 
@@ -406,14 +408,14 @@
 
 <dialog id="akMailDlg" aria-labelledby="akMailTitle">
   <div class="dlg">
-    <h2 id="akMailTitle">当選メールから読み込む</h2>
+    <h2 id="akMailTitle">申込・当選メールから読み込む</h2>
     <div class="seg" role="group" aria-label="読み込み方"><button type="button" id="mModePaste" aria-pressed="true">📋 本文を貼る</button><button type="button" id="mModeShot" aria-pressed="false">📷 スクショから</button></div>
     <div id="mPasteBox">
-      <p class="hint" style="margin:0 0 8px">Official Shopから届く「抽選結果のお知らせ」か「ご注文完了のご案内」の本文をまるごとコピーして貼ってね。何通ぶんかまとめて貼ってもOK。</p>
+      <p class="hint" style="margin:0 0 8px">Official Shopから届く「申込受付のご連絡」（→申込中に入る）、「抽選結果のお知らせ」（→申込中の記録に当落が入る）、「ご注文完了のご案内」（→持ってる券に入る）の本文をまるごとコピーして貼ってね。何通ぶんかまとめて貼ってもOK。</p>
       <button type="button" class="btn ghost small" id="mPaste">📋 クリップボードから貼る</button>
     </div>
     <div id="mShotBox" hidden>
-      <p class="hint" style="margin:0 0 8px">メールのスクショを選んでね（何枚でもOK）。「商品名」と「当選数（注文なら数量）」が写ってれば読めるよ。長いメールは少し重ねて撮っても、同じ内容は1つにまとめるよ。</p>
+      <p class="hint" style="margin:0 0 8px">メールのスクショを選んでね（何枚でもOK）。「商品名」と、その下の「数量」か「当選数」が写ってれば読めるよ。長いメールは少し重ねて撮っても、同じ内容は1つにまとめるよ。</p>
       <button type="button" class="btn ghost small" id="mShotBtn">🖼 スクショを選ぶ</button>
       <input type="file" id="mShot" accept="image/*" multiple hidden>
       <p class="hint" id="mShotStatus" style="margin:6px 0 0" aria-live="polite"></p>
@@ -1141,7 +1143,7 @@
     kind: String(e.kind || '').slice(0, 30), date: String(e.date || '').slice(0, 10), venue: String(e.venue || '').slice(0, 40),
     part: num(e.part, 20), member: String(e.member || '').slice(0, 20), win: String(e.win || '').slice(0, 30), winKey: String(e.winKey || '').slice(0, 60),
     applied: num(e.applied), won: e.won === null || e.won === undefined || e.won === '' ? null : num(e.won),
-    sign: String(e.sign || '').slice(0, 12), signWon: e.signWon === null || e.signWon === undefined || e.signWon === '' ? null : num(e.signWon), mail: String(e.mail || '').slice(0, 120), memo: String(e.memo || '').slice(0, 200),
+    sign: String(e.sign || '').slice(0, 12), signWon: e.signWon === null || e.signWon === undefined || e.signWon === '' ? null : num(e.signWon), mail: String(e.mail || '').slice(0, 120), appNo: String(e.appNo || '').slice(0, 30), memo: String(e.memo || '').slice(0, 200),
     createdAt: String(e.createdAt || new Date().toISOString()), updatedAt: String(e.updatedAt || new Date().toISOString()),
   });
   const akRel = (id) => akushu.find((r) => r.id === id);
@@ -1393,6 +1395,13 @@
       ...(akEditing || {}), rel: relSel === FREE ? relLabel : relSel, relLabel, kind: $('#kKind').value, date, venue, part: $('#kPart').value, member: $('#kMember').value,
       winKey: $('#kWin').value, win: $('#kWin').value ? wsel.textContent : '', applied: applied || won || 0, won, sign: sg?.label || (akEditing ? akEditing.sign : ''), signWon, memo: $('#kMemo').value.trim(), updatedAt: new Date().toISOString(),
     });
+    const pend = !akEditing && won !== null && akEntries.find((x) => x.won === null && sameSlot(x, e) && winOk(x, e));
+    if (pend && confirm(`申込中の「${md(pend.date)} ${pend.member} 第${pend.part || '—'}部（${pend.applied}枚）」に、この当落を反映する？\n（キャンセルすると別の記録として追加するよ）`)) {
+      const m = cleanAk({ ...pend, won, applied: Math.max(pend.applied, e.applied), signWon, winKey: pend.winKey || e.winKey, win: pend.win || e.win, memo: e.memo || pend.memo, updatedAt: new Date().toISOString() });
+      akEntries = akEntries.map((x) => (x.id === pend.id ? m : x));
+      saveAk(); renderAkushu();
+      return m;
+    }
     akEntries = akEditing ? akEntries.map((x) => (x.id === e.id ? e : x)) : [...akEntries, e];
     saveAk(); renderAkushu();
     return e;
@@ -1441,14 +1450,21 @@
       const lot = after.match(/申込数\s*[:：]?\s*(\d+)[\s\S]{0,40}?当選数\s*[:：]?\s*(\d+)/);
       const qty = !lot && after.match(/数量\s*[:：]?\s*(\d+)/);
       if (!lot && !qty) continue;
-      const head = lot ? lastBefore(/抽選申込\s*\/\s*([^】\]\n]*)[】\]]\s*([^\n]*)/g, m.index) : null;
-      const win = head && head[1].match(/第\s*(\d+)\s*販売(?:\s*第\s*(\d+)\s*次)?/);
-      const applied = +(lot ? lot[1] : qty[1]), won = +(lot ? lot[2] : qty[1]);
-      const date = dateFor(p.mo, p.d, lot ? refDate(m.index) : now);
+      // どのメールか：申込受付（申込の控え）／抽選結果／ご注文完了（先着）
+      const mk = lastBefore(/(申込受付内容|申込受付のご連絡|申込内容確認ご案内)|(抽選\(当落\)結果|当選結果)|(ご注文番号|ご注文内容|ご注文情報)/g, m.index);
+      const head = lastBefore(/抽選申込\s*\/\s*([^】\]\n]*)[】\]]\s*([^\n]*)/g, m.index);
+      const type = lot ? 'result' : mk ? (mk[1] ? 'apply' : mk[3] ? 'order' : null) : head ? 'apply' : 'order';
+      if (!type) continue;
+      const useHead = type !== 'order' ? head : null;
+      const win = useHead && useHead[1].match(/第\s*(\d+)\s*販売(?:\s*第\s*(\d+)\s*次)?/);
+      const noM = type !== 'order' && lastBefore(/申込番号[:：]?\s*([\d-]{6,})/g, m.index);
+      const no = noM && m.index - noM.index < 400 ? noM[1] : '';
+      const applied = +(lot ? lot[1] : qty[1]), won = type === 'apply' ? null : +(lot ? lot[2] : qty[1]);
+      const date = dateFor(p.mo, p.d, type === 'result' ? refDate(m.index) : now);
       out.push({
-        ref: `${lot ? '抽選' : '注文'}:${win ? win[0].replace(/\s/g, '') : ''}:${date}:${p.member}:${p.part}:${applied}:${won}`,
-        relText: (head && head[2] ? head[2].trim() : '') || p.relText, sale: win ? +win[1] : 0, round: win && win[2] ? +win[2] : 0,
-        date, venue: p.venue, member: p.member, part: p.part, applied, won, lottery: !!lot,
+        ref: `${{ apply: '申込', result: '抽選', order: '注文' }[type]}:${no || (win ? win[0].replace(/\s/g, '') : '')}:${date}:${p.member}:${p.part}:${applied}:${won}`,
+        type, no, relText: (useHead && useHead[2] ? useHead[2].trim() : '') || p.relText, sale: win ? +win[1] : 0, round: win && win[2] ? +win[2] : 0,
+        date, venue: p.venue, member: p.member, part: p.part, applied, won, lottery: type !== 'order',
       });
     }
     // 同じ内容が重なってたら1つに（スクショを重ねて撮ったとき用）
@@ -1478,23 +1494,33 @@
     return cleanAk({
       rel: r ? r.id : relLabel, relLabel, kind: c ? c.ev.kind : /お話し会|オンライン/.test(x.relText) ? 'オンラインお話し会' : '個別握手会',
       date: x.date, venue: x.venue || (c && c.d.venue) || '', part: x.part, member, winKey: round ? round.key : '', win: round ? `第${x.sale}販売 第${x.round}次` : x.lottery ? '' : '先着販売',
-      applied: x.applied || x.won, won: x.won, mail: x.ref,
+      applied: x.applied || x.won || 0, won: x.won, mail: x.ref, appNo: x.no || '',
     });
   };
   const sameSlot = (a, b) => a.rel === b.rel && a.kind === b.kind && a.date === b.date && a.part === b.part && nameKey(a.member) === nameKey(b.member);
+  const winOk = (a, b) => !a.winKey || !b.winKey || a.winKey === b.winKey;
+  // 申込の控え → 申込中に追加／結果・注文 → 申込中の記録（申込番号か、同じ日・部・メンバー）に当選数を入れる
   const akMailPlan = (e) => {
     if (akEntries.some((x) => x.mail && x.mail === e.mail)) return { act: 'skip', label: '読み込み済み' };
-    const p = akEntries.find((x) => x.won === null && sameSlot(x, e) && (!x.winKey || !e.winKey || x.winKey === e.winKey));
-    if (p) return { act: 'update', target: p, label: '結果待ちの申込に反映' };
-    return { act: 'add', label: '新しく追加' };
+    if (e.won === null) {
+      if (e.appNo && akEntries.some((x) => x.appNo === e.appNo)) return { act: 'skip', label: '記録済み' };
+      const hand = akEntries.find((x) => !x.mail && !x.appNo && x.won === null && sameSlot(x, e) && winOk(x, e) && x.applied === e.applied);
+      if (hand) return { act: 'link', target: hand, label: '手入力した申込と同じ' };
+      return { act: 'add', label: '申込中に追加' };
+    }
+    const p = (e.appNo && akEntries.find((x) => x.appNo === e.appNo && x.won === null))
+      || akEntries.find((x) => x.won === null && sameSlot(x, e) && winOk(x, e) && (!x.appNo || !e.appNo));
+    if (p) return { act: 'update', target: p, label: '申込中の記録に当落を反映' };
+    if (e.appNo && akEntries.some((x) => x.appNo === e.appNo)) return { act: 'skip', label: '反映済み' };
+    return { act: 'add', label: e.won ? '持ってる券に追加' : '落選として追加' };
   };
   function previewAkMail() {
     const raw = parseAkMail($('#mText').value);
     akMailRows = raw.map((x) => { const e = akMatch(x); return { e, plan: akMailPlan(e) }; });
     const n = akMailRows.filter((r) => r.plan.act !== 'skip').length;
     $('#mPrev').innerHTML = !$('#mText').value.trim() ? '' : !akMailRows.length
-      ? '<p class="ferr">読み取れる当選内容が見つからなかったよ。「抽選結果のお知らせ」か「ご注文完了のご案内」の本文をまるごと貼ってね。</p>'
-      : `<ul class="mail-rows">${akMailRows.map(({ e, plan }) => `<li class="${plan.act}"><b>${md(e.date)} ${esc(e.member)} ${e.part ? `第${e.part}部` : ''}</b> ${e.won ? `当選${e.won}枚` : `<span class="lost">落選</span>`}${e.applied > e.won ? `<small>（申込${e.applied}枚）</small>` : ''}<br><small>${esc(e.relLabel)}・${esc(e.kind)}${e.win ? `・${esc(e.win)}` : ''} → ${plan.label}</small></li>`).join('')}</ul>`;
+      ? '<p class="ferr">読み取れる内容が見つからなかったよ。「申込受付のご連絡」「抽選結果のお知らせ」「ご注文完了のご案内」のどれかを、本文まるごと貼ってね。</p>'
+      : `<ul class="mail-rows">${akMailRows.map(({ e, plan }) => `<li class="${plan.act}"><b>${md(e.date)} ${esc(e.member)} ${e.part ? `第${e.part}部` : ''}</b> ${e.won === null ? `申込${e.applied}枚<small>（結果待ち）</small>` : e.won ? `当選${e.won}枚` : `<span class="lost">落選</span>`}${e.won !== null && e.applied > e.won ? `<small>（申込${e.applied}枚）</small>` : ''}<br><small>${esc(e.relLabel)}・${esc(e.kind)}${e.win ? `・${esc(e.win)}` : ''} → ${plan.label}</small></li>`).join('')}</ul>`;
     $('#mGo').disabled = !n; $('#mGo').textContent = n ? `${n}件を取り込む` : '取り込む';
   }
   $('#akMail').addEventListener('click', () => { $('#mText').value = ''; $('#mShotStatus').textContent = ''; setMailMode('paste'); previewAkMail(); akMailDlg.showModal(); });
@@ -1530,7 +1556,7 @@
       $('#mText').value = [$('#mText').value.trim(), ...texts].filter(Boolean).join('\n');
       $('#mTextWrap').hidden = false;
       previewAkMail();
-      st.textContent = akMailRows.length ? `${files.length}枚読み取ったよ。下の内容を確認してね。` : `${files.length}枚読み取ったけど、当選内容が見つからなかった。「商品名」と「当選数（数量）」が両方写ってるか確認してね。`;
+      st.textContent = akMailRows.length ? `${files.length}枚読み取ったよ。下の内容を確認してね。` : `${files.length}枚読み取ったけど、内容が見つからなかった。「商品名」と「数量（当選数）」が両方写ってるか確認してね。`;
     } catch (e) {
       st.textContent = '読み取れなかった。電波のいいところでもう一回試すか、本文のコピペにしてね。';
     } finally { $('#mShotBtn').disabled = false; if (worker) worker.terminate(); }
@@ -1539,14 +1565,28 @@
   $('#mText').addEventListener('input', previewAkMail);
   $('#mPaste').addEventListener('click', async () => { try { $('#mText').value = await navigator.clipboard.readText(); previewAkMail(); } catch { toast('貼り付けできなかった。テキスト欄に長押しで貼ってね'); } });
   $('#mCancel').addEventListener('click', () => akMailDlg.close());
+  $('#akWipe').addEventListener('click', () => {
+    if (!akEntries.length) { toast('消す記録はないよ'); return; }
+    if (!confirm(`握手会の記録（申込・持ってる券・落選、${akEntries.length}件）を全部消す？\n劇場公演の観覧記録は消えないよ。`)) return;
+    if (!confirm('ほんとに消していい？元には戻せないよ（バックアップは「書き出す」で取れる）')) return;
+    akEntries = []; saveAk(); renderAkushu(); toast('握手会の記録を全部消したよ');
+  });
   $('#mGo').addEventListener('click', () => {
     let add = 0, upd = 0;
     for (const { e, plan } of akMailRows) {
       if (plan.act === 'add') { akEntries.push(e); add++; }
-      else if (plan.act === 'update') { akEntries = akEntries.map((x) => x.id === plan.target.id ? cleanAk({ ...x, won: e.won, applied: Math.max(x.applied, e.applied), winKey: x.winKey || e.winKey, win: x.win || e.win, mail: e.mail, updatedAt: new Date().toISOString() }) : x); upd++; }
+      else if (plan.act === 'update') { akEntries = akEntries.map((x) => x.id === plan.target.id ? cleanAk({ ...x, won: e.won, applied: Math.max(x.applied, e.applied), winKey: x.winKey || e.winKey, win: x.win || e.win, mail: e.mail, appNo: x.appNo || e.appNo, updatedAt: new Date().toISOString() }) : x); upd++; }
+      else if (plan.act === 'link') { akEntries = akEntries.map((x) => x.id === plan.target.id ? cleanAk({ ...x, appNo: e.appNo, mail: e.mail, winKey: x.winKey || e.winKey, win: x.win || e.win }) : x); }
     }
     saveAk(); renderAkushu(); akMailDlg.close();
     toast([add && `${add}件追加`, upd && `${upd}件反映`].filter(Boolean).join('・') + 'したよ');
+  });
+
+  $('#akWipe').addEventListener('click', () => {
+    if (!akEntries.length) { toast('消す記録はないよ'); return; }
+    if (!confirm(`握手会の申込・当選の記録 ${akEntries.length}件を全部消す？（劇場公演の観覧記録は消えないよ）`)) return;
+    if (!confirm('元に戻せないけど、ほんとに消していい？')) return;
+    akEntries = []; saveAk(); renderAkushu(); toast('握手会の記録を全部消したよ');
   });
 
   function showPage(p) {

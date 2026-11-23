@@ -64,3 +64,24 @@ test('重ねて撮ったスクショの重複は1つに', () => {
   const a = `商品名：【3月22日(土) 幕張メッセ】 AKB48 坂川 陽香 第4部\n申込数：2枚　当選数：2枚\n`;
   assert.equal(parseAkMail(a + a, new Date('2025-03-06')).length, 1);
 });
+test('申込受付のご連絡（結果待ちの申込）と、抽選結果の申込番号', () => {
+  const app = `本メールは申込内容確認ご案内です。
+●申込受付内容
+【抽選申込/第7販売 第3次】AKB48 65thシングル「まさかのConfession」Official Shop盤
+申込番号：430306-1289764
+合計枚数：2枚
+
+■商品内訳
+商品名：【3月23日(日) 幕張メッセ】 AKB48 大賀 彩姫 第1部
+数量：2枚（単価1,200円）
+小計：2,400 円(税込)
+●各種ご注意事項
+※お申込み内容の抽選（当落）結果は、別途、期日内にメールにてご案内いたします。`;
+  const a = parseAkMail(app, new Date('2025-03-05T21:00:00Z'));
+  assert.equal(a.length, 1);
+  assert.deepEqual([a[0].type, a[0].no, a[0].applied, a[0].won, a[0].sale, a[0].round, a[0].date], ['apply', '430306-1289764', 2, null, 7, 3, '2025-03-23']);
+  const r = parseAkMail(lottery, new Date('2025-03-06T10:00:00Z'));
+  assert.deepEqual([r[0].type, r[0].no], ['result', '430306-1289764']);
+  const o = parseAkMail(order, new Date('2025-08-30T21:00:00Z'));
+  assert.equal(o[0].type, 'order');
+});
