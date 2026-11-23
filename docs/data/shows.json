@@ -49,8 +49,8 @@
         "name": "一般枠",
         "short": "一般",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-21T07:00:00.000000Z",
         "applyUrl": null,
@@ -61,8 +61,8 @@
         "name": "ファミリー・カップル枠",
         "short": "ファミカプ",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-21T07:00:00.000000Z",
         "applyUrl": null,
@@ -73,8 +73,8 @@
         "name": "女性・小中学生枠",
         "short": "女性・小中学生",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-21T07:00:00.000000Z",
         "applyUrl": null,
@@ -105,7 +105,7 @@
         "price": 1800
       }
     ],
-    "fp": "214463:soldout,214464:soldout,214465:ended,214466:ended,214467:ended,214468:soldout,214469:ended|奥本カイリ,正鋳真優,大賀彩姫,丸山ひなた,髙橋舞桜,田中沙友利,森川優,渡邉葵心"
+    "fp": "214463:soldout,214464:soldout,214465:soldout,214466:soldout,214467:soldout,214468:soldout,214469:ended|奥本カイリ,正鋳真優,大賀彩姫,丸山ひなた,髙橋舞桜,田中沙友利,森川優,渡邉葵心"
   },
   {
     "id": 386450,
@@ -241,8 +241,8 @@
         "name": "映像倉庫会員枠",
         "short": "映像倉庫",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-21T07:00:00.000000Z",
         "applyUrl": null,
@@ -253,8 +253,8 @@
         "name": "柱の会 会員枠",
         "short": "柱の会",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-21T07:00:00.000000Z",
         "applyUrl": null,
@@ -301,8 +301,8 @@
         "name": "100発98中権利",
         "short": "100発98中",
         "lobby": false,
-        "status": "ended",
-        "label": "抽選受付終了",
+        "status": "soldout",
+        "label": "在庫なし",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-21T07:00:00.000000Z",
         "applyUrl": null,
@@ -321,7 +321,7 @@
         "price": 1800
       }
     ],
-    "fp": "214480:ended,214481:ended,214482:ended,214483:ended,214484:ended,214485:ended,214486:open|岩立沙穂,久保姫菜乃,迫由芽実,橋本陽菜,布袋百椛,正鋳真優,丸山ひなた,森川優"
+    "fp": "214480:soldout,214481:soldout,214482:ended,214483:ended,214484:ended,214485:soldout,214486:open|岩立沙穂,久保姫菜乃,迫由芽実,橋本陽菜,布袋百椛,正鋳真優,丸山ひなた,森川優"
   },
   {
     "id": 386452,
