@@ -5,6 +5,7 @@ import { dirname } from 'node:path';
 import webpush from 'web-push';
 import { ORIGIN, parseList, parseDetail, mergeDetail, fingerprint, isOpen, parseSitemap, parseEventPage } from './zaiko.js';
 import { composeFor, diffMembers, dueReminders } from './core.js';
+import { checkUpcoming } from './upcoming.js';
 import { NEWS, wanted, parseNewsList, parseArticle, buildReleases, windows, dueAkushu, composeAkushu, packLineups } from './akushu.js';
 
 const env = process.env;
@@ -18,6 +19,8 @@ const PATHS = {
   config: 'docs/data/config.json',
   akushu: 'docs/data/akushu.json',
   akushuState: 'state/akushu.json',
+  upcoming: 'docs/data/upcoming.json',
+  upcomingState: 'state/upcoming.json',
 };
 
 async function readJson(p, fallback) {
@@ -235,6 +238,14 @@ export async function run({ now = new Date(), fetchImpl = fetch, sendImpl } = {}
   let ak = { releases: [], due: { opened: [], closing: [] } };
   if (env.AKUSHU !== '0') {
     try { ak = await checkAkushu({ now, fetchImpl }); } catch (e) { console.warn(`握手会のチェックに失敗: ${e.message}`); }
+    // 公式ブログの公演スケジュール（受付前の公演）。1時間に1回だけ読む。失敗しても他は止めない
+    try {
+      const prevU = await readJson(PATHS.upcomingState, {});
+      const u = await checkUpcoming({ now, getText: (url) => fetchText(url, fetchImpl), prev: prevU });
+      await writeJson(PATHS.upcomingState, { checkedAt: u.checkedAt, posts: u.posts });
+      const pub = await readJson(PATHS.upcoming, {});
+      if (JSON.stringify(pub.shows || null) !== JSON.stringify(u.shows)) await writeJson(PATHS.upcoming, { source: u.source, updatedAt: now.toISOString(), shows: u.shows });
+    } catch (e) { console.warn(`公演スケジュール（ブログ）を読めなかった（次回また試す） ${e.message}`); }
   }
 
   // 4. 送信

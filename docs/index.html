@@ -106,6 +106,10 @@
   .appl{display:inline-block;font-size:11px;font-weight:700;color:var(--ok);background:#eef8f2;border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:2px}
   .ticket .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
   .ticket.done{opacity:.55}
+  .btn.wait{background:#e9e5e1;color:#9a9195;cursor:not-allowed;pointer-events:none}
+  .ticket.soon-t .stub{background:#6f6669}
+  .sec-label{font-size:12px;font-weight:700;color:var(--muted);margin:18px 0 -4px;display:flex;align-items:center;gap:8px}
+  .sec-label::after{content:"";flex:1;border-top:1px dashed var(--line)}
   .empty{text-align:center;color:var(--muted);font-size:14px;padding:18px 0 6px}
   .tabs{display:flex;gap:6px;margin-bottom:4px}
   .tab{font:inherit;font-size:13px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 10px;cursor:pointer}
@@ -348,7 +352,7 @@
   </section>
 
   <section class="card" aria-labelledby="s3">
-    <h2 id="s3"><span class="n" aria-hidden="true"></span>チケットセンターに出てる公演</h2>
+    <h2 id="s3"><span class="n" aria-hidden="true"></span>チケットを申し込む</h2>
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" aria-selected="true" data-mode="oshi">推しの出演だけ</button>
       <button class="tab" role="tab" aria-selected="false" data-mode="open">受付中</button>
@@ -833,17 +837,47 @@
         ${apRow(s)}
         <div class="actions">${live || lobby.length
           ? `<a class="btn primary" href="${esc(s.url)}" target="_blank" rel="noopener">チケットセンターで申し込む</a>`
-          : '<span class="hint">受付終了</span>'}${new Date(s.start) <= now ? beenBtn(s) : ''}</div>
+          : notYet(s) ? '<span class="btn wait" aria-disabled="true">申し込み受け付け前</span>' : '<span class="hint">受付終了</span>'}${new Date(s.start) <= now ? beenBtn(s) : ''}</div>
       </div></article>`;
   }
 
+  // チケットセンターにまだ出ていない（受付前の）枠しかない公演
+  const notYet = (s) => !isLive(s) && s.slots.some((x) => x.status === 'upcoming' && (!x.end || new Date(x.end) > Date.now()));
+  // 公式ブログの公演スケジュールで発表済み・チケットセンターにはまだ出ていない公演（data/upcoming.json）
+  let blogShows = [];
+  const blogOnly = () => {
+    const today = todayJst();
+    const have = new Set(shows.map((s) => `${s.date}|${s.time}`)), haveDay = new Set(shows.map((s) => s.date));
+    return blogShows.filter((b) => b.date >= today && !have.has(`${b.date}|${b.time}`) && !(!b.time && haveDay.has(b.date)));
+  };
+  function blogTicket(b) {
+    const wd = '日月火水木金土'[new Date(`${b.date}T12:00:00+09:00`).getUTCDay()];
+    const mem = (b.members || []).map((n) => `<span class="cast-member">${memberPhoto(n)}${picked.has(n) ? `<b>${esc(n)}</b>` : esc(n)}</span>`).join('');
+    return `<article class="ticket soon-t">
+      <div class="stub"><div class="md mono">${Number(b.date.slice(5, 7))}/${Number(b.date.slice(8))}</div><div class="wd">${wd}</div><div class="tm mono">${esc(b.time || '時間未定')}</div></div>
+      <div class="body">
+        <div class="ttl">${esc(b.title)}</div>
+        ${b.note ? `<span class="note">${esc(b.note)}</span>` : ''}
+        ${mem ? `<div class="mem cast">${mem}</div>` : ''}
+        ${unitsBlock({ ...b, members: b.members || [] })}
+        <div class="dl"><span class="pill">公式ブログで発表済み・チケットセンターの受付はまだ</span></div>
+        <div class="actions"><span class="btn wait" aria-disabled="true">申し込み受け付け前</span>${b.url ? `<a class="btn ghost small" href="${esc(b.url)}" target="_blank" rel="noopener">発表の記事</a>` : ''}</div>
+      </div></article>`;
+  }
   function renderShows() {
     document.querySelectorAll('.tab').forEach((t) => t.setAttribute('aria-selected', t.dataset.mode === mode));
     let list = shows;
     if (mode === 'oshi') list = shows.filter((s) => s.members.some((m) => picked.has(m)));
     if (mode === 'open') list = shows.filter((s) => isLive(s) || groups(s, true).some((g) => g.st === 'open'));
-    list = [...list].sort((a, b) => (!isLive(a)) - (!isLive(b)) || a.start.localeCompare(b.start));
-    $('#shows').innerHTML = list.length ? list.map(ticket).join('') :
+    // 並び：申し込める公演 → 受付前（チケットセンター） → 受付前（公式ブログで発表済み） → 受付が終わった公演
+    const rank = (s) => (isLive(s) || groups(s, true).some((g) => g.st === 'open') ? 0 : notYet(s) ? 1 : 3);
+    list = [...list].sort((a, b) => rank(a) - rank(b) || a.start.localeCompare(b.start));
+    let blog = mode === 'open' ? [] : blogOnly();
+    if (mode === 'oshi') blog = blog.filter((b) => (b.members || []).some((m) => picked.has(m)));
+    const head = list.filter((s) => rank(s) < 3), tail = list.filter((s) => rank(s) === 3);
+    const html = [...head.map(ticket), ...(blog.length ? [`<p class="sec-label">ここから下は受付前（公式ブログで発表済みの公演）</p>`, ...blog.map(blogTicket)] : []), ...(tail.length ? ['<p class="sec-label">受付が終わった公演</p>', ...tail.map(ticket)] : [])].join('');
+    list = [...head, ...blog, ...tail];
+    $('#shows').innerHTML = list.length ? html :
       `<p class="empty">${mode === 'oshi' && picked.size ? '推しの出る公演は今チケットセンターに出てないよ。出たら通知が届く！' : mode === 'oshi' ? '推しを選ぶとここに出るよ' : mode === 'open' ? '現在受付中の公演はありません' : '公演はまだ出てないよ'}</p>`;
   }
 
@@ -1908,8 +1942,9 @@
         navigator.serviceWorker.addEventListener('message', (e) => { if (e.data && e.data.type === 'navigate') route(e.data.url); });
       } catch {}
     }
-    const [m, s, c, r, a, hi, un, ak, pl] = await Promise.all([get('data/members.json'), get('data/shows.json'), get('data/config.json'), get('data/roster.json'), get('data/archive.json'), get('data/history/index.json'), get('data/units.json'), get('data/akushu.json'), get('data/penlight.json')]);
+    const [m, s, c, r, a, hi, un, ak, pl, upc] = await Promise.all([get('data/members.json'), get('data/shows.json'), get('data/config.json'), get('data/roster.json'), get('data/archive.json'), get('data/history/index.json'), get('data/units.json'), get('data/akushu.json'), get('data/penlight.json'), get('data/upcoming.json')]);
     if (pl && pl.members) penlight = pl;
+    blogShows = (upc && upc.shows) || [];
     members = m || []; shows = s || []; akushu = (ak && ak.releases) || [];
     if (shows.length) { const live = new Set(shows.map((x) => String(x.id))); let ch = false; for (const k of Object.keys(applied)) if (!live.has(k)) { delete applied[k]; ch = true; } if (ch) saveApplied(); }
  config = c || {}; roster = (r && r.members) || []; archive = a || []; historyIndex = hi; unitTable = (un && un.stages) || {}; unitKnown = (un && un.known) || {};
