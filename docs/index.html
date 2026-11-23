@@ -65,6 +65,18 @@
   .cast-member{display:inline-flex;align-items:center;gap:4px}
   .member-photo{width:24px;height:24px;flex:none;object-fit:cover;object-position:center 25%;border-radius:50%}
   .mem b{color:var(--curtain);font-weight:900}
+  .today-card .tt{font-family:"DM Mono",ui-monospace,monospace;letter-spacing:.08em}
+  .today-show + .today-show{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line)}
+  .today-show .when{font-size:12px;font-weight:700;color:var(--curtain)}
+  .today-show .ttl{font-size:18px;font-weight:900;line-height:1.35}
+  .today-show .ttl small{font-size:12px;font-weight:700;color:var(--muted);margin-left:6px}
+  .cast2{display:grid;grid-template-columns:repeat(auto-fill,minmax(9.5em,1fr));gap:6px 10px;margin-top:10px}
+  .cast2 .cm{display:flex;align-items:center;gap:6px;font-size:13px;min-width:0}
+  .cast2 .cm .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cast2 .cm b{color:var(--curtain);font-weight:900}
+  .pl{display:inline-flex;gap:2px;flex:none}
+  .pl i{width:11px;height:11px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)}
+  .today-next{font-size:13px;color:var(--muted);margin:0}
   .units{margin-top:8px;font-size:13px}
   .units summary{cursor:pointer;font-weight:800;color:var(--curtain);list-style:none;display:inline-flex;align-items:center;gap:4px}
   .units summary::-webkit-details-marker{display:none}
@@ -207,6 +219,30 @@
   .pages{display:flex;gap:8px;margin-top:16px}
   .page{font:inherit;font-size:14px;font-weight:700;color:#fff;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:7px 16px;cursor:pointer}
   .page[aria-selected=true]{background:#fff;color:var(--curtain);border-color:#fff}
+  .page.icon{display:inline-grid;place-items:center;width:44px;padding:0}
+  /* カレンダー */
+  .mc-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .mc-head .t{flex:1;text-align:center;font-weight:900;font-size:17px}
+  .mc-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+  .mc-grid .wd{text-align:center;font-size:11px;font-weight:700;color:var(--muted);padding:2px 0}
+  .mc-grid .wd:nth-child(1){color:#c0392b}.mc-grid .wd:nth-child(7){color:#2463b0}
+  .mcd{font:inherit;font-size:14px;min-height:52px;border:0;border-radius:10px;background:transparent;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3px;padding:6px 0 4px}
+  .mcd.out{visibility:hidden}
+  .mcd.has{background:var(--bg);font-weight:700}
+  .mcd.today{box-shadow:inset 0 0 0 1.5px var(--gold)}
+  .mcd.sel{background:var(--ink);color:#fff}
+  .mcd .dots{display:flex;gap:3px;flex-wrap:wrap;justify-content:center;max-width:90%}
+  .mcd .dots b{display:block;width:7px;height:7px;border-radius:50%}
+  .dot-t{background:var(--curtain)}.dot-a{background:var(--gold)}
+  .mc-legend{display:flex;gap:14px;font-size:11px;color:var(--muted);margin-top:8px;align-items:center}
+  .mc-legend b{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:0}
+  .mc-day{margin-top:14px}
+  .mc-day h3{font-size:14px;margin:0 0 6px}
+  .mc-item{display:grid;grid-template-columns:4px 1fr;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+  .mc-item .bar{border-radius:2px}
+  .mc-item .tt{font-weight:800;font-size:14px}
+  .mc-item .ss{font-size:12px;color:var(--muted)}
+  .mc-item a{color:inherit}
   .ak-rel{font-size:14px;font-weight:900;margin:14px 0 6px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
   .ak-rel:first-child{margin-top:0}
   .ak-rel small{font-size:12px;font-weight:400;color:var(--muted)}
@@ -266,21 +302,23 @@
     <nav class="pages" role="tablist" aria-label="ページ">
       <button class="page" role="tab" aria-selected="true" data-page="home">劇場公演</button>
       <button class="page" role="tab" aria-selected="false" data-page="akushu">握手会</button>
+      <button class="page icon" role="tab" aria-selected="false" data-page="cal" aria-label="カレンダー" title="カレンダー"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="8.5" cy="14.5" r="1" fill="currentColor"/><circle cx="12" cy="14.5" r="1" fill="currentColor"/><circle cx="15.5" cy="14.5" r="1" fill="currentColor"/></svg></button>
     </nav>
   </div>
 </header>
 
 <main id="view-home">
+  <section class="card today-card" aria-labelledby="t0">
+    <h2 id="t0"><span class="n" aria-hidden="true"></span><span class="tt">TODAY'S SHOW</span></h2>
+    <div id="today"><p class="empty">読み込み中…</p></div>
+  </section>
+
   <section class="card" aria-labelledby="s1">
-    <h2 id="s1"><span class="n" aria-hidden="true"></span>推しを選ぶ</h2>
+    <h2 id="s1"><span class="n" aria-hidden="true"></span>推しと通知</h2>
     <div class="select"><select id="add" aria-label="推しを追加"><option value="">＋ 推しを追加</option></select></div>
     <div class="tags" id="tags" aria-live="polite"></div>
     <p class="hint" id="memberHint">何人でも選べるよ。外すときはタップ。</p>
-  </section>
-
-  <section class="card" aria-labelledby="s2">
-    <h2 id="s2"><span class="n" aria-hidden="true"></span>通知をオンにする</h2>
-    <div class="push" id="push"><p class="hint">読み込み中…</p></div>
+    <div class="push" id="push" style="margin-top:14px"><p class="hint">読み込み中…</p></div>
     <label class="check"><input type="checkbox" id="box"> 推し以外も含めて、全公演の受付開始を受け取る（箱推し）</label>
   </section>
 
@@ -311,6 +349,14 @@
       <label class="btn ghost" for="importFile">読み込む</label>
       <input type="file" id="importFile" accept="application/json,.json" hidden>
     </div>
+  </section>
+</main>
+
+<main id="view-cal" hidden>
+  <section class="card" aria-labelledby="c1">
+    <h2 id="c1"><span class="n" aria-hidden="true"></span>カレンダー</h2>
+    <div id="mcal"></div>
+    <p class="hint">劇場公演は「応募した枠」にチェックした公演、握手会は当選して持ってる券が出るよ。</p>
   </section>
 </main>
 
@@ -660,9 +706,9 @@
 
   /* ユニット担当：演目ごとのポジション表（data/units.json）と出演メンバーから割り出す。
      1行＝1ポジション（先頭がオリジナル、続きがアンダー）で、出演者はちょうど1ポジションに入る */
-  let unitTable = {};
+  let unitTable = {}, unitKnown = {};
   const unorm = (x) => String(x || '').normalize('NFKC').replace(/髙/g, '高').replace(/﨑/g, '崎').replace(/[邊邉]/g, '辺').replace(/[濵濱]/g, '浜').replace(/\s/g, '');
-  function assignUnits(songs, members) {
+  function assignUnits(songs, members, known = []) {
     const cast = new Map(members.map((m) => [unorm(m), m]));
     // 同じ並びの行は同じポジション（「RESET」のように1人が2曲を担当する演目）
     const pos = [];
@@ -682,13 +728,18 @@
       if (!any || !pos[i].cand.length) go(k + 1, filled);
     })(0, 0);
     const cost = (sol) => sol.reduce((c, n, i) => c + (n ? pos[i].row.findIndex((x) => unorm(x) === unorm(n)) : 0), 0);
-    const top = sols.length ? sols.reduce((a, b) => (cost(b) < cost(a) ? b : a)) : [];
-    return songs.map((song, si) => ({ ...song, slots: song.positions.map((row, pi) => { const i = at[si][pi]; const name = top[i] || null; return { name, sure: !!name && sols.every((x) => x[i] === name) }; }) }));
+    // 実際の公演で判明した担当（units.json の known）：その組み合わせのメンバーがそろってたら、合う割り当てだけ残す
+    const rules = (known || []).filter((k) => (k.with || Object.values(k.set || {})).every((n) => cast.has(unorm(n))));
+    const posFor = (title, name) => { const si = songs.findIndex((x) => unorm(x.title) === unorm(title)); return si < 0 ? -1 : (at[si].find((i) => pos[i].row.some((x) => unorm(x) === unorm(name))) ?? -1); };
+    const fits = (sol) => rules.every((k) => Object.entries(k.set || {}).every(([t, n]) => { const i = posFor(t, n); return i < 0 || sol[i] === cast.get(unorm(n)); }));
+    const pool = rules.length && sols.some(fits) ? sols.filter(fits) : sols;
+    const top = pool.length ? pool.reduce((a, b) => (cost(b) < cost(a) ? b : a)) : [];
+    return songs.map((song, si) => ({ ...song, slots: song.positions.map((row, pi) => { const i = at[si][pi]; const name = top[i] || null; return { name, sure: !!name && pool.every((x) => x[i] === name) }; }) }));
   }
   function unitsBlock(s) {
     const key = Object.keys(unitTable).find((k) => String(s.title).normalize('NFKC').includes(k.normalize('NFKC')));
     if (!key || (s.members || []).length < 4) return '';
-    const res = assignUnits(unitTable[key], s.members);
+    const res = assignUnits(unitTable[key], s.members, unitKnown[key]);
     let maybe = false;
     const who = (sl) => {
       if (!sl.name) return '<span class="unknown">？</span>';
@@ -703,6 +754,32 @@
     const gap = res.some((so) => so.slots.some((sl) => !sl.name));
     const newPos = gap && extra.length ? `<p class="foot">「？」のところは、${extra.map(esc).join('・')}が入る新しいポジションかも（公演後に分かるよ）</p>` : '';
     return `<details class="units"${mine ? ' data-mine' : ''}><summary>ユニット担当</summary><ol>${items}</ol>${newPos}<p class="foot">出演メンバーとポジション表から割り出してるよ。${maybe ? '点線の人は入れ替わりの可能性あり。' : ''}メンバー変更があるとずれることがあるよ</p></details>`;
+  }
+
+  /* ---------- TODAY'S SHOW（今日の公演：演目・メンバー＋ペンライトカラー・ユニット担当） ---------- */
+  let penlight = { palette: {}, members: {} };
+  const plDots = (n) => {
+    const cs = penlight.members[n] || penlight.members[Object.keys(penlight.members).find((k) => unorm(k) === unorm(n))] || [];
+    return cs.length ? `<span class="pl" title="${esc(cs.join('×'))}" aria-label="ペンライト ${esc(cs.join('×'))}">${cs.map((c) => `<i style="background:${esc(penlight.palette[c] || '#ccc')}"></i>`).join('')}</span>` : '<span class="pl" aria-hidden="true"><i style="background:#eee"></i></span>';
+  };
+  function renderToday() {
+    const today = todayJst();
+    const seen = new Set();
+    const list = [...shows, ...archive].filter((s) => s.date === today && !seen.has(String(s.id)) && seen.add(String(s.id))).sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+    if (!list.length) {
+      const next = [...shows].filter((s) => s.date > today).sort((a, b) => a.start.localeCompare(b.start))[0];
+      $('#today').innerHTML = `<p class="today-next">今日（${md(today)}）は劇場公演がないよ。${next ? `次は <b>${esc(next.label)} ${esc(next.time)}</b> ${esc(next.title)}${next.note ? `（${esc(next.note)}）` : ''}` : ''}</p>`;
+      return;
+    }
+    $('#today').innerHTML = list.map((s) => {
+      const mem = [...(s.members || [])].sort(bySenior);
+      const units = unitsBlock({ ...s, members: s.members || [] }).replace('<details class="units"', '<details class="units" open');
+      return `<div class="today-show">
+        <div class="when mono">${esc(s.label || md(s.date))} ${esc(s.time || '')} 開演</div>
+        <div class="ttl">${esc(s.title || '（演目未発表）')}${s.note ? `<small>${esc(s.note)}</small>` : ''}</div>
+        ${mem.length ? `<div class="cast2">${mem.map((n) => `<span class="cm">${plDots(n)}<span class="nm">${picked.has(n) ? `<b>${esc(n)}</b>` : esc(n)}</span></span>`).join('')}</div>` : '<p class="hint">出演メンバーはまだ発表されてないよ</p>'}
+        ${units}</div>`;
+    }).join('');
   }
 
   function ticket(s) {
@@ -1610,11 +1687,62 @@
   });
 
 
+  /* ---------- カレンダー（応募済みの劇場公演＋当選済みの握手会の券） ---------- */
+  let mcMonth = '', mcSel = '';
+  function mcEvents() {
+    const ev = [];
+    for (const [sid, slots] of Object.entries(applied)) {
+      const s = shows.find((x) => String(x.id) === String(sid)) || archive.find((x) => String(x.id) === String(sid));
+      if (!s || !(slots || []).length) continue;
+      const names = [...new Set((s.slots || []).filter((x) => slots.map(String).includes(String(x.id ?? x.short))).map((x) => x.short || x.name))];
+      ev.push({ type: 't', date: s.date, time: s.time || '', title: s.title, sub: `応募：${names.join('・') || `${slots.length}枠`}${s.note ? `　${s.note}` : ''}`, oshi: (s.members || []).filter((m) => picked.has(m)), url: s.url });
+    }
+    const g = new Map();
+    for (const e of akEntries.filter((x) => x.won > 0 && x.date)) {
+      const k = `${e.date}|${e.kind}|${e.part}|${nameKey(e.member)}`;
+      if (!g.has(k)) g.set(k, { ...e, won: 0 }); g.get(k).won += e.won;
+    }
+    for (const e of g.values()) ev.push({ type: 'a', date: e.date, time: partTime(e).split('〜')[0] || '', title: `${e.kind}　${e.part ? `第${e.part}部 ` : ''}${e.member}`, sub: `${e.won}枚${e.venue ? `　${e.venue}` : ''}　${relOf(e)}` });
+    return ev.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+  }
+  function renderMCal() {
+    const today = todayJst();
+    const ev = mcEvents();
+    if (!mcMonth) mcMonth = today.slice(0, 7);
+    const [y, m] = mcMonth.split('-').map(Number);
+    const first = new Date(Date.UTC(y, m - 1, 1)).getUTCDay(), days = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    const byDay = new Map();
+    for (const e of ev) { if (!byDay.has(e.date)) byDay.set(e.date, []); byDay.get(e.date).push(e); }
+    let cells = '日月火水木金土'.split('').map((w) => `<span class="wd">${w}</span>`).join('') + '<span class="mcd out"></span>'.repeat(first);
+    for (let d = 1; d <= days; d++) {
+      const ds = `${mcMonth}-${String(d).padStart(2, '0')}`, es = byDay.get(ds) || [];
+      cells += `<button type="button" class="mcd${es.length ? ' has' : ''}${ds === today ? ' today' : ''}${ds === mcSel ? ' sel' : ''}" data-mcd="${ds}" aria-label="${m}月${d}日${es.length ? ` 予定${es.length}件` : ''}">${d}<span class="dots">${es.slice(0, 4).map((e) => `<b class="dot-${e.type}"></b>`).join('')}</span></button>`;
+    }
+    const inMonth = ev.filter((e) => e.date.startsWith(mcMonth));
+    const show = mcSel && mcSel.startsWith(mcMonth) ? ev.filter((e) => e.date === mcSel) : inMonth;
+    const item = (e) => `<div class="mc-item"><span class="bar dot-${e.type}"></span><div><div class="ss">${md(e.date)} ${esc(e.time)}${e.type === 't' ? '　劇場公演' : ''}</div><div class="tt">${e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.title)}</a>` : esc(e.title)}</div><div class="ss">${esc(e.sub)}${e.oshi && e.oshi.length ? `　推し：${e.oshi.map(esc).join('・')}` : ''}</div></div></div>`;
+    const next = ev.find((e) => e.date >= today);
+    $('#mcal').innerHTML = `<div class="mc-head"><button type="button" class="cal-nav" data-mcm="-1" aria-label="前の月">‹</button><span class="t">${y}年${m}月</span><button type="button" class="cal-nav" data-mcm="1" aria-label="次の月">›</button></div>
+      <div class="mc-grid">${cells}</div>
+      <div class="mc-legend"><span><b class="dot-t"></b>劇場公演（応募済み）</span><span><b class="dot-a"></b>握手会など（持ってる券）</span></div>
+      <div class="mc-day"><h3>${mcSel && mcSel.startsWith(mcMonth) ? `${md(mcSel)}の予定` : `${m}月の予定`}</h3>${show.length ? show.map(item).join('') : `<p class="empty" style="padding:8px 0">${mcSel ? 'この日の予定はないよ' : 'この月の予定はないよ'}${!mcSel && next ? `<br><button type="button" class="btn ghost small" data-mcgo="${next.date}" style="margin-top:8px">次の予定（${md(next.date)}）へ</button>` : ''}</p>`}</div>`;
+  }
+  $('#mcal').addEventListener('click', (e) => {
+    const nav = e.target.closest('[data-mcm]');
+    if (nav) { const [y, m] = mcMonth.split('-').map(Number); const d = new Date(Date.UTC(y, m - 1 + Number(nav.dataset.mcm), 1)); mcMonth = d.toISOString().slice(0, 7); mcSel = ''; renderMCal(); return; }
+    const go = e.target.closest('[data-mcgo]');
+    if (go) { mcMonth = go.dataset.mcgo.slice(0, 7); mcSel = go.dataset.mcgo; renderMCal(); return; }
+    const d = e.target.closest('[data-mcd]');
+    if (d) { mcSel = mcSel === d.dataset.mcd ? '' : d.dataset.mcd; renderMCal(); }
+  });
+
   function showPage(p) {
-    page = p === 'akushu' ? 'akushu' : 'home';
-    $('#view-home').hidden = page !== 'home'; $('#view-akushu').hidden = page !== 'akushu';
+    page = p === 'akushu' || p === 'cal' ? p : 'home';
+    $('#view-home').hidden = page !== 'home'; $('#view-akushu').hidden = page !== 'akushu'; $('#view-cal').hidden = page !== 'cal';
+    if (page === 'cal') renderMCal();
     document.querySelectorAll('.page').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.page === page)));
-    $('#lead').textContent = page === 'akushu'
+    $('#lead').textContent = page === 'cal' ? '申し込んだ劇場公演と、当選した握手会の券をカレンダーで見られるよ。'
+      : page === 'akushu'
       ? '握手会・お話し会の申込スケジュールと、自分が申し込んだ分・持ってる券をまとめて見られるよ。受付開始と締切前には通知も届く。'
       : '推しが出る劇場公演の受付が始まったら、スマホに通知。メンバー変更で推しが出演することになったときと、締切の6時間前にも届くよ。';
   }
@@ -1643,7 +1771,7 @@
     setFold(id, !!folds[id]);
   });
 
-  const renderAll = () => { renderChips(); renderPush(); renderShows(); renderLog(); renderAkushu(); };
+  const renderAll = () => { renderChips(); renderPush(); renderToday(); renderShows(); renderLog(); renderAkushu(); };
 
   /* ---------- 通知タップからの遷移（?show=ID / ?view=oshi） ---------- */
   function route(href) {
@@ -1694,7 +1822,7 @@
     if (akA) { openAk({ rel: akA.dataset.akadd, kind: akA.dataset.kind, date: akA.dataset.date, win: akA.dataset.win, part: akA.dataset.part, member: akA.dataset.member }); return; }
     if (e.target.closest('#akAdd')) { openAk(); return; }
     const tag = e.target.closest('.tag');
-    if (tag) { picked.delete(tag.dataset.name); renderChips(); renderShows(); renderLog(); scheduleSync(); renderPush(); return; }
+    if (tag) { picked.delete(tag.dataset.name); renderChips(); renderToday(); renderShows(); renderLog(); scheduleSync(); renderPush(); return; }
     const tab = e.target.closest('.tab');
     if (tab) { mode = tab.dataset.mode; persist(); renderShows(); return; }
     const been = e.target.closest('[data-been]');
@@ -1714,7 +1842,7 @@
   $('#add').addEventListener('change', (e) => {
     const n = e.target.value;
     if (!n) return;
-    picked.add(n); renderChips(); renderShows(); renderLog(); scheduleSync(); renderPush();
+    picked.add(n); renderChips(); renderToday(); renderShows(); renderLog(); scheduleSync(); renderPush();
   });
   $('#importFile').addEventListener('change', (e) => { const f = e.target.files[0]; if (f) importRecords(f); e.target.value = ''; });
   $('#box').checked = box;
@@ -1730,10 +1858,11 @@
         navigator.serviceWorker.addEventListener('message', (e) => { if (e.data && e.data.type === 'navigate') route(e.data.url); });
       } catch {}
     }
-    const [m, s, c, r, a, hi, un, ak] = await Promise.all([get('data/members.json'), get('data/shows.json'), get('data/config.json'), get('data/roster.json'), get('data/archive.json'), get('data/history/index.json'), get('data/units.json'), get('data/akushu.json')]);
+    const [m, s, c, r, a, hi, un, ak, pl] = await Promise.all([get('data/members.json'), get('data/shows.json'), get('data/config.json'), get('data/roster.json'), get('data/archive.json'), get('data/history/index.json'), get('data/units.json'), get('data/akushu.json'), get('data/penlight.json')]);
+    if (pl && pl.members) penlight = pl;
     members = m || []; shows = s || []; akushu = (ak && ak.releases) || [];
     if (shows.length) { const live = new Set(shows.map((x) => String(x.id))); let ch = false; for (const k of Object.keys(applied)) if (!live.has(k)) { delete applied[k]; ch = true; } if (ch) saveApplied(); }
- config = c || {}; roster = (r && r.members) || []; archive = a || []; historyIndex = hi; unitTable = (un && un.stages) || {};
+ config = c || {}; roster = (r && r.members) || []; archive = a || []; historyIndex = hi; unitTable = (un && un.stages) || {}; unitKnown = (un && un.known) || {};
     if (config.updatedAt) $('#updated').textContent = `データ更新：${jst(config.updatedAt)}`;
     if (!members.length && !roster.length) $('#memberHint').textContent = 'まだデータがないよ（初回の自動チェック後に表示される）';
     showPage(page);
