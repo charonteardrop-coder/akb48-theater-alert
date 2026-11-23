@@ -256,6 +256,10 @@
   .ak-day{margin-top:12px;border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
   .ak-day > .h{background:var(--ink);color:#fff;padding:8px 12px;font-size:14px;font-weight:700;display:flex;justify-content:space-between;gap:8px}
   .ak-day > .h small{font-weight:400;opacity:.8}
+  details.ak-day > summary.h{list-style:none;cursor:pointer;align-items:center}
+  details.ak-day > summary.h::-webkit-details-marker{display:none}
+  details.ak-day > summary.h > span::before{content:"▾";display:inline-block;margin-right:6px;font-size:11px;transition:transform .15s}
+  details.ak-day:not([open]) > summary.h > span::before{transform:rotate(-90deg)}
   .ak-tk{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:9px 12px;border-top:1px solid var(--line);width:100%;font:inherit;text-align:left;background:#fff;border-left:0;border-right:0;border-bottom:0;color:var(--ink);cursor:pointer}
   .ak-tk:first-of-type{border-top:0}
   .ak-tk .p{font-size:12px;color:var(--muted);min-width:5.5em}
@@ -1294,6 +1298,14 @@
       <span class="c mono">${sumBy(g, countOf)}<small>枚</small></span></summary>
       <div class="ak-mg-in">${g.map((e) => akLine(e, countOf(e)) + (acts ? acts(e) : '')).join('')}</div></details>`;
   };
+  const AKFOLD = 'oshi-gekijo-alert:akfold:v1';
+  const akFolded = new Set((() => { try { const a = JSON.parse(localStorage.getItem(AKFOLD)); return Array.isArray(a) ? a : []; } catch { return []; } })());
+  document.addEventListener('toggle', (e) => {
+    const d = e.target;
+    if (!(d instanceof HTMLDetailsElement) || !d.dataset.akd) return;
+    if (d.open) akFolded.delete(d.dataset.akd); else akFolded.add(d.dataset.akd);
+    try { localStorage.setItem(AKFOLD, JSON.stringify([...akFolded].slice(-200))); } catch {}
+  }, true);
   const akGroup = (list, countOf, acts, merge) => {
     const days = new Map();
     for (const e of [...list].sort(byWhen)) { const k = `${e.date}|${e.kind}|${e.venue}`; if (!days.has(k)) days.set(k, []); days.get(k).push(e); }
@@ -1301,8 +1313,11 @@
       const [date, kind, venue] = k.split('|');
       const slots = new Map();
       for (const e of es) { const sk = merge ? `${e.part}|${nameKey(e.member)}` : e.id; if (!slots.has(sk)) slots.set(sk, []); slots.get(sk).push(e); }
-      return `<div class="ak-day"><div class="h"><span>${date ? md(date) : '日付未入力'} ${esc(kind)}</span><small>${esc(venue)}　計${sumBy(es, countOf)}枚</small></div>
-        ${[...slots.values()].map((g) => g.length > 1 ? akMerged(g, countOf, acts) : akLine(g[0], countOf(g[0])) + (acts ? acts(g[0]) : '')).join('')}</div>`;
+      const head = `<span>${date ? md(date) : '日付未入力'} ${esc(kind)}</span><small>${esc(venue)}　計${sumBy(es, countOf)}枚</small>`;
+      const body = [...slots.values()].map((g) => g.length > 1 ? akMerged(g, countOf, acts) : akLine(g[0], countOf(g[0])) + (acts ? acts(g[0]) : '')).join('');
+      // 持ってる券は日程ごとに折りたためる（閉じた日程はこの端末に覚えておく）
+      return merge ? `<details class="ak-day" data-akd="${esc(k)}"${akFolded.has(k) ? '' : ' open'}><summary class="h">${head}</summary>${body}</details>`
+        : `<div class="ak-day"><div class="h">${head}</div>${body}</div>`;
     }).join('');
   };
 
