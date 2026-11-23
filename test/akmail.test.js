@@ -49,3 +49,18 @@ test('注文完了メール（年またぎ）', () => {
   const r2 = parseAkMail(order.replace('10月14日', '1月9日'), new Date('2025-11-20T00:00:00Z'));
   assert.equal(r2[0].date, '2026-01-09');
 });
+test('スクショのOCRっぽい崩れたテキスト', () => {
+  const ocr = `■ 支払 開始 予定 : 2025-03-06 19:00:00
+【 抽選 申込 / 第 7 販売 第 3 次 】 AKB48 65th シングル Official Shop 盤
+● 抽選 (当落) 結果
+商品 名 : [3 月 23 日 (日) 幕張 メッセ ] AKB48 大賀 彩姫 第 1 部
+申込 数 : 2 枚 当選 数 : 2 枚 落選 数 : 0 枚
+小計 : 2,400 円`;
+  const r = parseAkMail(ocr, new Date('2025-03-06T10:00:00Z'));
+  assert.equal(r.length, 1);
+  assert.deepEqual([r[0].date, r[0].member, r[0].part, r[0].won, r[0].sale, r[0].round, r[0].venue], ['2025-03-23', '大賀彩姫', 1, 2, 7, 3, '幕張メッセ']);
+});
+test('重ねて撮ったスクショの重複は1つに', () => {
+  const a = `商品名：【3月22日(土) 幕張メッセ】 AKB48 坂川 陽香 第4部\n申込数：2枚　当選数：2枚\n`;
+  assert.equal(parseAkMail(a + a, new Date('2025-03-06')).length, 1);
+});

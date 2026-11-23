@@ -128,6 +128,9 @@
   .bar .b i{display:block;height:100%;background:var(--curtain);border-radius:5px}
   .bar .n{text-align:right;font-family:"DM Mono",monospace}
   .head-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .seg button{flex:1;font:inherit;font-size:14px;padding:9px 6px;border:0;background:#fff;color:var(--ink);cursor:pointer}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:#fff;font-weight:700}
   .mail-rows{list-style:none;margin:0;padding:0;display:grid;gap:6px}
   .mail-rows li{padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;line-height:1.5}
   .mail-rows li.skip{opacity:.5}
@@ -404,9 +407,19 @@
 <dialog id="akMailDlg" aria-labelledby="akMailTitle">
   <div class="dlg">
     <h2 id="akMailTitle">当選メールから読み込む</h2>
-    <p class="hint" style="margin:0">Official Shopから届く「抽選結果のお知らせ」か「ご注文完了のご案内」の本文をまるごとコピーして貼ってね。何通ぶんかまとめて貼ってもOK。メールの中身はこの端末で読むだけで、どこにも送らないよ。</p>
-    <label class="field"><span>メール本文</span><textarea id="mText" style="min-height:140px" placeholder="ここに貼り付け"></textarea></label>
-    <button type="button" class="btn ghost small" id="mPaste" style="justify-self:start">📋 クリップボードから貼る</button>
+    <div class="seg" role="group" aria-label="読み込み方"><button type="button" id="mModePaste" aria-pressed="true">📋 本文を貼る</button><button type="button" id="mModeShot" aria-pressed="false">📷 スクショから</button></div>
+    <div id="mPasteBox">
+      <p class="hint" style="margin:0 0 8px">Official Shopから届く「抽選結果のお知らせ」か「ご注文完了のご案内」の本文をまるごとコピーして貼ってね。何通ぶんかまとめて貼ってもOK。</p>
+      <button type="button" class="btn ghost small" id="mPaste">📋 クリップボードから貼る</button>
+    </div>
+    <div id="mShotBox" hidden>
+      <p class="hint" style="margin:0 0 8px">メールのスクショを選んでね（何枚でもOK）。「商品名」と「当選数（注文なら数量）」が写ってれば読めるよ。長いメールは少し重ねて撮っても、同じ内容は1つにまとめるよ。</p>
+      <button type="button" class="btn ghost small" id="mShotBtn">🖼 スクショを選ぶ</button>
+      <input type="file" id="mShot" accept="image/*" multiple hidden>
+      <p class="hint" id="mShotStatus" style="margin:6px 0 0" aria-live="polite"></p>
+    </div>
+    <label class="field" id="mTextWrap"><span id="mTextLabel">メール本文</span><textarea id="mText" style="min-height:140px" placeholder="ここに貼り付け"></textarea></label>
+    <p class="hint" style="margin:0">メールやスクショはこの端末の中で読むだけで、どこにも送らないよ。</p>
     <div id="mPrev"></div>
     <div class="dlg-actions">
       <button type="button" class="btn ghost" id="mCancel">やめる</button>
@@ -1395,53 +1408,51 @@
   $('#akOn').addEventListener('change', (e) => { akOn = e.target.checked; scheduleSync(akOn ? '握手会の通知をオンにしたよ' : '握手会の通知をオフにしたよ'); renderPush(); renderAkushu(); });
 
     function parseAkMail(text, now = new Date()) {
-    const t = String(text || '').normalize('NFKC').replace(/\r/g, '').replace(/　/g, ' ');
+    let t = String(text || '').normalize('NFKC').replace(/\r/g, '').replace(/[　\t]/g, ' ');
+    // OCRは日本語の文字の間に空白を入れがちなので詰める
+    t = t.replace(/([^\x00-\x7F]) +(?=[^\x00-\x7F])/g, '$1').replace(/ *([:：]) */g, '$1');
     const out = [];
     const pad = (n) => String(n).padStart(2, '0');
-    const refBefore = (pos) => {
-      const all = [...t.slice(0, pos).matchAll(/支払開始予定[:：]\s*(20\d{2})-(\d{2})-(\d{2})/g)];
-      const m = all[all.length - 1];
-      return m ? new Date(`${m[1]}-${m[2]}-${m[3]}T00:00:00+09:00`) : now;
+    const lastBefore = (re, pos) => { const all = [...t.slice(0, pos).matchAll(re)]; return all[all.length - 1] || null; };
+    const refDate = (pos) => {
+      const m = lastBefore(/支払開始予定[:：]?\s*(20\d{2})[-/](\d{1,2})[-/](\d{1,2})/g, pos);
+      return m ? new Date(`${m[1]}-${pad(m[2])}-${pad(m[3])}T00:00:00+09:00`) : now;
     };
     const dateFor = (mo, d, ref) => {
       let y = Number(new Intl.DateTimeFormat('en', { timeZone: 'Asia/Tokyo', year: 'numeric' }).format(ref));
-      const at = (yy) => new Date(`${yy}-${pad(mo)}-${pad(d)}T23:59:59+09:00`);
-      if (at(y) < new Date(ref.getTime() - 60 * 864e5)) y += 1;
+      if (new Date(`${y}-${pad(mo)}-${pad(d)}T23:59:59+09:00`) < new Date(ref.getTime() - 60 * 864e5)) y += 1;
       return `${y}-${pad(mo)}-${pad(d)}`;
     };
-    // 商品名 → 日付・会場・メンバー・部・（リリース名）
+    // 商品名の行 → 日付・会場・メンバー・部・（リリース名）
     const product = (s) => {
-      const m = String(s).match(/【\s*(\d{1,2})月(\d{1,2})日\s*(?:\([^)]*\))?\s*([^】]*)】\s*([\s\S]*)$/);
-      if (!m) return null;
-      const [who, ...rest] = m[4].split('|');
-      const p = who.replace(/AKB48/g, '').match(/^\s*(.+?)\s*第\s*(\d+)\s*部/);
-      return { mo: Number(m[1]), d: Number(m[2]), venue: m[3].trim(), member: p ? p[1].replace(/\s+/g, '') : who.replace(/AKB48|\s+/g, ''), part: p ? Number(p[2]) : 0, relText: rest.join('|').trim() };
+      const m = String(s).match(/[【\[]\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日\s*(?:\([^)]{0,3}\))?\s*([^】\]\n]*?)\s*[】\]]\s*([^\n]*)/);
+      if (!m || +m[1] < 1 || +m[1] > 12 || +m[2] < 1 || +m[2] > 31) return null;
+      const [who, ...rest] = m[4].split(/\s*[|｜]\s*/);
+      const p = who.replace(/AKB\s*48/gi, '').match(/^\s*(.+?)\s*第\s*(\d+)\s*部/);
+      return { mo: +m[1], d: +m[2], venue: m[3].trim(), member: (p ? p[1] : who.replace(/AKB\s*48/gi, '')).replace(/\s+/g, ''), part: p ? +p[2] : 0, relText: rest.join(' ').trim() };
     };
-  
-    // 抽選結果
-    const re = /●申込番号[:：]\s*([\w-]+)([\s\S]*?)(?=●申込番号|●抽選\(当落\)結果に関して|━+\n●抽選|$)/g;
+    // 「商品名」ごとに、すぐ後ろの 申込数／当選数（抽選）か 数量（注文）を拾う
+    const re = /商品名\s*[:：]?\s*([^\n]+)\n?([\s\S]*?)(?=商品名|$)/g;
     let m;
     while ((m = re.exec(t))) {
-      const body = m[2];
-      const head = (body.match(/【抽選申込\/([^】]*)】\s*([^\n]*)/) || []);
-      const win = (head[1] || '').match(/第\s*(\d+)\s*販売(?:\s*第\s*(\d+)\s*次)?/);
-      const items = [...body.matchAll(/商品名[:：]\s*([^\n]+)\n[\s\S]*?申込数[:：]\s*(\d+)[^\n]*?当選数[:：]\s*(\d+)/g)];
-      for (const [, name, applied, won] of items) {
-        const p = product(name);
-        if (!p) continue;
-        out.push({ ref: `抽選${m[1]}${items.length > 1 ? ':' + name.trim() : ''}`, relText: head[2] ? head[2].trim() : p.relText, sale: win ? Number(win[1]) : 0, round: win && win[2] ? Number(win[2]) : 0,
-          date: dateFor(p.mo, p.d, refBefore(m.index)), venue: p.venue, member: p.member, part: p.part, applied: Number(applied), won: Number(won), lottery: true });
-      }
+      const p = product(m[1]);
+      if (!p) continue;
+      const after = m[2];
+      const lot = after.match(/申込数\s*[:：]?\s*(\d+)[\s\S]{0,40}?当選数\s*[:：]?\s*(\d+)/);
+      const qty = !lot && after.match(/数量\s*[:：]?\s*(\d+)/);
+      if (!lot && !qty) continue;
+      const head = lot ? lastBefore(/抽選申込\s*\/\s*([^】\]\n]*)[】\]]\s*([^\n]*)/g, m.index) : null;
+      const win = head && head[1].match(/第\s*(\d+)\s*販売(?:\s*第\s*(\d+)\s*次)?/);
+      const applied = +(lot ? lot[1] : qty[1]), won = +(lot ? lot[2] : qty[1]);
+      const date = dateFor(p.mo, p.d, lot ? refDate(m.index) : now);
+      out.push({
+        ref: `${lot ? '抽選' : '注文'}:${win ? win[0].replace(/\s/g, '') : ''}:${date}:${p.member}:${p.part}:${applied}:${won}`,
+        relText: (head && head[2] ? head[2].trim() : '') || p.relText, sale: win ? +win[1] : 0, round: win && win[2] ? +win[2] : 0,
+        date, venue: p.venue, member: p.member, part: p.part, applied, won, lottery: !!lot,
+      });
     }
-    // ご注文完了（先着）
-    for (const om of t.matchAll(/ご注文番号[:：]\s*([\w-]+)([\s\S]*?)(?=ご注文番号[:：]|$)/g)) {
-      for (const [, name, qty] of om[2].matchAll(/商品名[:：]\s*([^\n]+)\n[\s\S]*?数量[:：]\s*(\d+)/g)) {
-        const p = product(name);
-        if (!p) continue;
-        out.push({ ref: `注文${om[1]}:${name.trim()}`, relText: p.relText, sale: 0, round: 0, date: dateFor(p.mo, p.d, now), venue: p.venue, member: p.member, part: p.part, applied: Number(qty), won: Number(qty), lottery: false });
-      }
-    }
-    return out;
+    // 同じ内容が重なってたら1つに（スクショを重ねて撮ったとき用）
+    return out.filter((x, i) => out.findIndex((y) => y.ref === x.ref) === i);
   }
 
   /* ---------- 当選メールから読み込む（Official Shopの「抽選結果のお知らせ」「ご注文完了のご案内」を貼り付け） ---------- */
@@ -1456,7 +1467,12 @@
     const r = c ? c.r : relGuess;
     let member = x.member;
     const lu = c && c.d.lineup;
-    if (lu) { const k = Object.keys(lu).find((n) => nameKey(n) === nameKey(x.member)); if (k) member = k; }
+    if (lu) {
+      const want = nameKey(x.member), names = Object.keys(lu);
+      const sim = (n) => { const a = [...nameKey(n)], b = [...want]; let same = 0; a.forEach((ch, i) => { if (b[i] === ch || b.includes(ch)) same++; }); return a.length === b.length || Math.abs(a.length - b.length) === 1 ? same / Math.max(a.length, b.length) : 0; };
+      const k = names.find((n) => nameKey(n) === want) || names.map((n) => [n, sim(n)]).filter(([, v]) => v >= 0.6).sort((p, q) => q[1] - p[1])[0]?.[0];
+      if (k) member = k;
+    }
     const round = r && x.sale ? r.sales.find((s) => s.no === x.sale)?.rounds.find((rr) => rr.n === x.round) : null;
     const relLabel = r ? relName(r) : (x.relText.replace(/^AKB48\s*/, '').replace(/【[^】]*】|Official Shop盤|OS盤/g, '').trim() || 'その他').slice(0, 40);
     return cleanAk({
@@ -1481,7 +1497,45 @@
       : `<ul class="mail-rows">${akMailRows.map(({ e, plan }) => `<li class="${plan.act}"><b>${md(e.date)} ${esc(e.member)} ${e.part ? `第${e.part}部` : ''}</b> ${e.won ? `当選${e.won}枚` : `<span class="lost">落選</span>`}${e.applied > e.won ? `<small>（申込${e.applied}枚）</small>` : ''}<br><small>${esc(e.relLabel)}・${esc(e.kind)}${e.win ? `・${esc(e.win)}` : ''} → ${plan.label}</small></li>`).join('')}</ul>`;
     $('#mGo').disabled = !n; $('#mGo').textContent = n ? `${n}件を取り込む` : '取り込む';
   }
-  $('#akMail').addEventListener('click', () => { $('#mText').value = ''; previewAkMail(); akMailDlg.showModal(); });
+  $('#akMail').addEventListener('click', () => { $('#mText').value = ''; $('#mShotStatus').textContent = ''; setMailMode('paste'); previewAkMail(); akMailDlg.showModal(); });
+  // スクショ → 文字認識（Tesseract.js をその時だけ読み込む。画像は端末の中で処理して、どこにも送らない）
+  let ocrLib = null;
+  const loadOcr = () => ocrLib || (ocrLib = new Promise((ok, ng) => {
+    const sc = document.createElement('script');
+    sc.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+    sc.onload = () => ok(window.Tesseract); sc.onerror = () => { ocrLib = null; ng(new Error('load')); };
+    document.head.appendChild(sc);
+  }));
+  const setMailMode = (mode) => {
+    $('#mModePaste').setAttribute('aria-pressed', mode === 'paste'); $('#mModeShot').setAttribute('aria-pressed', mode === 'shot');
+    $('#mPasteBox').hidden = mode !== 'paste'; $('#mShotBox').hidden = mode !== 'shot';
+    $('#mTextLabel').textContent = mode === 'shot' ? '読み取った文字（まちがってたら直せるよ）' : 'メール本文';
+    $('#mTextWrap').hidden = mode === 'shot' && !$('#mText').value;
+  };
+  $('#mModePaste').addEventListener('click', () => setMailMode('paste'));
+  $('#mModeShot').addEventListener('click', () => setMailMode('shot'));
+  $('#mShotBtn').addEventListener('click', () => $('#mShot').click());
+  $('#mShot').addEventListener('change', async (ev) => {
+    const files = [...ev.target.files]; ev.target.value = '';
+    if (!files.length) return;
+    const st = $('#mShotStatus'); $('#mShotBtn').disabled = true;
+    let worker;
+    try {
+      st.textContent = '文字認識の準備中…（初回は辞書のダウンロードで少し時間がかかるよ）';
+      const T = await loadOcr();
+      let cur = 0;
+      worker = await T.createWorker('jpn', 1, { logger: (m) => { if (m.status === 'recognizing text') st.textContent = `読み取り中… ${cur + 1}/${files.length}枚目 ${Math.round(m.progress * 100)}%`; } });
+      const texts = [];
+      for (; cur < files.length; cur++) texts.push((await worker.recognize(files[cur])).data.text);
+      $('#mText').value = [$('#mText').value.trim(), ...texts].filter(Boolean).join('\n');
+      $('#mTextWrap').hidden = false;
+      previewAkMail();
+      st.textContent = akMailRows.length ? `${files.length}枚読み取ったよ。下の内容を確認してね。` : `${files.length}枚読み取ったけど、当選内容が見つからなかった。「商品名」と「当選数（数量）」が両方写ってるか確認してね。`;
+    } catch (e) {
+      st.textContent = '読み取れなかった。電波のいいところでもう一回試すか、本文のコピペにしてね。';
+    } finally { $('#mShotBtn').disabled = false; if (worker) worker.terminate(); }
+  });
+
   $('#mText').addEventListener('input', previewAkMail);
   $('#mPaste').addEventListener('click', async () => { try { $('#mText').value = await navigator.clipboard.readText(); previewAkMail(); } catch { toast('貼り付けできなかった。テキスト欄に長押しで貼ってね'); } });
   $('#mCancel').addEventListener('click', () => akMailDlg.close());
