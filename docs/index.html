@@ -344,7 +344,6 @@
 
   <p class="hint" style="padding:0 4px">申込・当選の記録はこの端末の中だけに保存されるよ（公式サイトのマイページとは連動しない）。バックアップは「劇場公演」タブのいちばん下の「書き出す」に一緒に入るよ。</p>
   <p style="padding:0 4px;margin-top:4px"><button type="button" class="btn danger small" id="akWipe">握手会の記録を全部消す</button></p>
-  <p style="padding:0 4px;margin:4px 0 0"><button type="button" class="btn danger small" id="akWipe">握手会の記録を全部消す</button></p>
 </main>
 
 
@@ -1610,12 +1609,6 @@
     toast([add && `${add}件追加`, upd && `${upd}件反映`].filter(Boolean).join('・') + 'したよ');
   });
 
-  $('#akWipe').addEventListener('click', () => {
-    if (!akEntries.length) { toast('消す記録はないよ'); return; }
-    if (!confirm(`握手会の申込・当選の記録 ${akEntries.length}件を全部消す？（劇場公演の観覧記録は消えないよ）`)) return;
-    if (!confirm('元に戻せないけど、ほんとに消していい？')) return;
-    akEntries = []; saveAk(); renderAkushu(); toast('握手会の記録を全部消したよ');
-  });
 
   function showPage(p) {
     page = p === 'akushu' ? 'akushu' : 'home';
