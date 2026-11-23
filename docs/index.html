@@ -127,7 +127,7 @@
   .bar .b{height:10px;border-radius:5px;background:var(--bg);overflow:hidden}
   .bar .b i{display:block;height:100%;background:var(--curtain);border-radius:5px}
   .bar .n{text-align:right;font-family:"DM Mono",monospace}
-  .head-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .head-btns{display:flex;gap:6px;justify-content:flex-end;margin-left:auto}
   .seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
   .seg button{flex:1;font:inherit;font-size:14px;padding:9px 6px;border:0;background:#fff;color:var(--ink);cursor:pointer}
   .seg button[aria-pressed="true"]{background:var(--ink);color:#fff;font-weight:700}
@@ -135,8 +135,9 @@
   .mail-rows li{padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;line-height:1.5}
   .mail-rows li.skip{opacity:.5}
   .mail-rows .lost{color:var(--muted,#888)}
-  .head-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
-  .head-row h2{margin:0}
+  .head-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
+  .head-row h2{margin:0;white-space:nowrap}
+  .head-row .btn{white-space:nowrap}
   .log{display:grid;grid-template-columns:86px 1fr;background:#fff;border:1px solid var(--line);border-radius:12px;margin-top:12px;overflow:hidden;cursor:pointer;text-align:left;font:inherit;color:inherit;padding:0;width:100%}
   .log .stub{background:var(--curtain);color:#fff;text-align:center;padding:12px 6px;display:flex;flex-direction:column;justify-content:center;border-right:2px dashed var(--bg)}
   .log .yr{font-size:11px;opacity:.8}
@@ -226,6 +227,15 @@
   .ak-tk .m{font-size:15px;font-weight:700}
   .ak-tk .m small{display:block;font-size:11px;font-weight:400;color:var(--muted)}
   .ak-tk .c{font-size:18px;font-weight:900}
+  .ak-mg{border-top:1px solid var(--line)}
+  .ak-mg:first-of-type{border-top:0}
+  .ak-mg > summary{list-style:none;border-top:0}
+  .ak-mg > summary::-webkit-details-marker{display:none}
+  .ak-mg-ic{color:var(--curtain);font-weight:700;white-space:nowrap}
+  .ak-mg[open] .ak-mg-ic{opacity:.6}
+  .ak-mg-in{background:var(--paper);border-top:1px dashed var(--line);padding-left:14px}
+  .ak-mg-in .ak-tk{background:transparent}
+  .ak-mg-in .ak-tk .m{font-size:13px}
   .ak-tk .c small{font-size:11px;margin-left:1px}
   .ak-acts{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:0 12px 10px}
   .ak-acts .s{font-size:12px;color:var(--muted)}
@@ -1199,13 +1209,24 @@
       <span class="p"><b>${e.part ? `第${e.part}部` : '—'}</b>${esc(partTime(e))}</span>
       <span class="m">${memberPhoto(e.member)}${esc(e.member || '（メンバー未入力）')}<small>${esc([relOf(e), e.win, e.memo].filter(Boolean).join('・'))}</small>${signBadge(e)}</span>
       <span class="c mono">${count}<small>枚</small></span></button>`;
-  const akGroup = (list, countOf, acts) => {
+  // 同じ日・同じ部・同じメンバーの券は、申込（販売回）が別でも1行にまとめる。タップで内訳（1件ずつ編集できる）
+  const akMerged = (g, countOf, acts) => {
+    const v = { ...g[0], won: sumBy(g, (e) => e.won || 0), signWon: g.some((e) => e.signWon !== null) ? sumBy(g, (e) => e.signWon || 0) : null };
+    return `<details class="ak-mg"><summary class="ak-tk">
+      <span class="p"><b>${v.part ? `第${v.part}部` : '—'}</b>${esc(partTime(v))}</span>
+      <span class="m">${memberPhoto(v.member)}${esc(v.member || '（メンバー未入力）')}<small>${esc(relOf(v))}・${g.length}回の申込分 <span class="ak-mg-ic">内訳 ▾</span></small>${signBadge(v)}</span>
+      <span class="c mono">${sumBy(g, countOf)}<small>枚</small></span></summary>
+      <div class="ak-mg-in">${g.map((e) => akLine(e, countOf(e)) + (acts ? acts(e) : '')).join('')}</div></details>`;
+  };
+  const akGroup = (list, countOf, acts, merge) => {
     const days = new Map();
     for (const e of [...list].sort(byWhen)) { const k = `${e.date}|${e.kind}|${e.venue}`; if (!days.has(k)) days.set(k, []); days.get(k).push(e); }
     return [...days.entries()].map(([k, es]) => {
       const [date, kind, venue] = k.split('|');
+      const slots = new Map();
+      for (const e of es) { const sk = merge ? `${e.part}|${nameKey(e.member)}` : e.id; if (!slots.has(sk)) slots.set(sk, []); slots.get(sk).push(e); }
       return `<div class="ak-day"><div class="h"><span>${date ? md(date) : '日付未入力'} ${esc(kind)}</span><small>${esc(venue)}　計${sumBy(es, countOf)}枚</small></div>
-        ${es.map((e) => akLine(e, countOf(e)) + (acts ? acts(e) : '')).join('')}</div>`;
+        ${[...slots.values()].map((g) => g.length > 1 ? akMerged(g, countOf, acts) : akLine(g[0], countOf(g[0])) + (acts ? acts(g[0]) : '')).join('')}</div>`;
     }).join('');
   };
 
@@ -1225,8 +1246,8 @@
       ['持ってる券', sumBy(coming, (e) => e.won), '枚'], ['結果待ち', sumBy(pending, (e) => e.applied), '枚'],
       ['次の参加日', nextDay ? md(nextDay) : '—', ''], ['サイン当選', sumBy(coming, (e) => e.signWon || 0), '枚'],
     ].map(([k, v, u]) => `<div class="stat"><div class="k">${k}</div><div class="v mono">${v}<small>${u}</small></div></div>`).join('');
-    $('#akTickets').innerHTML = (coming.length ? akGroup(coming, (e) => e.won, signActs) : '<p class="empty">まだ券がないよ。申し込んだら「＋ 申込を記録」から入れてね。</p>')
-      + (gone.length ? `<details class="ak-more"><summary>終わった分（${sumBy(gone, (e) => e.won)}枚）</summary>${akGroup(gone, (e) => e.won)}</details>` : '');
+    $('#akTickets').innerHTML = (coming.length ? akGroup(coming, (e) => e.won, signActs, true) : '<p class="empty">まだ券がないよ。申し込んだら「＋ 申込を記録」から入れてね。</p>')
+      + (gone.length ? `<details class="ak-more"><summary>終わった分（${sumBy(gone, (e) => e.won)}枚）</summary>${akGroup(gone, (e) => e.won, null, true)}</details>` : '');
 
     // 申込中
     $('#akPending').innerHTML = (pending.length
