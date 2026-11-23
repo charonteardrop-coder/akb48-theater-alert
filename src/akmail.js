@@ -15,18 +15,25 @@ export function parseAkMail(text, now = new Date()) {
     const m = lastBefore(/支払開始予定[:：]?\s*(20\d{2})[-/](\d{1,2})[-/](\d{1,2})/g, pos);
     return m ? new Date(`${m[1]}-${pad(m[2])}-${pad(m[3])}T00:00:00+09:00`) : now;
   };
-  const dateFor = (mo, d, ref) => {
-    let y = Number(new Intl.DateTimeFormat('en', { timeZone: 'Asia/Tokyo', year: 'numeric' }).format(ref));
-    if (new Date(`${y}-${pad(mo)}-${pad(d)}T23:59:59+09:00`) < new Date(ref.getTime() - 60 * 864e5)) y += 1;
+  // 年はメールに書いてない。曜日が読めたら、曜日が合う年のうち基準日にいちばん近い年。読めなければ基準日から近い将来
+  const dateFor = (mo, d, ref, dow) => {
+    const y0 = Number(new Intl.DateTimeFormat('en', { timeZone: 'Asia/Tokyo', year: 'numeric' }).format(ref));
+    const at = (y) => new Date(`${y}-${pad(mo)}-${pad(d)}T12:00:00+09:00`);
+    const wd = '日月火水木金土'.indexOf(dow || '');
+    if (wd >= 0) {
+      const ys = [y0 - 1, y0, y0 + 1, y0 - 2, y0 + 2].filter((y) => at(y).getUTCDay() === wd);
+      if (ys.length) return `${ys.sort((a, b) => Math.abs(at(a) - ref) - Math.abs(at(b) - ref))[0]}-${pad(mo)}-${pad(d)}`;
+    }
+    const y = at(y0) < new Date(ref.getTime() - 60 * 864e5) ? y0 + 1 : y0;
     return `${y}-${pad(mo)}-${pad(d)}`;
   };
   // 商品名の行 → 日付・会場・メンバー・部・（リリース名）
   const product = (s) => {
-    const m = String(s).match(/[【\[]\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日\s*(?:\([^)]{0,3}\))?\s*([^】\]\n]*?)\s*[】\]]\s*([^\n]*)/);
+    const m = String(s).match(/[【\[]\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日\s*(?:\(\s*([日月火水木金土])?[^)]{0,3}\))?\s*([^】\]\n]*?)\s*[】\]]\s*([^\n]*)/);
     if (!m || +m[1] < 1 || +m[1] > 12 || +m[2] < 1 || +m[2] > 31) return null;
-    const [who, ...rest] = m[4].split(/\s*[|｜]\s*/);
+    const [who, ...rest] = m[5].split(/\s*[|｜]\s*/);
     const p = who.replace(/AKB\s*48/gi, '').match(/^\s*(.+?)\s*第\s*(\d+)\s*部/);
-    return { mo: +m[1], d: +m[2], venue: m[3].trim(), member: (p ? p[1] : who.replace(/AKB\s*48/gi, '')).replace(/\s+/g, ''), part: p ? +p[2] : 0, relText: rest.join(' ').trim() };
+    return { mo: +m[1], d: +m[2], dow: m[3] || '', venue: m[4].trim(), member: (p ? p[1] : who.replace(/AKB\s*48/gi, '')).replace(/\s+/g, ''), part: p ? +p[2] : 0, relText: rest.join(' ').trim() };
   };
   // 「商品名」ごとに、すぐ後ろの 申込数／当選数（抽選）か 数量（注文）を拾う
   const re = /商品名\s*[:：]?\s*([^\n]+)\n?([\s\S]*?)(?=商品名|$)/g;
@@ -48,7 +55,7 @@ export function parseAkMail(text, now = new Date()) {
     const noM = type !== 'order' && lastBefore(/申込番号[:：]?\s*([\d-]{6,})/g, m.index);
     const no = noM && m.index - noM.index < 400 ? noM[1] : '';
     const applied = +(lot ? lot[1] : qty[1]), won = type === 'apply' ? null : +(lot ? lot[2] : qty[1]);
-    const date = dateFor(p.mo, p.d, type === 'result' ? refDate(m.index) : now);
+    const date = dateFor(p.mo, p.d, type === 'result' ? refDate(m.index) : now, p.dow);
     out.push({
       ref: `${{ apply: '申込', result: '抽選', order: '注文' }[type]}:${no || (win ? win[0].replace(/\s/g, '') : '')}:${date}:${p.member}:${p.part}:${applied}:${won}`,
       type, no, relText: (useHead && useHead[2] ? useHead[2].trim() : '') || p.relText, sale: win ? +win[1] : 0, round: win && win[2] ? +win[2] : 0,

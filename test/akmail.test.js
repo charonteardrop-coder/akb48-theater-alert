@@ -85,3 +85,10 @@ test('申込受付のご連絡（結果待ちの申込）と、抽選結果の�
   const o = parseAkMail(order, new Date('2025-08-30T21:00:00Z'));
   assert.equal(o[0].type, 'order');
 });
+test('昔のメールを後から貼っても、曜日から年を決める', () => {
+  const t = `商品名：【6月20日(土) 有明GYM-EX】 AKB48 八木 愛月 第1部 【色紙サイン】\n申込数：3枚　当選数：3枚　落選数：0枚\n`;
+  const r = parseAkMail(t, new Date('2026-11-23T12:00:00Z'));
+  assert.deepEqual([r[0].date, r[0].member, r[0].part, r[0].venue], ['2026-06-20', '八木愛月', 1, '有明GYM-EX']);
+  const r2 = parseAkMail(t.replace('6月20日(土)', '1月9日(土)'), new Date('2026-11-23T12:00:00Z'));
+  assert.equal(r2[0].date, '2027-01-09');
+});
