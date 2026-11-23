@@ -150,6 +150,7 @@
   .head-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
   .head-row h2{margin:0;white-space:nowrap}
   .head-row .btn{white-space:nowrap}
+  .log.lobby{opacity:.7}
   .log{display:grid;grid-template-columns:86px 1fr;background:#fff;border:1px solid var(--line);border-radius:12px;margin-top:12px;overflow:hidden;cursor:pointer;text-align:left;font:inherit;color:inherit;padding:0;width:100%}
   .log .stub{background:var(--curtain);color:#fff;text-align:center;padding:12px 6px;display:flex;flex-direction:column;justify-content:center;border-right:2px dashed var(--bg)}
   .log .yr{font-size:11px;opacity:.8}
@@ -157,6 +158,8 @@
   .log .tm{font-size:12px;color:#f4d8a0;margin-top:4px}
   .log .body{padding:12px 14px}
   .log .memo{font-size:13px;margin-top:6px;white-space:pre-wrap;color:var(--ink);background:var(--bg);border-radius:8px;padding:6px 10px}
+  .slot.lobby{border-style:dashed}
+  .slot.up{color:var(--ok);border-color:#bfe0cd;background:#eef8f2}
   .slot{display:inline-block;font-size:11px;font-weight:700;border:1px solid var(--line);border-radius:6px;padding:0 6px;margin-left:6px;color:var(--muted);vertical-align:middle}
   .btn.small{padding:7px 12px;font-size:13px}
   .been{background:var(--ink);color:#fff}
@@ -437,6 +440,7 @@
     </div>
     <label class="field"><span>当選した枠</span>
       <select id="fSlot"><option value="">—</option><option>映像倉庫</option><option>柱の会</option><option>100発98中</option><option>一般</option><option>ファミカプ</option><option>女性・小中学生</option><option>ロビー観覧</option><option>招待・その他</option></select></label>
+    <button type="button" class="btn ghost small" id="fUp" aria-pressed="false" hidden style="justify-self:start">🎟 繰り上げで中に入れた</button>
     <label class="field"><span>メモ（座席・感想など）</span><textarea id="fMemo"></textarea></label>
     <div class="field"><span>写真</span>
       <div class="pics" id="fPics"></div>
@@ -911,22 +915,26 @@
 
   const beenBtn = (s) => { const r = recordOf(s.id); return `<button class="btn small been${r ? ' done' : ''}" data-been="${esc(s.id)}">${r ? '✓ 記録済み' : '行った！'}</button>`; };
 
+  // ロビー観覧は観覧記録の数に入れない（繰り上げで中に入れた回は数える）
+  const isLobby = (r) => r.slot === 'ロビー観覧' && !r.up;
   function renderLog() {
     const yr = todayJst().slice(0, 4);
-    const thisYear = records.filter((r) => r.date.startsWith(yr)).length;
-    const oshiCnt = records.filter((r) => r.members.some((m) => picked.has(m))).length;
+    const counted = records.filter((r) => !isLobby(r)), lobbyN = records.length - counted.length;
+    const thisYear = counted.filter((r) => r.date.startsWith(yr)).length;
+    const oshiCnt = counted.filter((r) => r.members.some((m) => picked.has(m))).length;
     const titles = new Map();
-    for (const r of records) if (r.title) titles.set(r.title, (titles.get(r.title) || 0) + 1);
+    for (const r of counted) if (r.title) titles.set(r.title, (titles.get(r.title) || 0) + 1);
     const tile = (k, v, unit) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}<small>${unit}</small></div></div>`;
-    $('#stats').innerHTML = tile('通算', records.length, '公演') + tile(`${yr}年`, thisYear, '公演')
+    $('#stats').innerHTML = tile('通算', counted.length, '公演') + tile(`${yr}年`, thisYear, '公演')
       + (picked.size ? tile('推しが出てた', oshiCnt, '公演') : tile('観た演目', titles.size, '種類'))
-      + tile('観たメンバー', new Set(records.flatMap((r) => r.members)).size, '人');
+      + tile('観たメンバー', new Set(counted.flatMap((r) => r.members)).size, '人')
+      + (lobbyN ? `<p class="hint" style="grid-column:1/-1;margin:0">ロビー観覧 ${lobbyN}回は数に入れてないよ（繰り上げで入れた回は数えてる）</p>` : '');
 
     const bar = (label, n, max, hl) => `<div class="bar"><span class="t">${hl ? `<b style="color:var(--curtain)">${esc(label)}</b>` : esc(label)}</span><span class="b"><i style="width:${max ? Math.max(4, n / max * 100) : 0}%"></i></span><span class="n">${n}</span></div>`;
     const seen = new Map();
-    for (const r of records) for (const m of r.members) seen.set(m, (seen.get(m) || 0) + 1);
+    for (const r of counted) for (const m of r.members) seen.set(m, (seen.get(m) || 0) + 1);
     let html = '';
-    if (records.length) {
+    if (counted.length) {
       const memTop = picked.size
         ? [...picked].sort(bySenior).map((m) => [m, seen.get(m) || 0])
         : [...seen.entries()].sort((a, b) => b[1] - a[1] || bySenior(a[0], b[0])).slice(0, 5);
@@ -940,10 +948,10 @@
     const list = [...records].sort(byDateDesc);
     $('#logs').innerHTML = list.length ? list.map((r) => {
       const [y, mo, d] = r.date.split('-');
-      return `<button class="log" data-log="${esc(r.id)}">
+      return `<button class="log${isLobby(r) ? ' lobby' : ''}" data-log="${esc(r.id)}">
         <div class="stub"><div class="yr mono">${y}</div><div class="md mono">${Number(mo)}/${Number(d)}</div><div class="yr">${wday(r.date)}</div>${r.time ? `<div class="tm mono">${esc(r.time)}</div>` : ''}</div>
         <div class="body">
-          <div class="ttl">${esc(r.title || '（演目未入力）')}${r.slot ? `<span class="slot">${esc(r.slot)}</span>` : ''}</div>
+          <div class="ttl">${esc(r.title || '（演目未入力）')}${r.slot ? `<span class="slot${isLobby(r) ? ' lobby' : r.up ? ' up' : ''}">${esc(r.slot === 'ロビー観覧' ? (r.up ? 'ロビ観→繰り上げ' : 'ロビー観覧・カウント外') : r.slot)}</span>` : ''}</div>
           ${r.note ? `<span class="note">${esc(r.note)}</span>` : ''}
           ${r.members.length ? `<div class="mem">${[...r.members].map((n) => picked.has(n) ? `<b>${esc(n)}</b>` : esc(n)).join('・')}</div>` : ''}
           ${r.memo ? `<div class="memo">${esc(r.memo)}</div>` : ''}
@@ -1009,11 +1017,12 @@
     if (record) {
       $('#fDate').value = record.date; $('#fTime').value = record.time || ''; $('#fTitle').value = record.title || ''; $('#fNote').value = record.note || '';
       fMembers = new Set(record.members); $('#fSlot').value = record.slot || ''; $('#fMemo').value = record.memo || '';
+      fUp = !!record.up; renderFUp();
       renderFTags();
       dlg.showModal();
       await fillDay(record.date, record.showId);
     } else {
-      $('#fSlot').value = ''; $('#fMemo').value = '';
+      $('#fSlot').value = ''; $('#fMemo').value = ''; fUp = false; renderFUp();
       if (show) fillFromShow(show); else fillFromShow({ date: todayJst(), time: '', title: '', note: '', members: [] });
       dlg.showModal();
       await fillDay($('#fDate').value, show ? show.id : null, !show);
@@ -1096,6 +1105,14 @@
     if (e.target.id === 'calM') calM = Number(e.target.value);
     renderCal();
   });
+  let fUp = false;
+  const renderFUp = () => {
+    const b = $('#fUp'); b.hidden = $('#fSlot').value !== 'ロビー観覧';
+    b.setAttribute('aria-pressed', String(fUp)); b.classList.toggle('primary', fUp); b.classList.toggle('ghost', !fUp);
+    b.textContent = fUp ? '✓ 繰り上げ（観覧記録に数える）' : '🎟 繰り上げで中に入れた';
+  };
+  $('#fSlot').addEventListener('change', renderFUp);
+  $('#fUp').addEventListener('click', () => { fUp = !fUp; renderFUp(); });
   $('#fShow').addEventListener('change', (e) => {
     const s = dayShows.find((x) => String(x.id) === e.target.value);
     if (s) fillFromShow(s); else $('#fMemHint').hidden = true;
@@ -1136,7 +1153,7 @@
     const rec = {
       id: editing?.id || uid(), showId,
       date, time: $('#fTime').value, title: $('#fTitle').value.trim(), note: $('#fNote').value.trim(),
-      members: [...fMembers].sort(bySenior), slot: $('#fSlot').value, memo: $('#fMemo').value.trim(),
+      members: [...fMembers].sort(bySenior), slot: $('#fSlot').value, up: $('#fSlot').value === 'ロビー観覧' && fUp, memo: $('#fMemo').value.trim(),
       photos: fPhotos.map((p) => p.id),
       createdAt: editing?.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString(),
     };
@@ -1179,7 +1196,7 @@
     date: String(r.date || ''), time: /^\d{2}:\d{2}$/.test(r.time || '') ? r.time : '',
     title: String(r.title || '').slice(0, 60), note: String(r.note || '').slice(0, 60),
     members: (Array.isArray(r.members) ? r.members : []).filter((m) => typeof m === 'string').map((m) => m.slice(0, 20)).slice(0, 60),
-    slot: String(r.slot || '').slice(0, 20), memo: String(r.memo || '').slice(0, 2000),
+    slot: String(r.slot || '').slice(0, 20), up: !!r.up, memo: String(r.memo || '').slice(0, 2000),
     photos: (Array.isArray(r.photos) ? r.photos : []).filter((x) => typeof x === 'string').map((x) => x.slice(0, 64)).slice(0, MAXPICS),
     createdAt: String(r.createdAt || new Date().toISOString()), updatedAt: String(r.updatedAt || new Date().toISOString()),
   });
