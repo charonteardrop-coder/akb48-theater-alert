@@ -295,7 +295,25 @@
   footer a{color:inherit}
   .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:.2s;pointer-events:none;z-index:9}
   .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
-  @media (max-width:420px){.ticket{grid-template-columns:72px 1fr}.ticket .md{font-size:19px}}
+  /* スマホ：公演カードの日付を上の帯にして、本文を全幅に */
+  @media (max-width:560px){
+    .ticket{grid-template-columns:1fr}
+    .ticket .stub{flex-direction:row;align-items:baseline;justify-content:flex-start;gap:8px;text-align:left;padding:8px 14px;border-right:0;border-bottom:2px dashed var(--bg)}
+    .ticket .md{font-size:19px}
+    .ticket .wd{margin-top:0;font-size:13px}
+    .ticket .tm{margin:0 0 0 auto;font-size:14px}
+    .ticket .body{padding:12px 14px 14px}
+    .ticket .ttl{font-size:16px}
+    .mem.cast{gap:4px 12px;font-size:12.5px;margin-top:8px}
+    .mem.cast .member-photo{width:20px;height:20px}
+    .dl{gap:5px}
+    .dl .pill{font-size:11.5px;padding:2px 8px}
+    .dl .pill.closed{display:none}
+    .aps{gap:5px;margin-top:8px;padding-top:8px}
+    .aps .l{flex-basis:100%;margin:0}
+    .ap{font-size:11.5px;padding:4px 9px}
+    .ticket .actions .btn.primary{flex:1}
+  }
 </style>
 </head>
 <body>
