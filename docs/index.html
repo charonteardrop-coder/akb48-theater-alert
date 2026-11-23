@@ -127,6 +127,11 @@
   .bar .b{height:10px;border-radius:5px;background:var(--bg);overflow:hidden}
   .bar .b i{display:block;height:100%;background:var(--curtain);border-radius:5px}
   .bar .n{text-align:right;font-family:"DM Mono",monospace}
+  .head-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .mail-rows{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+  .mail-rows li{padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;line-height:1.5}
+  .mail-rows li.skip{opacity:.5}
+  .mail-rows .lost{color:var(--muted,#888)}
   .head-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
   .head-row h2{margin:0}
   .log{display:grid;grid-template-columns:86px 1fr;background:#fff;border:1px solid var(--line);border-radius:12px;margin-top:12px;overflow:hidden;cursor:pointer;text-align:left;font:inherit;color:inherit;padding:0;width:100%}
@@ -304,7 +309,7 @@
   </section>
 
   <section class="card" aria-labelledby="a2">
-    <div class="head-row"><h2 id="a2"><span class="n" aria-hidden="true"></span>持ってる券</h2><button class="btn primary small" id="akAdd">＋ 申込を記録</button></div>
+    <div class="head-row"><h2 id="a2"><span class="n" aria-hidden="true"></span>持ってる券</h2><div class="head-btns"><button class="btn ghost small" id="akMail">📩 メールから</button><button class="btn primary small" id="akAdd">＋ 申込を記録</button></div></div>
     <div class="stats" id="akStats"></div>
     <div id="akTickets"></div>
   </section>
@@ -394,6 +399,20 @@
       <button type="submit" class="btn primary">保存</button>
     </div>
   </form>
+</dialog>
+
+<dialog id="akMailDlg" aria-labelledby="akMailTitle">
+  <div class="dlg">
+    <h2 id="akMailTitle">当選メールから読み込む</h2>
+    <p class="hint" style="margin:0">Official Shopから届く「抽選結果のお知らせ」か「ご注文完了のご案内」の本文をまるごとコピーして貼ってね。何通ぶんかまとめて貼ってもOK。メールの中身はこの端末で読むだけで、どこにも送らないよ。</p>
+    <label class="field"><span>メール本文</span><textarea id="mText" style="min-height:140px" placeholder="ここに貼り付け"></textarea></label>
+    <button type="button" class="btn ghost small" id="mPaste" style="justify-self:start">📋 クリップボードから貼る</button>
+    <div id="mPrev"></div>
+    <div class="dlg-actions">
+      <button type="button" class="btn ghost" id="mCancel">やめる</button>
+      <button type="button" class="btn primary" id="mGo" disabled>取り込む</button>
+    </div>
+  </div>
 </dialog>
 
 <dialog id="viewer" aria-label="写真">
@@ -1109,7 +1128,7 @@
     kind: String(e.kind || '').slice(0, 30), date: String(e.date || '').slice(0, 10), venue: String(e.venue || '').slice(0, 40),
     part: num(e.part, 20), member: String(e.member || '').slice(0, 20), win: String(e.win || '').slice(0, 30), winKey: String(e.winKey || '').slice(0, 60),
     applied: num(e.applied), won: e.won === null || e.won === undefined || e.won === '' ? null : num(e.won),
-    sign: String(e.sign || '').slice(0, 12), signWon: e.signWon === null || e.signWon === undefined || e.signWon === '' ? null : num(e.signWon), memo: String(e.memo || '').slice(0, 200),
+    sign: String(e.sign || '').slice(0, 12), signWon: e.signWon === null || e.signWon === undefined || e.signWon === '' ? null : num(e.signWon), mail: String(e.mail || '').slice(0, 120), memo: String(e.memo || '').slice(0, 200),
     createdAt: String(e.createdAt || new Date().toISOString()), updatedAt: String(e.updatedAt || new Date().toISOString()),
   });
   const akRel = (id) => akushu.find((r) => r.id === id);
@@ -1374,6 +1393,107 @@
   $('#kDay').addEventListener('change', () => { $('#kDateWrap').hidden = $('#kDay').value !== FREE; fillAkPart(Number($('#kPart').value) || 0); refreshSign(); });
   ['#kDate', '#kPart', '#kMember'].forEach((q) => $(q).addEventListener('change', refreshSign));
   $('#akOn').addEventListener('change', (e) => { akOn = e.target.checked; scheduleSync(akOn ? '握手会の通知をオンにしたよ' : '握手会の通知をオフにしたよ'); renderPush(); renderAkushu(); });
+
+    function parseAkMail(text, now = new Date()) {
+    const t = String(text || '').normalize('NFKC').replace(/\r/g, '').replace(/　/g, ' ');
+    const out = [];
+    const pad = (n) => String(n).padStart(2, '0');
+    const refBefore = (pos) => {
+      const all = [...t.slice(0, pos).matchAll(/支払開始予定[:：]\s*(20\d{2})-(\d{2})-(\d{2})/g)];
+      const m = all[all.length - 1];
+      return m ? new Date(`${m[1]}-${m[2]}-${m[3]}T00:00:00+09:00`) : now;
+    };
+    const dateFor = (mo, d, ref) => {
+      let y = Number(new Intl.DateTimeFormat('en', { timeZone: 'Asia/Tokyo', year: 'numeric' }).format(ref));
+      const at = (yy) => new Date(`${yy}-${pad(mo)}-${pad(d)}T23:59:59+09:00`);
+      if (at(y) < new Date(ref.getTime() - 60 * 864e5)) y += 1;
+      return `${y}-${pad(mo)}-${pad(d)}`;
+    };
+    // 商品名 → 日付・会場・メンバー・部・（リリース名）
+    const product = (s) => {
+      const m = String(s).match(/【\s*(\d{1,2})月(\d{1,2})日\s*(?:\([^)]*\))?\s*([^】]*)】\s*([\s\S]*)$/);
+      if (!m) return null;
+      const [who, ...rest] = m[4].split('|');
+      const p = who.replace(/AKB48/g, '').match(/^\s*(.+?)\s*第\s*(\d+)\s*部/);
+      return { mo: Number(m[1]), d: Number(m[2]), venue: m[3].trim(), member: p ? p[1].replace(/\s+/g, '') : who.replace(/AKB48|\s+/g, ''), part: p ? Number(p[2]) : 0, relText: rest.join('|').trim() };
+    };
+  
+    // 抽選結果
+    const re = /●申込番号[:：]\s*([\w-]+)([\s\S]*?)(?=●申込番号|●抽選\(当落\)結果に関して|━+\n●抽選|$)/g;
+    let m;
+    while ((m = re.exec(t))) {
+      const body = m[2];
+      const head = (body.match(/【抽選申込\/([^】]*)】\s*([^\n]*)/) || []);
+      const win = (head[1] || '').match(/第\s*(\d+)\s*販売(?:\s*第\s*(\d+)\s*次)?/);
+      const items = [...body.matchAll(/商品名[:：]\s*([^\n]+)\n[\s\S]*?申込数[:：]\s*(\d+)[^\n]*?当選数[:：]\s*(\d+)/g)];
+      for (const [, name, applied, won] of items) {
+        const p = product(name);
+        if (!p) continue;
+        out.push({ ref: `抽選${m[1]}${items.length > 1 ? ':' + name.trim() : ''}`, relText: head[2] ? head[2].trim() : p.relText, sale: win ? Number(win[1]) : 0, round: win && win[2] ? Number(win[2]) : 0,
+          date: dateFor(p.mo, p.d, refBefore(m.index)), venue: p.venue, member: p.member, part: p.part, applied: Number(applied), won: Number(won), lottery: true });
+      }
+    }
+    // ご注文完了（先着）
+    for (const om of t.matchAll(/ご注文番号[:：]\s*([\w-]+)([\s\S]*?)(?=ご注文番号[:：]|$)/g)) {
+      for (const [, name, qty] of om[2].matchAll(/商品名[:：]\s*([^\n]+)\n[\s\S]*?数量[:：]\s*(\d+)/g)) {
+        const p = product(name);
+        if (!p) continue;
+        out.push({ ref: `注文${om[1]}:${name.trim()}`, relText: p.relText, sale: 0, round: 0, date: dateFor(p.mo, p.d, now), venue: p.venue, member: p.member, part: p.part, applied: Number(qty), won: Number(qty), lottery: false });
+      }
+    }
+    return out;
+  }
+
+  /* ---------- 当選メールから読み込む（Official Shopの「抽選結果のお知らせ」「ご注文完了のご案内」を貼り付け） ---------- */
+  const akMailDlg = $('#akMailDlg');
+  let akMailRows = [];
+  const akMatch = (x) => {
+    const cands = [];
+    for (const r of akushu) for (const ev of r.events) for (const d of ev.days) if (d.date === x.date) cands.push({ r, ev, d });
+    const hit = (c) => x.relText && (x.relText.includes(c.r.id) || (c.r.song && x.relText.includes(c.r.song)));
+    const c = cands.find(hit) || cands.find((c) => !x.venue || !c.d.venue || nameKey(c.d.venue) === nameKey(x.venue)) || cands[0];
+    const relGuess = akushu.find((r) => x.relText && x.relText.includes(r.id));
+    const r = c ? c.r : relGuess;
+    let member = x.member;
+    const lu = c && c.d.lineup;
+    if (lu) { const k = Object.keys(lu).find((n) => nameKey(n) === nameKey(x.member)); if (k) member = k; }
+    const round = r && x.sale ? r.sales.find((s) => s.no === x.sale)?.rounds.find((rr) => rr.n === x.round) : null;
+    const relLabel = r ? relName(r) : (x.relText.replace(/^AKB48\s*/, '').replace(/【[^】]*】|Official Shop盤|OS盤/g, '').trim() || 'その他').slice(0, 40);
+    return cleanAk({
+      rel: r ? r.id : relLabel, relLabel, kind: c ? c.ev.kind : /お話し会|オンライン/.test(x.relText) ? 'オンラインお話し会' : '個別握手会',
+      date: x.date, venue: x.venue || (c && c.d.venue) || '', part: x.part, member, winKey: round ? round.key : '', win: round ? `第${x.sale}販売 第${x.round}次` : x.lottery ? '' : '先着販売',
+      applied: x.applied || x.won, won: x.won, mail: x.ref,
+    });
+  };
+  const sameSlot = (a, b) => a.rel === b.rel && a.kind === b.kind && a.date === b.date && a.part === b.part && nameKey(a.member) === nameKey(b.member);
+  const akMailPlan = (e) => {
+    if (akEntries.some((x) => x.mail && x.mail === e.mail)) return { act: 'skip', label: '読み込み済み' };
+    const p = akEntries.find((x) => x.won === null && sameSlot(x, e) && (!x.winKey || !e.winKey || x.winKey === e.winKey));
+    if (p) return { act: 'update', target: p, label: '結果待ちの申込に反映' };
+    return { act: 'add', label: '新しく追加' };
+  };
+  function previewAkMail() {
+    const raw = parseAkMail($('#mText').value);
+    akMailRows = raw.map((x) => { const e = akMatch(x); return { e, plan: akMailPlan(e) }; });
+    const n = akMailRows.filter((r) => r.plan.act !== 'skip').length;
+    $('#mPrev').innerHTML = !$('#mText').value.trim() ? '' : !akMailRows.length
+      ? '<p class="ferr">読み取れる当選内容が見つからなかったよ。「抽選結果のお知らせ」か「ご注文完了のご案内」の本文をまるごと貼ってね。</p>'
+      : `<ul class="mail-rows">${akMailRows.map(({ e, plan }) => `<li class="${plan.act}"><b>${md(e.date)} ${esc(e.member)} ${e.part ? `第${e.part}部` : ''}</b> ${e.won ? `当選${e.won}枚` : `<span class="lost">落選</span>`}${e.applied > e.won ? `<small>（申込${e.applied}枚）</small>` : ''}<br><small>${esc(e.relLabel)}・${esc(e.kind)}${e.win ? `・${esc(e.win)}` : ''} → ${plan.label}</small></li>`).join('')}</ul>`;
+    $('#mGo').disabled = !n; $('#mGo').textContent = n ? `${n}件を取り込む` : '取り込む';
+  }
+  $('#akMail').addEventListener('click', () => { $('#mText').value = ''; previewAkMail(); akMailDlg.showModal(); });
+  $('#mText').addEventListener('input', previewAkMail);
+  $('#mPaste').addEventListener('click', async () => { try { $('#mText').value = await navigator.clipboard.readText(); previewAkMail(); } catch { toast('貼り付けできなかった。テキスト欄に長押しで貼ってね'); } });
+  $('#mCancel').addEventListener('click', () => akMailDlg.close());
+  $('#mGo').addEventListener('click', () => {
+    let add = 0, upd = 0;
+    for (const { e, plan } of akMailRows) {
+      if (plan.act === 'add') { akEntries.push(e); add++; }
+      else if (plan.act === 'update') { akEntries = akEntries.map((x) => x.id === plan.target.id ? cleanAk({ ...x, won: e.won, applied: Math.max(x.applied, e.applied), winKey: x.winKey || e.winKey, win: x.win || e.win, mail: e.mail, updatedAt: new Date().toISOString() }) : x); upd++; }
+    }
+    saveAk(); renderAkushu(); akMailDlg.close();
+    toast([add && `${add}件追加`, upd && `${upd}件反映`].filter(Boolean).join('・') + 'したよ');
+  });
 
   function showPage(p) {
     page = p === 'akushu' ? 'akushu' : 'home';
