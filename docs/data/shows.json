@@ -313,15 +313,15 @@
         "name": "お見送り会参加権付きロビー観覧チケット",
         "short": "ロビー観覧",
         "lobby": true,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-25T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx5:TNs:7db5c",
+        "applyUrl": null,
         "price": 1800
       }
     ],
-    "fp": "214480:soldout,214481:soldout,214482:ended,214483:ended,214484:ended,214485:soldout,214486:open|岩立沙穂,久保姫菜乃,迫由芽実,橋本陽菜,布袋百椛,正鋳真優,丸山ひなた,森川優"
+    "fp": "214480:soldout,214481:soldout,214482:ended,214483:ended,214484:ended,214485:soldout,214486:ended|岩立沙穂,久保姫菜乃,迫由芽実,橋本陽菜,布袋百椛,正鋳真優,丸山ひなた,森川優"
   },
   {
     "id": 386452,
@@ -477,11 +477,11 @@
         "name": "一般枠",
         "short": "一般",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-25T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx7:TNC:ced87",
+        "applyUrl": null,
         "price": 4300
       },
       {
@@ -489,11 +489,11 @@
         "name": "ファミリー・カップル枠",
         "short": "ファミカプ",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-25T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx7:TND:10e4a",
+        "applyUrl": null,
         "price": 4300
       },
       {
@@ -501,11 +501,11 @@
         "name": "女性・小中学生枠",
         "short": "女性・小中学生",
         "lobby": false,
-        "status": "open",
-        "label": "抽選受付期間中",
+        "status": "ended",
+        "label": "抽選受付終了",
         "start": "2026-11-11T07:00:00.000000Z",
         "end": "2026-11-25T07:00:00.000000Z",
-        "applyUrl": "https://akb48.zaiko.io/apply/1Cx7:TNE:39f01",
+        "applyUrl": null,
         "price": 4300
       },
       {
@@ -533,7 +533,7 @@
         "price": 1800
       }
     ],
-    "fp": "214494:ended,214495:ended,214496:open,214497:open,214498:open,214499:ended,214500:open|奥本カイリ,黒須遥香,迫由芽実,正鋳真優,丸山ひなた,髙橋舞桜,田中沙友利,森川優"
+    "fp": "214494:ended,214495:ended,214496:ended,214497:ended,214498:ended,214499:ended,214500:open|奥本カイリ,黒須遥香,迫由芽実,正鋳真優,丸山ひなた,髙橋舞桜,田中沙友利,森川優"
   },
   {
     "id": 386669,
