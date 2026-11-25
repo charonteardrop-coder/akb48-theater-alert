@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="AKB48 ALERT">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#f6f1ea; --paper:#fffdf9; --ink:#1d1a1c; --muted:#7a7175; --line:#e6ddd3;
@@ -23,7 +23,7 @@
   }
   *{box-sizing:border-box}
   html,body{margin:0}
-  body{background:var(--bg);color:var(--ink);font-family:"Zen Kaku Gothic New",system-ui,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
+  body{background:var(--bg);color:var(--ink);font-family:"Zen Maru Gothic",system-ui,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
   .mono{font-family:"DM Mono",ui-monospace,monospace}
   header{background:linear-gradient(180deg,rgba(118,11,32,.45) 0%,rgba(70,6,18,.72) 55%,rgba(60,5,15,.9) 100%),url("img/theater.jpg") center 38%/cover no-repeat,var(--curtain-d);color:#fff;padding:36px 20px 60px;position:relative;overflow:hidden}
   header h1,header p{text-shadow:0 2px 10px rgba(0,0,0,.45)}
@@ -135,7 +135,7 @@
   .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
   .stat .k{font-size:12px;color:var(--muted);font-weight:700}
   .stat .v{font-size:30px;font-weight:900;line-height:1.1}
-  .stat .v small{font-size:13px;font-family:"Zen Kaku Gothic New",sans-serif;margin-left:2px}
+  .stat .v small{font-size:13px;font-family:"Zen Maru Gothic",sans-serif;margin-left:2px}
   .bars{margin-top:14px;display:grid;gap:7px}
   .bars h3{font-size:13px;margin:6px 0 0;color:var(--muted)}
   .bar{display:grid;grid-template-columns:7.5em 1fr 2.4em;align-items:center;gap:8px;font-size:13px}
@@ -325,6 +325,45 @@
     .ap{font-size:11.5px;padding:4px 9px}
     .ticket .actions .btn.primary{flex:1}
   }
+
+  /* ===== リデザイン 2026-11（ほどよく可愛い） ===== */
+  :root{--gold:#e7799a;--pink:#f9dde4;--pink2:#fdf0f3;--pinkline:#f3c6d1;--paper:#fff;--line:#ecdfd6;--ink:#2a2326;--muted:#7d6f6a}
+  header{background:linear-gradient(180deg,rgba(150,14,40,.80),rgba(105,6,28,.93)),url("img/theater.jpg") center 38%/cover no-repeat,var(--curtain-d);padding:28px 20px 54px}
+  header h1,header p{text-shadow:none}
+  header h1{font-family:"DM Mono",ui-monospace,monospace;font-weight:500;font-size:clamp(22px,6.4vw,32px);letter-spacing:.04em}
+  header p{font-size:13.5px;opacity:.9}
+  .card{background:#fff;border-color:var(--line);box-shadow:0 2px 10px rgba(90,30,40,.06)}
+  h2{font-size:15.5px;font-weight:700}
+  h2 .n{width:26px;height:26px;border:0;border-radius:8px;background:var(--pink);display:inline-grid;place-items:center}
+  h2 .n svg{width:14px;height:14px;display:block}
+  #t0 .n{display:none}
+  #t0 .tt{display:inline-block;background:var(--pink);color:var(--curtain);font-size:11px;font-weight:700;border-radius:999px;padding:3px 10px;letter-spacing:.06em}
+  .btn{border-radius:999px}
+  .btn.ghost{border-color:var(--line)}
+  .tag{background:var(--pink2);color:var(--curtain);border:1px solid var(--pinkline)}
+  .tag .x{background:rgba(163,18,46,.1)}
+  .tag:hover .x{background:rgba(163,18,46,.2)}
+  .ticket .stub{background:var(--pink2);color:var(--curtain);border-right-color:var(--line)}
+  .ticket .md{font-family:"DM Mono",ui-monospace,monospace;font-weight:500}
+  .ticket .wd{opacity:1;color:var(--ink);font-weight:700}
+  .ticket .tm{color:var(--curtain)}
+  .ticket.soon-t .stub{background:#eeeae7;color:#8b817c}
+  .ticket.soon-t .tm{color:#8b817c}
+  .ap.on{background:var(--pink2);border-color:var(--pinkline);color:var(--curtain)}
+  .ap.on::before{background:var(--curtain)}
+  .appl{background:var(--pink);color:var(--curtain)}
+  .tab{border-radius:999px}
+  .tab[aria-selected=true]{background:var(--curtain);border-color:var(--curtain)}
+  .install li::before{background:var(--curtain)}
+  .units li{background:#faf6f2;border-radius:10px;padding:7px 10px}
+  .units li:has(b){background:var(--pink2)}
+  .seg button[aria-pressed="true"]{background:var(--curtain)}
+  .mcd.sel{background:var(--curtain)}
+  .ak-day > .h{background:var(--pink2);color:var(--ink);border-bottom:1px solid var(--line)}
+  .been{background:var(--curtain)}
+  .stat{border-color:var(--line)}
+  .stat .v{color:var(--curtain)}
+  @media (max-width:560px){.ticket .stub{border-bottom:1px dashed var(--pinkline)}}
 </style>
 </head>
 <body>
@@ -1977,6 +2016,25 @@
     renderAll();
     route(location.href);
   })();
+})();
+</script>
+<script>
+/* 見出しの線画アイコン（リデザイン 2026-11） */
+(() => {
+  const P = {
+    bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+    ticket:'<path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2"/>',
+    book:'<path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2z"/><path d="M8 7h6"/>',
+    star:'<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>',
+    save:'<path d="M12 4v11M7 10l5 5 5-5"/><path d="M4 19h16"/>',
+    cal:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  };
+  const map = { s1:'bell', s3:'ticket', l1:'star', l2:'book', l3:'save', c1:'cal', a1:'bell', a2:'ticket', a3:'clock', a4:'cal', a5:'cal' };
+  for (const [id, k] of Object.entries(map)) {
+    const n = document.querySelector(`#${id} .n`);
+    if (n) n.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="#a3122e" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${P[k]}</svg>`;
+  }
 })();
 </script>
 </body>
