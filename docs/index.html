@@ -223,10 +223,14 @@
   .ferr{margin:0;font-size:13px;font-weight:700;color:#b3261e;min-height:1em}
   .btn.danger{background:#fff;color:#b3261e;border:1px solid #f1c6c3;margin-right:auto}
   /* 握手会 */
-  .pages{display:flex;gap:8px;margin-top:16px}
+  .pages{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .pages .pagelink{margin-left:auto}
   .page{font:inherit;font-size:14px;font-weight:700;color:#fff;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:7px 16px;cursor:pointer}
   .page[aria-selected=true]{background:#fff;color:var(--curtain);border-color:#fff}
   .page.icon{display:inline-grid;place-items:center;width:44px;padding:0}
+  .pagelink{font:inherit;font-size:14px;font-weight:700;color:#fff;background:transparent;border:1px dashed rgba(255,255,255,.5);border-radius:999px;padding:7px 14px;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+  .pagelink:hover{background:rgba(255,255,255,.14)}
+  @media (max-width:400px){.pagelink{padding:7px 10px;font-size:13px}}
   /* カレンダー */
   .mc-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
   .mc-head .t{flex:1;text-align:center;font-weight:900;font-size:17px}
@@ -332,6 +336,7 @@
       <button class="page" role="tab" aria-selected="true" data-page="home">劇場公演</button>
       <button class="page" role="tab" aria-selected="false" data-page="akushu">握手会</button>
       <button class="page icon" role="tab" aria-selected="false" data-page="cal" aria-label="カレンダー" title="カレンダー"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="8.5" cy="14.5" r="1" fill="currentColor"/><circle cx="12" cy="14.5" r="1" fill="currentColor"/><circle cx="15.5" cy="14.5" r="1" fill="currentColor"/></svg></button>
+      <a class="pagelink" href="https://www.akb48.co.jp/" target="_blank" rel="noopener" title="AKB48公式サイト（別タブで開く）">公式サイト<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
     </nav>
   </div>
 </header>
