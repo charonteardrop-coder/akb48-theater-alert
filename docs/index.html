@@ -377,7 +377,7 @@
   </section>
   <section class="card" aria-labelledby="l3">
     <h2 id="l3"><span class="n" aria-hidden="true"></span>バックアップ</h2>
-    <p class="hint" style="margin-top:0">記録はこの端末の中だけに保存されてるよ。ホーム画面のアイコンを消したり機種変更したりする前に書き出しておいてね。</p>
+    <p class="hint" style="margin-top:0">記録・握手会の券・推しメンや申し込み済みの印などの設定はこの端末の中だけに保存されてるよ。ホーム画面のアイコンを消したり機種変更したりする前に書き出しておいてね（通知だけは読み込んだあとにもう一回オンにしてね）。</p>
     <div class="row">
       <button class="btn ghost" id="exportLog">書き出す</button>
       <label class="btn ghost" for="importFile">読み込む</label>
@@ -1220,7 +1220,8 @@
       const p = await photoGet(id);
       if (p) photos.push({ id: p.id, recordId: p.recordId, w: p.w, h: p.h, createdAt: p.createdAt, data: await new Promise((res) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = () => res(''); fr.readAsDataURL(p.blob); }) });
     }
-    const text = JSON.stringify({ app: 'oshi-gekijo-alert', kind: 'records', version: 2, exportedAt: new Date().toISOString(), records, photos, akushu: akEntries }, null, 1);
+    const text = JSON.stringify({ app: 'oshi-gekijo-alert', kind: 'records', version: 2, exportedAt: new Date().toISOString(), records, photos, akushu: akEntries,
+      settings: { picked: [...picked], box, mode, akushu: akOn, applied, folds, akFolded: [...akFolded] } }, null, 1);
     const file = new File([text], name, { type: 'application/json' });
     try {
       if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: '観覧記録のバックアップ' }); return; }
@@ -1228,7 +1229,7 @@
     const a = document.createElement('a');
     a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-    toast(`${records.length}件${photos.length ? `（写真${photos.length}枚）` : ''}を書き出したよ`);
+    toast(`記録${records.length}件${photos.length ? `（写真${photos.length}枚）` : ''}・握手会${akEntries.length}件・設定を書き出したよ`);
   }
   const clean = (r) => ({
     id: String(r.id || uid()).slice(0, 64), showId: r.showId != null && r.showId !== '' ? String(r.showId).slice(0, 40) : null,
@@ -1258,6 +1259,23 @@
       const akHave = new Set(akEntries.map((e) => e.id));
       const akAdd = (Array.isArray(j.akushu) ? j.akushu : []).map(cleanAk).filter((e) => !akHave.has(e.id));
       if (akAdd.length) { akEntries = [...akEntries, ...akAdd]; saveAk(); renderAkushu(); }
+      const st = j.settings && typeof j.settings === 'object' ? j.settings : null;
+      if (st) {
+        const isName = (m) => typeof m === 'string' && m.length <= 20;
+        (Array.isArray(st.picked) ? st.picked : []).filter(isName).forEach((m) => picked.add(m));
+        if (typeof st.box === 'boolean') box = st.box;
+        if (['oshi', 'open', 'all'].includes(st.mode)) mode = st.mode;
+        if (typeof st.akushu === 'boolean') akOn = st.akushu;
+        if (st.applied && typeof st.applied === 'object') {
+          for (const [k, v] of Object.entries(st.applied)) if (Array.isArray(v)) applied[k] = [...new Set([...(applied[k] || []), ...v.map(String)])].slice(0, 40);
+          saveApplied();
+        }
+        if (st.folds && typeof st.folds === 'object') Object.entries(st.folds).forEach(([id, on]) => setFold(id, !!on));
+        if (Array.isArray(st.akFolded)) { st.akFolded.filter((x) => typeof x === 'string').forEach((x) => akFolded.add(x)); try { localStorage.setItem(AKFOLD, JSON.stringify([...akFolded].slice(-200))); } catch {} }
+        $('#box').checked = box;
+        renderChips(); renderToday(); renderShows(); renderLog(); renderAkushu(); renderPush(); scheduleSync('バックアップの設定を反映したよ');
+      }
+      if (st) { toast(`記録${add.length}件・握手会${akAdd.length}件・設定を読み込んだよ`); return; }
       if (akAdd.length && !add.length) { toast(`握手会の記録${akAdd.length}件を読み込んだよ`); return; }
       toast(add.length ? `${add.length}件${rows.length ? `（写真${rows.length}枚）` : ''}を読み込んだよ` : '新しい記録はなかったよ');
     } catch { toast('読み込めなかった（ファイルを確認してね）'); }
