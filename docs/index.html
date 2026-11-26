@@ -326,6 +326,9 @@
     .ticket .actions .btn.primary{flex:1}
   }
 
+  .calbtn{display:inline-flex;align-items:center;gap:5px}
+  .ticket .actions .btn{white-space:nowrap}
+  .ak-calrow{padding:10px 12px;border-top:1px solid var(--line);background:#fff;display:flex;justify-content:flex-end}
   /* ===== リデザイン 2026-11（ほどよく可愛い） ===== */
   :root{--gold:#e7799a;--pink:#f9dde4;--pink2:#fdf0f3;--pinkline:#f3c6d1;--paper:#fff;--line:#ecdfd6;--ink:#2a2326;--muted:#7d6f6a}
   header{background:linear-gradient(180deg,rgba(150,14,40,.80),rgba(105,6,28,.93)),url("img/theater.jpg") center 38%/cover no-repeat,var(--curtain-d);padding:28px 20px 54px}
@@ -881,8 +884,56 @@
         ${apRow(s)}
         <div class="actions">${live || lobby.length
           ? `<a class="btn primary" href="${esc(s.url)}" target="_blank" rel="noopener">チケットセンターで申し込む</a>`
-          : notYet(s) ? '<span class="btn wait" aria-disabled="true">申し込み受け付け前</span>' : '<span class="hint">受付終了</span>'}${new Date(s.start) <= now ? beenBtn(s) : ''}</div>
+          : notYet(s) ? '<span class="btn wait" aria-disabled="true">申し込み受け付け前</span>' : '<span class="hint">受付終了</span>'}${new Date(s.start) <= now ? beenBtn(s) : ''}${showStart(s) > now ? `<button type="button" class="btn ghost small calbtn" data-ical="${esc(`show:${s.id}`)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></svg>カレンダーに追加</button>` : ''}</div>
       </div></article>`;
+  }
+
+  /* ---------- カレンダーに追加（端末のカレンダーアプリへ .ics を渡す） ---------- */
+  const showStart = (s) => new Date(`${s.date}T${s.time || '00:00'}:00+09:00`).getTime();
+  const THEATER = 'AKB48劇場（東京都千代田区外神田4-3-3 ドン・キホーテ秋葉原8F）';
+  const b64u = (str) => { let b = ''; for (const c of new TextEncoder().encode(str)) b += String.fromCharCode(c); return btoa(b).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+  const plusH = (iso, h) => new Date(new Date(iso).getTime() + h * 3600e3).toISOString();
+  function calEvents(key) {
+    const i = key.indexOf(':'), type = key.slice(0, i), rest = key.slice(i + 1);
+    if (type === 'show' || type === 'blog') {
+      const s = type === 'show' ? shows.find((x) => String(x.id) === rest) : blogShows.find((b) => `${b.date}|${b.time || ''}` === rest);
+      if (!s) return null;
+      const oshi = (s.members || []).filter((m) => picked.has(m));
+      const d = [s.note, oshi.length ? `推し：${oshi.join('・')}` : '', (s.members || []).length ? `出演：${s.members.join('・')}` : '', s.url || ''].filter(Boolean).join('\n');
+      const ev = { t: `AKB48劇場 ${s.title}`, l: THEATER, d, u: s.url || '' };
+      if (s.time) { ev.s = new Date(showStart(s)).toISOString(); ev.e = plusH(ev.s, 2); } else ev.a = s.date;
+      return { n: `akb48-${s.date}`, e: [ev] };
+    }
+    if (type === 'ak') {
+      const [date, kind, venue] = rest.split('|');
+      const es = akEntries.filter((e) => e.won > 0 && e.date === date && e.kind === kind && e.venue === venue);
+      if (!es.length) return null;
+      const byPart = new Map();
+      for (const e of es) { if (!byPart.has(e.part)) byPart.set(e.part, []); byPart.get(e.part).push(e); }
+      const out = [];
+      for (const [part, list] of [...byPart.entries()].sort((a, b) => a[0] - b[0])) {
+        const cnt = new Map();
+        for (const e of list) cnt.set(e.member, (cnt.get(e.member) || 0) + e.won);
+        const who = [...cnt.entries()].map(([m, n]) => `${m}×${n}`).join('・');
+        const rel = akRel(list[0].rel), ev = rel && (rel.events || []).find((x) => x.kind === kind);
+        const day = ev && (ev.days || []).find((x) => x.date === date);
+        const p = part ? (dayParts(ev, day) || []).find((x) => x.n === part) : null;
+        const t = `${kind}${part ? ` 第${part}部` : ''}（${who}）`;
+        const d = [rel ? relName(rel) : list[0].relLabel, p && p.recv ? `受付 ${p.recv}〜${p.recvEnd || ''}` : '', ev && ev.memberUrl ? ev.memberUrl : ''].filter(Boolean).join('\n');
+        const o = { t, l: venue, d, u: (ev && ev.url) || '' };
+        if (p && p.start) { o.s = new Date(`${date}T${p.start}:00+09:00`).toISOString(); o.e = p.end ? new Date(`${date}T${p.end}:00+09:00`).toISOString() : plusH(o.s, 1); }
+        else o.a = date;
+        out.push(o);
+      }
+      return { n: `akushu-${date}`, e: out };
+    }
+    return null;
+  }
+  function addToCalendar(key) {
+    const q = calEvents(key);
+    if (!q) { toast('予定が見つからなかった'); return; }
+    if (!config.apiBase) { toast('いまはカレンダーに追加できないみたい'); return; }
+    window.open(`${config.apiBase}/ics?d=${b64u(JSON.stringify(q))}`, '_blank', 'noopener');
   }
 
   // チケットセンターにまだ出ていない（受付前の）枠しかない公演
@@ -905,7 +956,7 @@
         ${mem ? `<div class="mem cast">${mem}</div>` : ''}
         ${unitsBlock({ ...b, members: b.members || [] })}
         <div class="dl"><span class="pill">公式ブログで発表済み・チケットセンターの受付はまだ</span></div>
-        <div class="actions"><span class="btn wait" aria-disabled="true">申し込み受け付け前</span>${b.url ? `<a class="btn ghost small" href="${esc(b.url)}" target="_blank" rel="noopener">発表の記事</a>` : ''}</div>
+        <div class="actions"><span class="btn wait" aria-disabled="true">申し込み受け付け前</span>${b.url ? `<a class="btn ghost small" href="${esc(b.url)}" target="_blank" rel="noopener">発表の記事</a>` : ''}<button type="button" class="btn ghost small calbtn" data-ical="${esc(`blog:${b.date}|${b.time || ''}`)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></svg>カレンダーに追加</button></div>
       </div></article>`;
   }
   function renderShows() {
@@ -1447,7 +1498,8 @@
       const head = `<span>${date ? md(date) : '日付未入力'} ${esc(kind)}</span><small>${esc(venue)}　計${sumBy(es, countOf)}枚</small>`;
       const body = [...slots.values()].map((g) => g.length > 1 ? akMerged(g, countOf, acts) : akLine(g[0], countOf(g[0])) + (acts ? acts(g[0]) : '')).join('');
       // 持ってる券は日程ごとに折りたためる（閉じた日程はこの端末に覚えておく）
-      return merge ? `<details class="ak-day" data-akd="${esc(k)}"${akFolded.has(k) ? '' : ' open'}><summary class="h">${head}</summary>${body}</details>`
+      const cal = merge && date && date >= todayJst() ? `<div class="ak-calrow"><button type="button" class="btn ghost small calbtn" data-ical="${esc(`ak:${k}`)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></svg>カレンダーに追加</button></div>` : '';
+      return merge ? `<details class="ak-day" data-akd="${esc(k)}"${akFolded.has(k) ? '' : ' open'}><summary class="h">${head}</summary>${body}${cal}</details>`
         : `<div class="ak-day"><div class="h">${head}</div>${body}</div>`;
     }).join('');
   };
@@ -1980,6 +2032,8 @@
     const lg = e.target.closest('[data-log]');
     if (lg) { const r = records.find((x) => x.id === lg.dataset.log); if (r) openForm({ record: r }); return; }
     if (e.target.closest('#addLog')) { openForm(); return; }
+    const ical = e.target.closest('[data-ical]');
+    if (ical) { addToCalendar(ical.dataset.ical); return; }
     if (e.target.closest('#exportLog')) { exportRecords(); return; }
     if (e.target.closest('#onBtn')) { turnOn(); return; }
     if (e.target.closest('#offBtn')) { turnOff(); return; }

@@ -79,6 +79,63 @@ async function readBody(req) {
   return JSON.parse(text);
 }
 
+// ---- カレンダー追加（.ics） ----
+// GET /ics?d=<base64url(JSON)>  JSON: {n: ファイル名, e: [{t, s, e, a, l, d, u}]}
+//   t=タイトル s/e=開始/終了(ISO) a=終日の日付(YYYY-MM-DD) l=場所 d=メモ u=URL
+const icsEsc = (v) => String(v || '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/([,;])/g, '\\$1');
+const icsFold = (line) => {
+  const out = []; let cur = '', bytes = 0;
+  for (const ch of line) {
+    const b = new TextEncoder().encode(ch).length;
+    if (bytes + b > 73) { out.push(cur); cur = ' '; bytes = 1; }
+    cur += ch; bytes += b;
+  }
+  out.push(cur);
+  return out.join('\r\n');
+};
+const icsUtc = (iso) => { const d = new Date(iso); return isNaN(d) ? null : d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); };
+function buildIcs(q) {
+  const evs = (Array.isArray(q?.e) ? q.e : []).slice(0, 20);
+  if (!evs.length) return null;
+  const stamp = icsUtc(new Date().toISOString());
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//AKB48 BOOKING ALERT//JA', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH'];
+  evs.forEach((e, i) => {
+    const t = String(e.t || '').slice(0, 120);
+    if (!t) return;
+    lines.push('BEGIN:VEVENT', `UID:${stamp}-${i}-${Math.random().toString(36).slice(2, 10)}@akb48-booking-alert`, `DTSTAMP:${stamp}`);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(e.a || '')) {
+      const d = e.a.replace(/-/g, ''), n = new Date(`${e.a}T00:00:00Z`); n.setUTCDate(n.getUTCDate() + 1);
+      lines.push(`DTSTART;VALUE=DATE:${d}`, `DTEND;VALUE=DATE:${n.toISOString().slice(0, 10).replace(/-/g, '')}`);
+    } else {
+      const s = icsUtc(e.s), en = icsUtc(e.e || e.s);
+      if (!s) return lines.splice(lines.lastIndexOf('BEGIN:VEVENT'));
+      lines.push(`DTSTART:${s}`, `DTEND:${en}`);
+      lines.push('BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${icsEsc(t)}`, 'TRIGGER:-PT1H', 'END:VALARM');
+    }
+    lines.push(`SUMMARY:${icsEsc(t)}`);
+    if (e.l) lines.push(`LOCATION:${icsEsc(String(e.l).slice(0, 120))}`);
+    if (e.d) lines.push(`DESCRIPTION:${icsEsc(String(e.d).slice(0, 1000))}`);
+    if (/^https:\/\/[^\s]+$/.test(e.u || '')) lines.push(`URL:${String(e.u).slice(0, 500)}`);
+    lines.push('END:VEVENT');
+  });
+  if (!lines.includes('BEGIN:VEVENT')) return null;
+  lines.push('END:VCALENDAR');
+  return lines.map(icsFold).join('\r\n') + '\r\n';
+}
+function icsResponse(url) {
+  const raw = url.searchParams.get('d') || '';
+  if (raw.length > 8000) return new Response('too long', { status: 400 });
+  let q = null;
+  try {
+    const b64 = raw.replace(/-/g, '+').replace(/_/g, '/');
+    q = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b64 + '==='.slice((b64.length + 3) % 4)), (c) => c.charCodeAt(0))));
+  } catch { return new Response('bad request', { status: 400 }); }
+  const body = buildIcs(q);
+  if (!body) return new Response('no events', { status: 400 });
+  const name = (String(q.n || 'event').replace(/[^\w.-]/g, '').slice(0, 40) || 'event') + '.ics';
+  return new Response(body, { headers: { 'content-type': 'text/calendar; charset=utf-8', 'content-disposition': `inline; filename="${name}"`, 'cache-control': 'no-store' } });
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
@@ -86,6 +143,7 @@ export default {
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: h });
 
     try {
+      if (req.method === 'GET' && url.pathname === '/ics') return icsResponse(url);
       if (req.method !== 'GET' || url.pathname !== '/health') await migrate(env);
       if (req.method === 'GET' && url.pathname === '/health') return json({ ok: true }, 200, h);
 
